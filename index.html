@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 <title>Player vs Computer</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="https://ads.adsgram.tech/sdk.js"></script>
+
+<!-- Telega SDK -->
+<script src="https://inapp.telega.io/sdk/v1/sdk.js"></script>
+
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
   html, body {
@@ -216,9 +219,11 @@
 <div id="points">Points: 0</div>
 <div id="game"></div>
 <button id="restart">Restart</button>
-<div id="adsgram-container"></div>
-<div id="particles-container"></div>
 
+<!-- Telega Ads Container -->
+<div id="adsgram-container"></div>
+
+<div id="particles-container"></div>
 <div id="result-overlay"></div>
 
 <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
@@ -248,37 +253,34 @@
 
   function createBoard() {
     game.innerHTML = "";
-    for (let i = 0; i < 9; i++) {
+    for(let i=0; i<9; i++) {
       const cell = document.createElement("div");
-      cell.id = `cell-${i}`;
-      cell.className = "cell";
-      cell.addEventListener("click", () => {
-        if (!gameActive) return;
-        playerMove(i);
-      });
+      cell.classList.add("cell");
+      cell.dataset.index = i;
+      cell.addEventListener("click", () => playerMove(i));
       game.appendChild(cell);
     }
   }
 
   function updateBoard() {
-    for (let i = 0; i < 9; i++) {
-      const cell = document.getElementById(`cell-${i}`);
+    const cells = game.querySelectorAll(".cell");
+    cells.forEach((cell, i) => {
       cell.textContent = board[i];
-      cell.className = "cell " + board[i];
-    }
+      cell.classList.remove("X", "O", "flash");
+      if(board[i]) {
+        cell.classList.add(board[i]);
+      }
+    });
   }
 
   function getEmptyIndices() {
-    return board.map((v, i) => v === "" ? i : null).filter(v => v !== null);
+    return board.map((v,i) => v === "" ? i : -1).filter(i => i !== -1);
   }
 
   function checkWin(player) {
-    for (const combo of winningCombinations) {
-      if (combo.every(i => board[i] === player)) {
-        return combo;
-      }
-    }
-    return null;
+    return winningCombinations.find(combo =>
+      combo.every(index => board[index] === player)
+    );
   }
 
   function isDraw() {
@@ -287,68 +289,34 @@
 
   function flashWinningCells(combo) {
     combo.forEach(i => {
-      const cell = document.getElementById(`cell-${i}`);
-      cell.classList.add("flash");
+      const cell = game.querySelector(`.cell[data-index="${i}"]`);
+      if(cell) {
+        cell.classList.add("flash");
+      }
     });
   }
 
-  const sparkleColors = [
-    '#FF3F6C', '#00FF88', '#FFD700', '#FF6F00',
-    '#00BFFF', '#FF4500', '#8A2BE2', '#00CED1'
-  ];
-
-  // Fireworks particle effect
-  function showFireworks(x = window.innerWidth/2, y = window.innerHeight/2, count = 40) {
-    for (let i = 0; i < count; i++) {
-      const particle = document.createElement("div");
-      particle.className = "particle";
-
-      // Angle from 0 to 2pi
-      const angle = Math.random() * 2 * Math.PI;
-      // Distance for rise and explode
-      const riseDist = 80 + Math.random() * 80;
-      const explodeDist = riseDist * (1.5 + Math.random());
-
-      // Rise position offset (mostly upward with some horizontal)
-      const dxRise = riseDist * Math.cos(angle) * 0.3;
-      const dyRise = -riseDist * Math.sin(angle);
-
-      // Explode position offset further
-      const dxExplode = explodeDist * Math.cos(angle);
-      const dyExplode = -explodeDist * Math.sin(angle);
-
-      // We use CSS variables --dx and --dy for animations (explode target)
-      particle.style.setProperty('--dx', `${dxExplode}px`);
-      particle.style.setProperty('--dy', `${dyExplode}px`);
-
-      // Start position for rise animation
-      particle.style.left = `${x + dxRise}px`;
-      particle.style.top = `${y + dyRise}px`;
-
-      // Random color from palette
-      particle.style.color = sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
-
+  function showFireworks() {
+    const colors = ['#ff3f6c', '#00ff88', '#ffff33'];
+    for(let i=0; i<40; i++) {
+      const particle = document.createElement('div');
+      particle.classList.add('particle');
+      particle.style.color = colors[i % colors.length];
+      particle.style.top = (Math.random() * 100) + 'vh';
+      particle.style.left = (Math.random() * 100) + 'vw';
+      particle.style.setProperty('--dx', (Math.random() * 100 - 50) + 'px');
+      particle.style.setProperty('--dy', (Math.random() * -100 - 50) + 'px');
       particlesContainer.appendChild(particle);
-
-      // Remove particle after animation
-      setTimeout(() => {
-        if (particle.parentNode) particle.parentNode.removeChild(particle);
-      }, 1600);
+      setTimeout(() => particle.remove(), 1500);
     }
   }
 
   function showResultOverlay(text) {
     resultOverlay.textContent = text;
     resultOverlay.classList.add("show");
-    // Center for fireworks: middle of overlay
-    const rect = resultOverlay.getBoundingClientRect();
-    const cx = rect.left + rect.width/2;
-    const cy = rect.top + rect.height/2;
-    showFireworks(cx, cy, 60);
-  }
-
-  function hideResultOverlay() {
-    resultOverlay.classList.remove("show");
+    setTimeout(() => {
+      resultOverlay.classList.remove("show");
+    }, 2200);
   }
 
   function playGameOverSound() {
@@ -362,121 +330,82 @@
   }
 
   function computerMove() {
+    if(!gameActive) return;
     const empty = getEmptyIndices();
-
-    // 1. Can computer win?
-    for (const i of empty) {
-      board[i] = "O";
-      if (checkWin("O")) {
-        updateBoard();
-        return i;
-      }
-      board[i] = "";
-    }
-    // 2. Block player win
-    for (const i of empty) {
-      board[i] = "X";
-      if (checkWin("X")) {
-        board[i] = "O";
-        updateBoard();
-        return i;
-      }
-      board[i] = "";
-    }
-    // 3. Random
-    const choice = empty[Math.floor(Math.random() * empty.length)];
-    board[choice] = "O";
+    if(empty.length === 0) return;
+    const move = empty[Math.floor(Math.random() * empty.length)];
+    board[move] = "O";
     updateBoard();
-    return choice;
+    const winCombo = checkWin("O");
+    if(winCombo) {
+      flashWinningCells(winCombo);
+      gameActive = false;
+      playGameOverSound();
+      showFireworks();
+      updatePoints(-1);
+      showResultOverlay("You Lose!");
+      return;
+    }
+    if(isDraw()) {
+      gameActive = false;
+      showResultOverlay("Draw!");
+      return;
+    }
+    statusText.textContent = "Your turn (X)";
   }
 
-  function playerMove(i) {
-    if (board[i] !== "") return;
-    board[i] = "X";
+  function playerMove(index) {
+    if(!gameActive) return;
+    if(board[index] !== "") return;
+    board[index] = "X";
     updateBoard();
-
-    let winCombo = checkWin("X");
-    if (winCombo) {
-      gameActive = false;
+    const winCombo = checkWin("X");
+    if(winCombo) {
       flashWinningCells(winCombo);
-      updatePoints(10);
-      statusText.textContent = "You win!";
-      showResultOverlay("You Win!");
-      playGameOverSound();
-      return;
-    }
-
-    if (isDraw()) {
       gameActive = false;
-      updatePoints(2);
-      statusText.textContent = "It's a draw.";
-      showResultOverlay("Draw!");
       playGameOverSound();
+      showFireworks();
+      updatePoints(1);
+      showResultOverlay("You Win!");
       return;
     }
-
-    // Computer turn
+    if(isDraw()) {
+      gameActive = false;
+      showResultOverlay("Draw!");
+      return;
+    }
     statusText.textContent = "Computer's turn (O)";
-    setTimeout(() => {
-      const compIndex = computerMove();
-      let compWinCombo = checkWin("O");
-      if (compWinCombo) {
-        gameActive = false;
-        flashWinningCells(compWinCombo);
-        updatePoints(-5);
-        statusText.textContent = "Computer wins.";
-        showResultOverlay("You Lose!");
-        playGameOverSound();
-        return;
-      }
-
-      if (isDraw()) {
-        gameActive = false;
-        updatePoints(2);
-        statusText.textContent = "It's a draw.";
-        showResultOverlay("Draw!");
-        playGameOverSound();
-        return;
-      }
-
-      statusText.textContent = "Your turn (X)";
-    }, 500);
+    setTimeout(computerMove, 700);
   }
 
   restartBtn.addEventListener("click", () => {
     board = ["", "", "", "", "", "", "", "", ""];
     gameActive = true;
-    updateBoard();
     statusText.textContent = "Your turn (X)";
+    updateBoard();
     hideResultOverlay();
   });
+
+  function hideResultOverlay() {
+    resultOverlay.classList.remove("show");
+  }
 
   createBoard();
   updateBoard();
 
-  // Initialize Adsgram ad
-  ads.init({
-    container: "#adsgram-container",
-    id: "int-11206",
-    adtype: "native",
-    adcount: 1,
-    style: {
-      width: "100%",
-      height: "90px",
-      borderRadius: "20px",
-      border: "none",
-      marginTop: "25px",
-    },
-    onError: (err) => {
-      console.error("Adsgram error:", err);
-    }
-  });
-</script>
-
-  <script src="https://inapp.telega.io/sdk/v1/sdk.js"></script>
-<script>
+  // Initialize Telega ads
   const ads = window.TelegaIn.AdsController.create_miniapp({
-    token: 'c66dd970-a8e9-443b-9f0c-70edbcae2791' });
+    token: 'c66dd970-a8e9-443b-9f0c-70edbcae2791'
+  });
+
+  // Mount ads inside ads container
+  ads.mount('#adsgram-container');
+
+  // Show the ad with given adBlockUuid
+  ads.ad_show({
+    adBlockUuid: "136f4f44-647c-4bf2-92b9-776215f047e3"
+  });
+
 </script>
 </body>
 </html>
