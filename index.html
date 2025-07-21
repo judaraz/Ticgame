@@ -291,14 +291,24 @@
     }
 
     restartBtn.addEventListener("click", () => {
-      board = ["", "", "", "", "", "", "", "", ""];
-      gameActive = true;
-      statusText.textContent = "Your turn (X)";
-      updateBoard();
-
-      // ✅ Show Adexium interstitial ad on restart
-      window.adexiumWidget?.showInterstitial?.();
+  if (window.adexiumReady && window.adexiumWidget) {
+    window.adexiumWidget.showInterstitial().then(() => {
+      resetGame();
+    }).catch(e => {
+      console.error("Adexium ad error:", e);
+      resetGame(); // fallback to reset even if ad fails
     });
+  } else {
+    resetGame(); // fallback if adexium not ready
+  }
+});
+
+function resetGame() {
+  board = ["", "", "", "", "", "", "", "", ""];
+  gameActive = true;
+  statusText.textContent = "Your turn (X)";
+  updateBoard();
+}
 
     createBoard();
     updateBoard();
