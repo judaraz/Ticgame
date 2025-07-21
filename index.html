@@ -295,17 +295,25 @@
       gameActive = true;
       statusText.textContent = "Your turn (X)";
       updateBoard();
+
+      // ✅ Show Adexium interstitial ad on restart
+      window.adexiumWidget?.showInterstitial?.();
     });
 
     createBoard();
     updateBoard();
   </script>
   <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
-<script type="text/javascript">
+  <script type="text/javascript">
+    let adexiumWidget;
+
     document.addEventListener('DOMContentLoaded', () => {
-        const adexiumWidget = new AdexiumWidget({wid: '7bced712-e334-4cef-8623-824223fb2b9b', adFormat: 'interstitial'});
-        adexiumWidget.autoMode();
+      adexiumWidget = new AdexiumWidget({
+        wid: '7bced712-e334-4cef-8623-824223fb2b9b',
+        adFormat: 'interstitial'
+      });
+      window.adexiumWidget = adexiumWidget; // Make available globally
     });
-</script>
+  </script>
 </body>
 </html>
