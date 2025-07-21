@@ -1,210 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="https://ad.gigapub.tech/script?id=978"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Player vs Computer</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://ad.gigapub.tech/script?id=978"></script>
 
   <style>
-    /* styles unchanged for brevity */
-    /* All CSS from your original code remains intact */
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+
+    #game {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 5px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .cell {
+      width: 100px;
+      height: 100px;
+      font-size: 2.5em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f1f1f1;
+      border: 1px solid #999;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .cell.X { color: #ff3f6c; }
+    .cell.O { color: #007bff; }
+
+    .flash {
+      animation: flash 0.5s alternate 3;
+    }
+
+    @keyframes flash {
+      from { background-color: yellow; }
+      to { background-color: white; }
+    }
+
+    #result-overlay {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2em;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 20px 40px;
+      border-radius: 10px;
+      display: none;
+      z-index: 999;
+    }
+
+    #result-overlay.show {
+      display: block;
+    }
+
+    .particle {
+      position: fixed;
+      font-size: 20px;
+      animation: explode 1.5s forwards;
+    }
+
+    @keyframes explode {
+      to {
+        transform: translate(var(--dx), var(--dy));
+        opacity: 0;
+      }
+    }
   </style>
 </head>
 <body>
-<h2>Player vs Computer</h2>
-<div id="status">Your turn (X)</div>
-<div id="points">Points: 0</div>
-<div id="game"></div>
-<button id="restart">Restart</button>
+  <h2>Player vs Computer</h2>
+  <div id="status">Your turn (X)</div>
+  <div id="points">Points: 0</div>
+  <div id="game"></div>
+  <button id="restart">Restart</button>
 
-<!-- Removed: Adsgram container -->
-<div id="particles-container"></div>
-<div id="result-overlay"></div>
-<audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
+  <div id="particles-container"></div>
+  <div id="result-overlay"></div>
+  <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
 
-<script>
-  const tg = window.Telegram.WebApp;
-  tg.expand();
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-  const game = document.getElementById("game");
-  const statusText = document.getElementById("status");
-  const restartBtn = document.getElementById("restart");
-  const gameoverSound = document.getElementById("gameover-sound");
-  const pointsText = document.getElementById("points");
-  const particlesContainer = document.getElementById("particles-container");
-  const resultOverlay = document.getElementById("result-overlay");
+    const game = document.getElementById("game");
+    const statusText = document.getElementById("status");
+    const restartBtn = document.getElementById("restart");
+    const gameoverSound = document.getElementById("gameover-sound");
+    const pointsText = document.getElementById("points");
+    const particlesContainer = document.getElementById("particles-container");
+    const resultOverlay = document.getElementById("result-overlay");
 
-  let board = ["", "", "", "", "", "", "", "", ""];
-  let gameActive = true;
-  let points = 0;
+    let board = ["", "", "", "", "", "", "", "", ""];
+    let gameActive = true;
+    let points = 0;
 
-  const winningCombinations = [
-    [0,1,2], [3,4,5], [6,7,8],
-    [0,3,6], [1,4,7], [2,5,8],
-    [0,4,8], [2,4,6]
-  ];
+    const winningCombinations = [
+      [0,1,2], [3,4,5], [6,7,8],
+      [0,3,6], [1,4,7], [2,5,8],
+      [0,4,8], [2,4,6]
+    ];
 
-  function createBoard() {
-    game.innerHTML = "";
-    for(let i=0; i<9; i++) {
-      const cell = document.createElement("div");
-      cell.classList.add("cell");
-      cell.dataset.index = i;
-      cell.addEventListener("click", () => playerMove(i));
-      game.appendChild(cell);
-    }
-  }
-
-  function updateBoard() {
-    const cells = game.querySelectorAll(".cell");
-    cells.forEach((cell, i) => {
-      cell.textContent = board[i];
-      cell.classList.remove("X", "O", "flash");
-      if(board[i]) {
-        cell.classList.add(board[i]);
+    function createBoard() {
+      game.innerHTML = "";
+      for(let i=0; i<9; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.dataset.index = i;
+        cell.addEventListener("click", () => playerMove(i));
+        game.appendChild(cell);
       }
-    });
-  }
-
-  function getEmptyIndices() {
-    return board.map((v,i) => v === "" ? i : -1).filter(i => i !== -1);
-  }
-
-  function checkWin(player) {
-    return winningCombinations.find(combo =>
-      combo.every(index => board[index] === player)
-    );
-  }
-
-  function isDraw() {
-    return board.every(cell => cell !== "");
-  }
-
-  function flashWinningCells(combo) {
-    combo.forEach(i => {
-      const cell = game.querySelector(`.cell[data-index="${i}"]`);
-      if(cell) {
-        cell.classList.add("flash");
-      }
-    });
-  }
-
-  function showFireworks() {
-    const colors = ['#ff3f6c', '#00ff88', '#ffff33'];
-    for(let i=0; i<40; i++) {
-      const particle = document.createElement('div');
-      particle.classList.add('particle');
-      particle.style.color = colors[i % colors.length];
-      particle.style.top = (Math.random() * 100) + 'vh';
-      particle.style.left = (Math.random() * 100) + 'vw';
-      particle.style.setProperty('--dx', (Math.random() * 100 - 50) + 'px');
-      particle.style.setProperty('--dy', (Math.random() * -100 - 50) + 'px');
-      particlesContainer.appendChild(particle);
-      setTimeout(() => particle.remove(), 1500);
     }
-  }
 
-  function showResultOverlay(text) {
-    resultOverlay.textContent = text;
-    resultOverlay.classList.add("show");
-    setTimeout(() => {
+    function updateBoard() {
+      const cells = game.querySelectorAll(".cell");
+      cells.forEach((cell, i) => {
+        cell.textContent = board[i];
+        cell.classList.remove("X", "O", "flash");
+        if(board[i]) {
+          cell.classList.add(board[i]);
+        }
+      });
+    }
+
+    function getEmptyIndices() {
+      return board.map((v,i) => v === "" ? i : -1).filter(i => i !== -1);
+    }
+
+    function checkWin(player) {
+      return winningCombinations.find(combo =>
+        combo.every(index => board[index] === player)
+      );
+    }
+
+    function isDraw() {
+      return board.every(cell => cell !== "");
+    }
+
+    function flashWinningCells(combo) {
+      combo.forEach(i => {
+        const cell = game.querySelector(`.cell[data-index="${i}"]`);
+        if(cell) {
+          cell.classList.add("flash");
+        }
+      });
+    }
+
+    function showFireworks() {
+      const colors = ['#ff3f6c', '#00ff88', '#ffff33'];
+      for(let i=0; i<40; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        particle.style.color = colors[i % colors.length];
+        particle.style.top = (Math.random() * 100) + 'vh';
+        particle.style.left = (Math.random() * 100) + 'vw';
+        particle.style.setProperty('--dx', (Math.random() * 100 - 50) + 'px');
+        particle.style.setProperty('--dy', (Math.random() * -100 - 50) + 'px');
+        particlesContainer.appendChild(particle);
+        setTimeout(() => particle.remove(), 1500);
+      }
+    }
+
+    function showResultOverlay(text) {
+      resultOverlay.textContent = text;
+      resultOverlay.classList.add("show");
+      setTimeout(() => {
+        resultOverlay.classList.remove("show");
+      }, 2200);
+    }
+
+    function playGameOverSound() {
+      gameoverSound.currentTime = 0;
+      gameoverSound.play();
+    }
+
+    function updatePoints(value) {
+      points += value;
+      pointsText.textContent = `Points: ${points}`;
+    }
+
+    function computerMove() {
+      if(!gameActive) return;
+      const empty = getEmptyIndices();
+      if(empty.length === 0) return;
+      const move = empty[Math.floor(Math.random() * empty.length)];
+      board[move] = "O";
+      updateBoard();
+      const winCombo = checkWin("O");
+      if(winCombo) {
+        flashWinningCells(winCombo);
+        gameActive = false;
+        playGameOverSound();
+        showFireworks();
+        updatePoints(-1);
+        showResultOverlay("You Lose!");
+
+        window.showGiga()
+          .then(() => {
+            console.log("Giga ad shown after loss");
+          })
+          .catch(e => {
+            console.error("Error showing Giga ad after loss:", e);
+          });
+
+        return;
+      }
+      if(isDraw()) {
+        gameActive = false;
+        showResultOverlay("Draw!");
+        return;
+      }
+      statusText.textContent = "Your turn (X)";
+    }
+
+    function playerMove(index) {
+      if(!gameActive) return;
+      if(board[index] !== "") return;
+      board[index] = "X";
+      updateBoard();
+      const winCombo = checkWin("X");
+      if(winCombo) {
+        flashWinningCells(winCombo);
+        gameActive = false;
+        playGameOverSound();
+        showFireworks();
+        updatePoints(1);
+        showResultOverlay("You Win!");
+
+        window.showGiga()
+          .then(() => {
+            console.log("Giga ad shown after win");
+          })
+          .catch(e => {
+            console.error("Error showing Giga ad after win:", e);
+          });
+
+        return;
+      }
+      if(isDraw()) {
+        gameActive = false;
+        showResultOverlay("Draw!");
+        return;
+      }
+      statusText.textContent = "Computer's turn (O)";
+      setTimeout(computerMove, 700);
+    }
+
+    restartBtn.addEventListener("click", () => {
+      board = ["", "", "", "", "", "", "", "", ""];
+      gameActive = true;
+      statusText.textContent = "Your turn (X)";
+      updateBoard();
+      hideResultOverlay();
+    });
+
+    function hideResultOverlay() {
       resultOverlay.classList.remove("show");
-    }, 2200);
-  }
+    }
 
-  function playGameOverSound() {
-    gameoverSound.currentTime = 0;
-    gameoverSound.play();
-  }
-
-  function updatePoints(value) {
-    points += value;
-    pointsText.textContent = `Points: ${points}`;
-  }
-
-  function computerMove() {
-    if(!gameActive) return;
-    const empty = getEmptyIndices();
-    if(empty.length === 0) return;
-    const move = empty[Math.floor(Math.random() * empty.length)];
-    board[move] = "O";
+    createBoard();
     updateBoard();
-    const winCombo = checkWin("O");
-    if(winCombo) {
-      flashWinningCells(winCombo);
-      gameActive = false;
-      playGameOverSound();
-      showFireworks();
-      updatePoints(-1);
-      showResultOverlay("You Lose!");
-
-      window.showGiga()
-        .then(() => {
-          console.log("Giga ad shown after loss");
-        })
-        .catch(e => {
-          console.error("Error showing Giga ad after loss:", e);
-        });
-
-      return;
-    }
-    if(isDraw()) {
-      gameActive = false;
-      showResultOverlay("Draw!");
-      return;
-    }
-    statusText.textContent = "Your turn (X)";
-  }
-
-  function playerMove(index) {
-    if(!gameActive) return;
-    if(board[index] !== "") return;
-    board[index] = "X";
-    updateBoard();
-    const winCombo = checkWin("X");
-    if(winCombo) {
-      flashWinningCells(winCombo);
-      gameActive = false;
-      playGameOverSound();
-      showFireworks();
-      updatePoints(1);
-      showResultOverlay("You Win!");
-
-      window.showGiga()
-        .then(() => {
-          console.log("Giga ad shown after win");
-        })
-        .catch(e => {
-          console.error("Error showing Giga ad after win:", e);
-        });
-
-      return;
-    }
-    if(isDraw()) {
-      gameActive = false;
-      showResultOverlay("Draw!");
-      return;
-    }
-    statusText.textContent = "Computer's turn (O)";
-    setTimeout(computerMove, 700);
-  }
-
-  restartBtn.addEventListener("click", () => {
-    board = ["", "", "", "", "", "", "", "", ""];
-    gameActive = true;
-    statusText.textContent = "Your turn (X)";
-    updateBoard();
-    hideResultOverlay();
-  });
-
-  function hideResultOverlay() {
-    resultOverlay.classList.remove("show");
-  }
-
-  createBoard();
-  updateBoard();
-</script>
+  </script>
 </body>
 </html>
