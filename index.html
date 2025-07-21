@@ -304,16 +304,28 @@
     updateBoard();
   </script>
   <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
-  <script type="text/javascript">
-    let adexiumWidget;
+<script>
+  window.adexiumReady = false;
 
-    document.addEventListener('DOMContentLoaded', () => {
-      adexiumWidget = new AdexiumWidget({
-        wid: '7bced712-e334-4cef-8623-824223fb2b9b',
-        adFormat: 'interstitial'
-      });
-      window.adexiumWidget = adexiumWidget; // Make available globally
+  window.addEventListener('DOMContentLoaded', () => {
+    const adexium = new AdexiumWidget({
+      wid: '7bced712-e334-4cef-8623-824223fb2b9b',
+      adFormat: 'interstitial',
+      onReady: () => {
+        console.log("Adexium ready");
+        window.adexiumReady = true;
+      },
+      onClose: () => {
+        console.log("Ad closed");
+      },
+      onError: (e) => {
+        console.error("Ad error:", e);
+      }
     });
-  </script>
+
+    window.adexiumWidget = adexium;
+  });
+</script>
+
 </body>
 </html>
