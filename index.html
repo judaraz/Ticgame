@@ -15,6 +15,48 @@
       color: #fff;
       text-align: center;
     }
+    #reward-ui {
+      display: none;
+      background: #f9f9f9;
+      color: #000;
+      height: 100vh;
+      padding-top: 40px;
+    }
+    #timer {
+      font-size: 22px;
+      font-weight: bold;
+    }
+    #ad-container {
+      margin: 20px auto;
+      width: 320px;
+      height: 180px;
+      background: #ddd url('https://via.placeholder.com/320x180?text=Your+Ad+Banner') center/cover;
+      border-radius: 12px;
+      position: relative;
+    }
+    #click-ad {
+      position: absolute;
+      inset: 0;
+      cursor: pointer;
+    }
+    #reward-text {
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    #continue-btn {
+      margin-top: 20px;
+      padding: 12px 24px;
+      font-size: 18px;
+      background: #0066cc;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      display: none;
+      cursor: pointer;
+    }
+
+    /* Game styles preserved */
+    #main-game { display: block; }
     h2 { margin-top: 20px; font-size: 24px; font-weight: 600; }
     #status, #level, #points {
       margin-top: 10px; font-size: 18px; font-weight: 500;
@@ -38,21 +80,16 @@
     .cell.X { color: #00ffcc; text-shadow: 0 0 8px #00ffcc, 0 0 12px #00ffcc; }
     .cell.O { color: #ff4d6d; text-shadow: 0 0 8px #ff4d6d, 0 0 12px #ff4d6d; }
     #restart, #next {
-      margin-top: 30px;
-      padding: 12px 28px;
+      margin-top: 30px; padding: 12px 28px;
       font-size: 18px;
       background: linear-gradient(to right, #ff416c, #ff4b2b);
-      border: none;
-      color: white;
+      border: none; color: white;
       border-radius: 30px;
       box-shadow: 0 0 18px rgba(255, 65, 108, 0.8);
-      cursor: pointer;
-      display: none;
+      cursor: pointer; display: none;
     }
     #result-overlay {
-      position: fixed;
-      top: 40%;
-      left: 50%;
+      position: fixed; top: 40%; left: 50%;
       transform: translate(-50%, -50%);
       font-size: 2em;
       background: rgba(0, 0, 0, 0.75);
@@ -67,20 +104,21 @@
       from { background-color: rgba(255, 255, 255, 0.12); }
       to { background-color: rgba(255, 255, 255, 0.05); }
     }
-    #loading-screen {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background: black;
-    }
-    #loading-screen h2, #loading-screen p {
-      color: white;
-    }
   </style>
 </head>
 <body>
+
+  <!-- Reward UI -->
+  <div id="reward-ui">
+    <div id="timer">00:15</div>
+    <div id="ad-container">
+      <div id="click-ad"></div>
+    </div>
+    <div id="reward-text">Click to get the reward!</div>
+    <button id="continue-btn">Continue</button>
+  </div>
+
+  <!-- Main Game UI -->
   <div id="main-game">
     <h2>Player vs Computer</h2>
     <div id="status">Your turn (X)</div>
@@ -93,15 +131,11 @@
     <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
   </div>
 
-  <div id="loading-screen">
-    <h2>Opening next level...</h2>
-    <p>Returning to the game in <span id="count">15</span> seconds</p>
-  </div>
-
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
+    // DOM refs
     const game = document.getElementById("game");
     const statusText = document.getElementById("status");
     const restartBtn = document.getElementById("restart");
@@ -110,9 +144,8 @@
     const pointsText = document.getElementById("points");
     const resultOverlay = document.getElementById("result-overlay");
     const gameoverSound = document.getElementById("gameover-sound");
+    const rewardUI = document.getElementById("reward-ui");
     const mainGame = document.getElementById("main-game");
-    const loadingScreen = document.getElementById("loading-screen");
-    const countSpan = document.getElementById("count");
 
     let board = Array(9).fill("");
     let gameActive = true;
@@ -246,30 +279,46 @@
     }
 
     restartBtn.addEventListener("click", resetGame);
-
     nextBtn.addEventListener("click", () => {
-      // Hide game, show loading screen
       mainGame.style.display = "none";
-      loadingScreen.style.display = "flex";
+      rewardUI.style.display = "block";
+      startRewardAd();
+    });
 
-      // Open ad in new tab
-      window.open("https://audaciousedifice.com/daau9dpqg?key=c3b72104b03cd5d698f7b3c2f6d091f5", "_blank");
-
+    // Reward Ad Logic
+    function startRewardAd() {
       let seconds = 15;
-      countSpan.textContent = seconds;
+      const timerEl = document.getElementById("timer");
+      const clickAd = document.getElementById("click-ad");
+      const continueBtn = document.getElementById("continue-btn");
+      const rewardText = document.getElementById("reward-text");
+      const adLink = "https://onlinegamex.xyz";
 
-      const interval = setInterval(() => {
+      timerEl.textContent = "00:15";
+      continueBtn.style.display = "none";
+      rewardText.textContent = "Click to get the reward!";
+
+      const countdown = setInterval(() => {
         seconds--;
-        countSpan.textContent = seconds;
+        timerEl.textContent = `00:${seconds < 10 ? "0" + seconds : seconds}`;
         if (seconds <= 0) {
-          clearInterval(interval);
-          // Return to game
-          resetGame();
-          loadingScreen.style.display = "none";
-          mainGame.style.display = "block";
+          clearInterval(countdown);
+          timerEl.textContent = "Reward unlocked!";
+          continueBtn.style.display = "inline-block";
         }
       }, 1000);
-    });
+
+      clickAd.onclick = () => {
+        window.open(adLink, "_blank");
+        rewardText.textContent = "Ad clicked! Thank you 😊";
+      };
+
+      continueBtn.onclick = () => {
+        rewardUI.style.display = "none";
+        mainGame.style.display = "block";
+        resetGame();
+      };
+    }
 
     createBoard();
     updateBoard();
