@@ -83,7 +83,7 @@
 <body>
   <h2>Player vs Computer</h2>
   <div id="status">Your turn (X)</div>
-  <div id="level">Level: 1</div>
+  <div id="level">Level: 1 (Easy)</div>
   <div id="points">XP: 0</div>
   <div id="game"></div>
   <button id="restart">Restart</button>
@@ -105,6 +105,7 @@
     let board = Array(9).fill("");
     let gameActive = true;
     let xp = 0;
+    let currentTurn = "player";
 
     const winningCombinations = [
       [0,1,2],[3,4,5],[6,7,8],
@@ -112,8 +113,15 @@
       [0,4,8],[2,4,6]
     ];
 
+    function getLevelName(xp) {
+      if (xp < 10) return "Easy";
+      if (xp < 40) return "Medium";
+      if (xp < 47) return "Hard";
+      return "Hardest";
+    }
+
     function getLevel() {
-      return xp + 1;
+      return Math.min(xp + 1, 50);
     }
 
     function createBoard() {
@@ -133,7 +141,8 @@
         cell.classList.remove("X", "O", "flash");
         if(board[i]) cell.classList.add(board[i]);
       });
-      levelText.textContent = `Level: ${getLevel()}`;
+      const level = getLevel();
+      levelText.textContent = `Level: ${level} (${getLevelName(xp)})`;
       pointsText.textContent = `XP: ${xp}`;
     }
 
@@ -165,12 +174,14 @@
     }
 
     function computerMove() {
-      if (!gameActive) return;
+      if (!gameActive || currentTurn !== "computer") return;
+
       const empty = getEmptyIndices();
-      if (empty.length === 0) return;
+
       const move = empty[Math.floor(Math.random() * empty.length)];
       board[move] = "O";
       updateBoard();
+
       const win = checkWin("O");
       if (win) {
         flashCells(win);
@@ -183,20 +194,23 @@
         showResult("Draw!");
         window.showGiga?.();
       } else {
+        currentTurn = "player";
         statusText.textContent = "Your turn (X)";
       }
     }
 
     function playerMove(i) {
-      if (!gameActive || board[i] !== "") return;
+      if (!gameActive || currentTurn !== "player" || board[i] !== "") return;
       board[i] = "X";
+      currentTurn = "computer";
       updateBoard();
+
       const win = checkWin("X");
       if (win) {
         flashCells(win);
         gameActive = false;
         playSound();
-        xp++;
+        xp = Math.min(xp + 1, 49);
         updateBoard();
         showResult("You Win!");
         window.showGiga?.();
@@ -208,6 +222,7 @@
         window.showGiga?.();
         return;
       }
+
       statusText.textContent = "Computer's turn (O)";
       setTimeout(computerMove, 500);
     }
@@ -215,6 +230,7 @@
     function resetGame() {
       board = Array(9).fill("");
       gameActive = true;
+      currentTurn = "player";
       statusText.textContent = "Your turn (X)";
       updateBoard();
     }
