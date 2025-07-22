@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Player vs Computer</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://ad.gigapub.tech/script?id=978"></script>
-  <script src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -16,11 +14,7 @@
       color: #fff;
       text-align: center;
     }
-    h2 {
-      margin-top: 20px;
-      font-size: 24px;
-      font-weight: 600;
-    }
+    h2 { margin-top: 20px; font-size: 24px; font-weight: 600; }
     #status, #level, #points {
       margin-top: 10px;
       font-size: 18px;
@@ -105,7 +99,7 @@
     let board = Array(9).fill("");
     let gameActive = true;
     let xp = 0;
-    let currentTurn = "player";
+    let turnLocked = false;
 
     const winningCombinations = [
       [0,1,2],[3,4,5],[6,7,8],
@@ -141,8 +135,7 @@
         cell.classList.remove("X", "O", "flash");
         if(board[i]) cell.classList.add(board[i]);
       });
-      const level = getLevel();
-      levelText.textContent = `Level: ${level} (${getLevelName(xp)})`;
+      levelText.textContent = `Level: ${getLevel()} (${getLevelName(xp)})`;
       pointsText.textContent = `XP: ${xp}`;
     }
 
@@ -174,9 +167,8 @@
     }
 
     function computerMove() {
-      if (!gameActive || currentTurn !== "computer") return;
-
       const empty = getEmptyIndices();
+      if (!gameActive || empty.length === 0) return;
 
       const move = empty[Math.floor(Math.random() * empty.length)];
       board[move] = "O";
@@ -188,21 +180,21 @@
         gameActive = false;
         playSound();
         showResult("You Lose!");
-        window.showGiga?.();
+        window.adexiumWidget?.showInterstitial?.();
       } else if (isDraw()) {
         gameActive = false;
         showResult("Draw!");
-        window.showGiga?.();
+        window.adexiumWidget?.showInterstitial?.();
       } else {
-        currentTurn = "player";
         statusText.textContent = "Your turn (X)";
+        turnLocked = false;
       }
     }
 
     function playerMove(i) {
-      if (!gameActive || currentTurn !== "player" || board[i] !== "") return;
+      if (!gameActive || board[i] !== "" || turnLocked) return;
       board[i] = "X";
-      currentTurn = "computer";
+      turnLocked = true;
       updateBoard();
 
       const win = checkWin("X");
@@ -210,19 +202,18 @@
         flashCells(win);
         gameActive = false;
         playSound();
-        xp = Math.min(xp + 1, 49);
+        if (xp < 49) xp++;
         updateBoard();
         showResult("You Win!");
-        window.showGiga?.();
+        window.adexiumWidget?.showInterstitial?.();
         return;
       }
       if (isDraw()) {
         gameActive = false;
         showResult("Draw!");
-        window.showGiga?.();
+        window.adexiumWidget?.showInterstitial?.();
         return;
       }
-
       statusText.textContent = "Computer's turn (O)";
       setTimeout(computerMove, 500);
     }
@@ -230,13 +221,13 @@
     function resetGame() {
       board = Array(9).fill("");
       gameActive = true;
-      currentTurn = "player";
+      turnLocked = false;
       statusText.textContent = "Your turn (X)";
       updateBoard();
     }
 
     restartBtn.addEventListener("click", () => {
-      if (window.adexiumReady && window.adexiumWidget) {
+      if (window.adexiumWidget?.showInterstitial) {
         window.adexiumWidget.showInterstitial().then(resetGame).catch(resetGame);
       } else {
         resetGame();
@@ -244,18 +235,30 @@
     });
 
     window.addEventListener('DOMContentLoaded', () => {
-      const adexium = new AdexiumWidget({
+      const interstitialAd = new AdexiumWidget({
         wid: '7bced712-e334-4cef-8623-824223fb2b9b',
         adFormat: 'interstitial',
         onReady: () => window.adexiumReady = true,
         onClose: () => {},
         onError: (e) => console.error("Ad error:", e)
       });
-      window.adexiumWidget = adexium;
+      window.adexiumWidget = interstitialAd;
     });
 
     createBoard();
     updateBoard();
+  </script>
+
+  <!-- Push-like Adexium Banner -->
+  <script src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const pushAd = new AdexiumWidget({
+        wid: 'c5ce10e2-56a3-45b4-944c-6c0e26438e60',
+        adFormat: 'push-like'
+      });
+      pushAd.autoMode();
+    });
   </script>
 </body>
 </html>
