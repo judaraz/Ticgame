@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Next Level Loading</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: sans-serif;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h2>Opening next level...</h2>
+  <p>Returning to the game in <span id="count">15</span> seconds</p>
+
+  <script>
+    window.open("https://audaciousedifice.com/daau9dpqg?key=c3b72104b03cd5d698f7b3c2f6d091f5", "_blank");
+
+    let seconds = 15;
+    const count = document.getElementById("count");
+
+    const interval = setInterval(() => {
+      seconds--;
+      count.textContent = seconds;
+      if (seconds <= 0) {
+        clearInterval(interval);
+        window.location.href = "index.html"; // Return to main game
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
