@@ -15,15 +15,9 @@
       color: #fff;
       text-align: center;
     }
-    h2 {
-      margin-top: 20px;
-      font-size: 24px;
-      font-weight: 600;
-    }
+    h2 { margin-top: 20px; font-size: 24px; font-weight: 600; }
     #status, #level, #points {
-      margin-top: 10px;
-      font-size: 18px;
-      font-weight: 500;
+      margin-top: 10px; font-size: 18px; font-weight: 500;
     }
     #game {
       display: grid;
@@ -33,17 +27,12 @@
       margin: 30px auto;
     }
     .cell {
-      width: 90px;
-      height: 90px;
-      font-size: 2.5em;
+      width: 90px; height: 90px; font-size: 2.5em;
       border-radius: 24px;
       background: linear-gradient(145deg, #5022aa, #2f0e63);
       box-shadow: inset -4px -4px 12px rgba(255,255,255,0.08), inset 4px 4px 12px rgba(0,0,0,0.25), 0 0 6px rgba(255,255,255,0.06);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: transform 0.2s;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: transform 0.2s;
     }
     .cell:hover { transform: scale(1.05); }
     .cell.X { color: #00ffcc; text-shadow: 0 0 8px #00ffcc, 0 0 12px #00ffcc; }
@@ -78,18 +67,36 @@
       from { background-color: rgba(255, 255, 255, 0.12); }
       to { background-color: rgba(255, 255, 255, 0.05); }
     }
+    #loading-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: black;
+    }
+    #loading-screen h2, #loading-screen p {
+      color: white;
+    }
   </style>
 </head>
 <body>
-  <h2>Player vs Computer</h2>
-  <div id="status">Your turn (X)</div>
-  <div id="level">Level: 1 (Easy)</div>
-  <div id="points">XP: 0</div>
-  <div id="game"></div>
-  <button id="restart">Restart</button>
-  <button id="next">Next</button>
-  <div id="result-overlay"></div>
-  <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
+  <div id="main-game">
+    <h2>Player vs Computer</h2>
+    <div id="status">Your turn (X)</div>
+    <div id="level">Level: 1 (Easy)</div>
+    <div id="points">XP: 0</div>
+    <div id="game"></div>
+    <button id="restart">Restart</button>
+    <button id="next">Next</button>
+    <div id="result-overlay"></div>
+    <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
+  </div>
+
+  <div id="loading-screen">
+    <h2>Opening next level...</h2>
+    <p>Returning to the game in <span id="count">15</span> seconds</p>
+  </div>
 
   <script>
     const tg = window.Telegram.WebApp;
@@ -103,6 +110,9 @@
     const pointsText = document.getElementById("points");
     const resultOverlay = document.getElementById("result-overlay");
     const gameoverSound = document.getElementById("gameover-sound");
+    const mainGame = document.getElementById("main-game");
+    const loadingScreen = document.getElementById("loading-screen");
+    const countSpan = document.getElementById("count");
 
     let board = Array(9).fill("");
     let gameActive = true;
@@ -236,7 +246,30 @@
     }
 
     restartBtn.addEventListener("click", resetGame);
-    nextBtn.addEventListener("click", resetGame);
+
+    nextBtn.addEventListener("click", () => {
+      // Hide game, show loading screen
+      mainGame.style.display = "none";
+      loadingScreen.style.display = "flex";
+
+      // Open ad in new tab
+      window.open("https://audaciousedifice.com/daau9dpqg?key=c3b72104b03cd5d698f7b3c2f6d091f5", "_blank");
+
+      let seconds = 15;
+      countSpan.textContent = seconds;
+
+      const interval = setInterval(() => {
+        seconds--;
+        countSpan.textContent = seconds;
+        if (seconds <= 0) {
+          clearInterval(interval);
+          // Return to game
+          resetGame();
+          loadingScreen.style.display = "none";
+          mainGame.style.display = "block";
+        }
+      }, 1000);
+    });
 
     createBoard();
     updateBoard();
