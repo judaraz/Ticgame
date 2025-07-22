@@ -49,7 +49,7 @@
     .cell:hover { transform: scale(1.05); }
     .cell.X { color: #00ffcc; text-shadow: 0 0 8px #00ffcc, 0 0 12px #00ffcc; }
     .cell.O { color: #ff4d6d; text-shadow: 0 0 8px #ff4d6d, 0 0 12px #ff4d6d; }
-    #restart {
+    .btn {
       margin-top: 30px;
       padding: 12px 28px;
       font-size: 18px;
@@ -59,6 +59,7 @@
       border-radius: 30px;
       box-shadow: 0 0 18px rgba(255, 65, 108, 0.8);
       cursor: pointer;
+      display: none;
     }
     #result-overlay {
       position: fixed;
@@ -78,9 +79,6 @@
       from { background-color: rgba(255, 255, 255, 0.12); }
       to { background-color: rgba(255, 255, 255, 0.05); }
     }
-    #adexium-banner {
-      margin: 20px auto;
-    }
   </style>
 </head>
 <body>
@@ -89,9 +87,9 @@
   <div id="level">Level: 1 (Easy)</div>
   <div id="points">XP: 0</div>
   <div id="game"></div>
-  <button id="restart">Restart</button>
+  <button id="restart" class="btn">Restart</button>
+  <button id="next" class="btn">Next</button>
   <div id="result-overlay"></div>
-  <div id="adexium-banner"></div>
   <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
 
   <script>
@@ -101,6 +99,7 @@
     const game = document.getElementById("game");
     const statusText = document.getElementById("status");
     const restartBtn = document.getElementById("restart");
+    const nextBtn = document.getElementById("next");
     const levelText = document.getElementById("level");
     const pointsText = document.getElementById("points");
     const resultOverlay = document.getElementById("result-overlay");
@@ -109,7 +108,7 @@
     let board = Array(9).fill("");
     let gameActive = true;
     let xp = 0;
-    let playerCanMove = true;
+    let awaitingAd = false;
 
     const winningCombinations = [
       [0,1,2],[3,4,5],[6,7,8],
@@ -177,6 +176,36 @@
       gameoverSound.play();
     }
 
+    function showAdThen(action, fallback) {
+      const isEven = getLevel() % 2 === 0;
+      const showAdexium = () => window.adexiumWidget?.showInterstitial().then(action).catch(() => window.showGiga?.() ? action() : fallback());
+      const showGiga = () => window.showGiga?.() ? action() : showAdexium();
+      isEven ? showAdexium() : showGiga();
+    }
+
+    function endGame(result, win) {
+      gameActive = false;
+      playSound();
+      showResult(result);
+
+      showAdThen(() => {
+        if (win) {
+          xp = Math.min(xp + 1, 49);
+          nextBtn.style.display = "inline-block";
+          restartBtn.style.display = "none";
+        } else {
+          nextBtn.style.display = "none";
+          restartBtn.style.display = "inline-block";
+        }
+        updateBoard();
+      }, () => {
+        // Both ads failed, XP doesn't increase, show restart only
+        nextBtn.style.display = "none";
+        restartBtn.style.display = "inline-block";
+        updateBoard();
+      });
+    }
+
     function computerMove() {
       if (!gameActive) return;
       const empty = getEmptyIndices();
@@ -187,40 +216,26 @@
       const win = checkWin("O");
       if (win) {
         flashCells(win);
-        gameActive = false;
-        playSound();
-        showResult("You Lose!");
-        window.showGiga?.();
+        endGame("You Lose!", false);
       } else if (isDraw()) {
-        gameActive = false;
-        showResult("Draw!");
-        window.showGiga?.();
+        endGame("Draw!", false);
       } else {
         statusText.textContent = "Your turn (X)";
-        playerCanMove = true;
       }
     }
 
     function playerMove(i) {
-      if (!gameActive || board[i] !== "" || !playerCanMove) return;
+      if (!gameActive || board[i] !== "") return;
       board[i] = "X";
       updateBoard();
-      playerCanMove = false;
       const win = checkWin("X");
       if (win) {
         flashCells(win);
-        gameActive = false;
-        playSound();
-        xp = Math.min(xp + 1, 49);
-        updateBoard();
-        showResult("You Win!");
-        window.showGiga?.();
+        endGame("You Win!", true);
         return;
       }
       if (isDraw()) {
-        gameActive = false;
-        showResult("Draw!");
-        window.showGiga?.();
+        endGame("Draw!", false);
         return;
       }
       statusText.textContent = "Computer's turn (O)";
@@ -230,24 +245,19 @@
     function resetGame() {
       board = Array(9).fill("");
       gameActive = true;
-      playerCanMove = true;
       statusText.textContent = "Your turn (X)";
+      nextBtn.style.display = "none";
+      restartBtn.style.display = "none";
       updateBoard();
     }
 
-    restartBtn.addEventListener("click", () => {
-      if (window.adexiumReady && window.adexiumWidget) {
-        window.adexiumWidget.showInterstitial().then(resetGame).catch(resetGame);
-      } else {
-        resetGame();
-      }
-    });
+    restartBtn.addEventListener("click", resetGame);
+    nextBtn.addEventListener("click", resetGame);
 
     window.addEventListener('DOMContentLoaded', () => {
       const adexium = new AdexiumWidget({
         wid: '7bced712-e334-4cef-8623-824223fb2b9b',
         adFormat: 'interstitial',
-        bannerContainer: '#adexium-banner',
         onReady: () => window.adexiumReady = true,
         onClose: () => {},
         onError: (e) => console.error("Ad error:", e)
