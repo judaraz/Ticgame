@@ -1,22 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
-  <script type="text/javascript">
-    document.addEventListener('DOMContentLoaded', () => {
-        const adexiumWidget = new AdexiumWidget({wid: '7bced712-e334-4cef-8623-824223fb2b9b', adFormat: 'interstitial'});
-        adexiumWidget.autoMode();
-    });
-  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Player vs Computer</title>
+
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://ad.gigapub.tech/script?id=978"></script>
+  <script src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
 
-  <!-- Styles remain unchanged -->
   <style>
-    /* [UNCHANGED STYLES: Your full original CSS goes here...] */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #3b0a84, #1c005e);
+      color: #fff;
+      text-align: center;
+    }
+
+    h2 { margin-top: 20px; font-size: 24px; font-weight: 600; }
+    #status { margin-top: 10px; font-size: 20px; font-weight: 500; }
+    #points { font-size: 18px; margin-bottom: 10px; opacity: 0.85; }
+
+    #game {
+      display: grid;
+      grid-template-columns: repeat(3, 90px);
+      grid-gap: 16px;
+      justify-content: center;
+      margin: 30px auto;
+    }
+
+    .cell {
+      width: 90px;
+      height: 90px;
+      font-size: 2.5em;
+      border-radius: 24px;
+      background: linear-gradient(145deg, #5022aa, #2f0e63);
+      box-shadow: inset -4px -4px 12px rgba(255,255,255,0.08),
+                  inset 4px 4px 12px rgba(0,0,0,0.25),
+                  0 0 6px rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .cell:hover { transform: scale(1.05); }
+    .cell.X { color: #00ffcc; text-shadow: 0 0 8px #00ffcc, 0 0 12px #00ffcc; }
+    .cell.O { color: #ff4d6d; text-shadow: 0 0 8px #ff4d6d, 0 0 12px #ff4d6d; }
+
+    #restart {
+      margin-top: 30px;
+      padding: 12px 28px;
+      font-size: 18px;
+      background: linear-gradient(to right, #ff416c, #ff4b2b);
+      border: none;
+      color: white;
+      border-radius: 30px;
+      box-shadow: 0 0 18px rgba(255, 65, 108, 0.8);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    #restart:active { transform: scale(0.95); }
+
+    #result-overlay {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2em;
+      background: rgba(0, 0, 0, 0.75);
+      padding: 20px 40px;
+      border-radius: 16px;
+      display: none;
+      z-index: 1000;
+    }
+
+    #result-overlay.show { display: block; }
+
+    .flash { animation: flash 0.5s alternate 4; }
+
+    @keyframes flash {
+      from { background-color: rgba(255, 255, 255, 0.12); }
+      to { background-color: rgba(255, 255, 255, 0.05); }
+    }
+
+    .particle {
+      position: fixed;
+      font-size: 18px;
+      animation: explode 1.5s forwards;
+    }
+
+    @keyframes explode {
+      to {
+        transform: translate(var(--dx), var(--dy));
+        opacity: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -43,8 +126,8 @@
 
     let board = ["", "", "", "", "", "", "", "", ""];
     let gameActive = true;
-    let points = parseInt(localStorage.getItem('gamePoints')) || 0;
-    pointsText.textContent = `Points: ${points}`;
+    let waitingForComputer = false;
+    let points = 0;
 
     const winningCombinations = [
       [0,1,2], [3,4,5], [6,7,8],
@@ -54,7 +137,7 @@
 
     function createBoard() {
       game.innerHTML = "";
-      for (let i = 0; i < 9; i++) {
+      for(let i = 0; i < 9; i++) {
         const cell = document.createElement("div");
         cell.classList.add("cell");
         cell.dataset.index = i;
@@ -67,10 +150,8 @@
       const cells = game.querySelectorAll(".cell");
       cells.forEach((cell, i) => {
         cell.textContent = board[i];
-        cell.classList.remove("X", "O", "flash");
-        if (board[i]) {
-          cell.classList.add(board[i]);
-        }
+        cell.className = "cell";
+        if(board[i]) cell.classList.add(board[i]);
       });
     }
 
@@ -95,12 +176,12 @@
 
     function showFireworks() {
       const colors = ['#ff3f6c', '#00ff88', '#ffff33'];
-      for (let i = 0; i < 40; i++) {
+      for(let i = 0; i < 40; i++) {
         const particle = document.createElement("div");
         particle.classList.add("particle");
         particle.style.color = colors[i % colors.length];
-        particle.style.top = (Math.random() * 100) + 'vh';
-        particle.style.left = (Math.random() * 100) + 'vw';
+        particle.style.top = Math.random() * 100 + 'vh';
+        particle.style.left = Math.random() * 100 + 'vw';
         particle.style.setProperty('--dx', (Math.random() * 100 - 50) + 'px');
         particle.style.setProperty('--dy', (Math.random() * -100 - 50) + 'px');
         particlesContainer.appendChild(particle);
@@ -122,144 +203,93 @@
     function updatePoints(val) {
       points += val;
       pointsText.textContent = `Points: ${points}`;
-      localStorage.setItem('gamePoints', points); // Save to localStorage
     }
 
-    // Medium level AI: Try to win, then block, else random
+    function handleEndGame(message, winCombo, pointChange) {
+      flashWinningCells(winCombo);
+      gameActive = false;
+      playGameOverSound();
+      showFireworks();
+      updatePoints(pointChange);
+      showResultOverlay(message);
+      window.showGiga?.().catch(console.error);
+    }
+
+    function handleDraw() {
+      gameActive = false;
+      showResultOverlay("Draw!");
+    }
+
     function computerMove() {
-      if (!gameActive) return;
-
+      if(!gameActive) return;
       const empty = getEmptyIndices();
-
-      // Try to win
-      for (let idx of empty) {
-        board[idx] = "O";
-        if (checkWin("O")) {
-          handleComputerMove(idx);
-          return;
-        }
-        board[idx] = "";
-      }
-
-      // Try to block
-      for (let idx of empty) {
-        board[idx] = "X";
-        if (checkWin("X")) {
-          board[idx] = "O";
-          handleComputerMove(idx);
-          return;
-        }
-        board[idx] = "";
-      }
-
-      // Random move
       const move = empty[Math.floor(Math.random() * empty.length)];
-      handleComputerMove(move);
-    }
-
-    function handleComputerMove(move) {
       board[move] = "O";
       updateBoard();
-      const win = checkWin("O");
-      if (win) {
-        flashWinningCells(win);
-        gameActive = false;
-        playGameOverSound();
-        showFireworks();
-        updatePoints(-1);
-        showResultOverlay("You Lose!");
 
-        window.showGiga()
-          .then(() => console.log("Ad shown"))
-          .catch(e => console.error("Ad error:", e));
+      const win = checkWin("O");
+      if(win) {
+        handleEndGame("You Lose!", win, -1);
         return;
       }
-      if (isDraw()) {
-        gameActive = false;
-        showResultOverlay("Draw!");
-        return;
-      }
+
+      if(isDraw()) return handleDraw();
       statusText.textContent = "Your turn (X)";
     }
 
     function playerMove(i) {
-      if (!gameActive || board[i] !== "") return;
+      if(!gameActive || board[i] !== "" || waitingForComputer) return;
+
       board[i] = "X";
       updateBoard();
+
       const win = checkWin("X");
-      if (win) {
-        flashWinningCells(win);
-        gameActive = false;
-        playGameOverSound();
-        showFireworks();
-        updatePoints(1);
-        showResultOverlay("You Win!");
+      if(win) return handleEndGame("You Win!", win, 1);
+      if(isDraw()) return handleDraw();
 
-        window.showGiga()
-          .then(() => console.log("Ad shown"))
-          .catch(e => console.error("Ad error:", e));
-        return;
-      }
-      if (isDraw()) {
-        gameActive = false;
-        showResultOverlay("Draw!");
-        return;
-      }
-
-      // Only trigger computer move when the board is full or player stops
-      if (getEmptyIndices().length <= 5) {
-        setTimeout(computerMove, 600);
-      }
-
-      statusText.textContent = "Your turn (X)";
+      statusText.textContent = "Computer's turn (O)";
+      waitingForComputer = true;
+      setTimeout(() => {
+        computerMove();
+        waitingForComputer = false;
+      }, 600);
     }
-
-    restartBtn.addEventListener("click", () => {
-      if (window.adexiumReady && window.adexiumWidget) {
-        window.adexiumWidget.showInterstitial().then(() => {
-          resetGame();
-        }).catch(e => {
-          console.error("Adexium ad error:", e);
-          resetGame(); // fallback
-        });
-      } else {
-        resetGame(); // fallback
-      }
-    });
 
     function resetGame() {
       board = ["", "", "", "", "", "", "", "", ""];
       gameActive = true;
+      waitingForComputer = false;
       statusText.textContent = "Your turn (X)";
       updateBoard();
     }
 
-    createBoard();
-    updateBoard();
-  </script>
+    restartBtn.addEventListener("click", () => {
+      if (window.adexiumReady && window.adexiumWidget) {
+        window.adexiumWidget.showInterstitial()
+          .then(resetGame)
+          .catch(() => {
+            console.error("Adexium ad error");
+            resetGame();
+          });
+      } else {
+        resetGame();
+      }
+    });
 
-  <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
-  <script>
+    // Adexium setup
     window.adexiumReady = false;
-
     window.addEventListener('DOMContentLoaded', () => {
       const adexium = new AdexiumWidget({
         wid: '7bced712-e334-4cef-8623-824223fb2b9b',
         adFormat: 'interstitial',
-        onReady: () => {
-          console.log("Adexium ready");
-          window.adexiumReady = true;
-        },
-        onClose: () => {
-          console.log("Ad closed");
-        },
-        onError: (e) => {
-          console.error("Ad error:", e);
-        }
+        onReady: () => { window.adexiumReady = true; },
+        onError: console.error
       });
-
       window.adexiumWidget = adexium;
     });
+
+    createBoard();
+    updateBoard();
   </script>
 </body>
 </html>
