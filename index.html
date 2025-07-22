@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Player vs Computer</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://ad.gigapub.tech/script?id=978"></script>
+  <script src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -14,7 +16,11 @@
       color: #fff;
       text-align: center;
     }
-    h2 { margin-top: 20px; font-size: 24px; font-weight: 600; }
+    h2 {
+      margin-top: 20px;
+      font-size: 24px;
+      font-weight: 600;
+    }
     #status, #level, #points {
       margin-top: 10px;
       font-size: 18px;
@@ -72,6 +78,9 @@
       from { background-color: rgba(255, 255, 255, 0.12); }
       to { background-color: rgba(255, 255, 255, 0.05); }
     }
+    #adexium-banner {
+      margin: 20px auto;
+    }
   </style>
 </head>
 <body>
@@ -82,6 +91,7 @@
   <div id="game"></div>
   <button id="restart">Restart</button>
   <div id="result-overlay"></div>
+  <div id="adexium-banner"></div>
   <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
 
   <script>
@@ -99,7 +109,7 @@
     let board = Array(9).fill("");
     let gameActive = true;
     let xp = 0;
-    let turnLocked = false;
+    let playerCanMove = true;
 
     const winningCombinations = [
       [0,1,2],[3,4,5],[6,7,8],
@@ -135,7 +145,8 @@
         cell.classList.remove("X", "O", "flash");
         if(board[i]) cell.classList.add(board[i]);
       });
-      levelText.textContent = `Level: ${getLevel()} (${getLevelName(xp)})`;
+      const level = getLevel();
+      levelText.textContent = `Level: ${level} (${getLevelName(xp)})`;
       pointsText.textContent = `XP: ${xp}`;
     }
 
@@ -167,51 +178,49 @@
     }
 
     function computerMove() {
+      if (!gameActive) return;
       const empty = getEmptyIndices();
-      if (!gameActive || empty.length === 0) return;
-
+      if (empty.length === 0) return;
       const move = empty[Math.floor(Math.random() * empty.length)];
       board[move] = "O";
       updateBoard();
-
       const win = checkWin("O");
       if (win) {
         flashCells(win);
         gameActive = false;
         playSound();
         showResult("You Lose!");
-        window.adexiumWidget?.showInterstitial?.();
+        window.showGiga?.();
       } else if (isDraw()) {
         gameActive = false;
         showResult("Draw!");
-        window.adexiumWidget?.showInterstitial?.();
+        window.showGiga?.();
       } else {
         statusText.textContent = "Your turn (X)";
-        turnLocked = false;
+        playerCanMove = true;
       }
     }
 
     function playerMove(i) {
-      if (!gameActive || board[i] !== "" || turnLocked) return;
+      if (!gameActive || board[i] !== "" || !playerCanMove) return;
       board[i] = "X";
-      turnLocked = true;
       updateBoard();
-
+      playerCanMove = false;
       const win = checkWin("X");
       if (win) {
         flashCells(win);
         gameActive = false;
         playSound();
-        if (xp < 49) xp++;
+        xp = Math.min(xp + 1, 49);
         updateBoard();
         showResult("You Win!");
-        window.adexiumWidget?.showInterstitial?.();
+        window.showGiga?.();
         return;
       }
       if (isDraw()) {
         gameActive = false;
         showResult("Draw!");
-        window.adexiumWidget?.showInterstitial?.();
+        window.showGiga?.();
         return;
       }
       statusText.textContent = "Computer's turn (O)";
@@ -221,13 +230,13 @@
     function resetGame() {
       board = Array(9).fill("");
       gameActive = true;
-      turnLocked = false;
+      playerCanMove = true;
       statusText.textContent = "Your turn (X)";
       updateBoard();
     }
 
     restartBtn.addEventListener("click", () => {
-      if (window.adexiumWidget?.showInterstitial) {
+      if (window.adexiumReady && window.adexiumWidget) {
         window.adexiumWidget.showInterstitial().then(resetGame).catch(resetGame);
       } else {
         resetGame();
@@ -235,30 +244,19 @@
     });
 
     window.addEventListener('DOMContentLoaded', () => {
-      const interstitialAd = new AdexiumWidget({
+      const adexium = new AdexiumWidget({
         wid: '7bced712-e334-4cef-8623-824223fb2b9b',
         adFormat: 'interstitial',
+        bannerContainer: '#adexium-banner',
         onReady: () => window.adexiumReady = true,
         onClose: () => {},
         onError: (e) => console.error("Ad error:", e)
       });
-      window.adexiumWidget = interstitialAd;
+      window.adexiumWidget = adexium;
     });
 
     createBoard();
     updateBoard();
-  </script>
-
-  <!-- Push-like Adexium Banner -->
-  <script src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const pushAd = new AdexiumWidget({
-        wid: 'c5ce10e2-56a3-45b4-944c-6c0e26438e60',
-        adFormat: 'push-like'
-      });
-      pushAd.autoMode();
-    });
   </script>
 </body>
 </html>
