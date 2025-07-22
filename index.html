@@ -4,11 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Player vs Computer</title>
-
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://ad.gigapub.tech/script?id=978"></script>
   <script src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
-
   <style>
     body {
       margin: 0;
@@ -18,11 +16,16 @@
       color: #fff;
       text-align: center;
     }
-
-    h2 { margin-top: 20px; font-size: 24px; font-weight: 600; }
-    #status { margin-top: 10px; font-size: 20px; font-weight: 500; }
-    #points { font-size: 18px; margin-bottom: 10px; opacity: 0.85; }
-
+    h2 {
+      margin-top: 20px;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    #status, #level, #points {
+      margin-top: 10px;
+      font-size: 18px;
+      font-weight: 500;
+    }
     #game {
       display: grid;
       grid-template-columns: repeat(3, 90px);
@@ -30,27 +33,22 @@
       justify-content: center;
       margin: 30px auto;
     }
-
     .cell {
       width: 90px;
       height: 90px;
       font-size: 2.5em;
       border-radius: 24px;
       background: linear-gradient(145deg, #5022aa, #2f0e63);
-      box-shadow: inset -4px -4px 12px rgba(255,255,255,0.08),
-                  inset 4px 4px 12px rgba(0,0,0,0.25),
-                  0 0 6px rgba(255,255,255,0.06);
+      box-shadow: inset -4px -4px 12px rgba(255,255,255,0.08), inset 4px 4px 12px rgba(0,0,0,0.25), 0 0 6px rgba(255,255,255,0.06);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       transition: transform 0.2s;
     }
-
     .cell:hover { transform: scale(1.05); }
     .cell.X { color: #00ffcc; text-shadow: 0 0 8px #00ffcc, 0 0 12px #00ffcc; }
     .cell.O { color: #ff4d6d; text-shadow: 0 0 8px #ff4d6d, 0 0 12px #ff4d6d; }
-
     #restart {
       margin-top: 30px;
       padding: 12px 28px;
@@ -61,11 +59,7 @@
       border-radius: 30px;
       box-shadow: 0 0 18px rgba(255, 65, 108, 0.8);
       cursor: pointer;
-      transition: transform 0.2s;
     }
-
-    #restart:active { transform: scale(0.95); }
-
     #result-overlay {
       position: fixed;
       top: 40%;
@@ -78,38 +72,22 @@
       display: none;
       z-index: 1000;
     }
-
     #result-overlay.show { display: block; }
-
     .flash { animation: flash 0.5s alternate 4; }
-
     @keyframes flash {
       from { background-color: rgba(255, 255, 255, 0.12); }
       to { background-color: rgba(255, 255, 255, 0.05); }
-    }
-
-    .particle {
-      position: fixed;
-      font-size: 18px;
-      animation: explode 1.5s forwards;
-    }
-
-    @keyframes explode {
-      to {
-        transform: translate(var(--dx), var(--dy));
-        opacity: 0;
-      }
     }
   </style>
 </head>
 <body>
   <h2>Player vs Computer</h2>
   <div id="status">Your turn (X)</div>
-  <div id="points">Points: 0</div>
+  <div id="level">Level: 1</div>
+  <div id="points">XP: 0</div>
   <div id="game"></div>
   <button id="restart">Restart</button>
   <div id="result-overlay"></div>
-  <div id="particles-container"></div>
   <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
 
   <script>
@@ -119,21 +97,24 @@
     const game = document.getElementById("game");
     const statusText = document.getElementById("status");
     const restartBtn = document.getElementById("restart");
+    const levelText = document.getElementById("level");
     const pointsText = document.getElementById("points");
     const resultOverlay = document.getElementById("result-overlay");
-    const particlesContainer = document.getElementById("particles-container");
     const gameoverSound = document.getElementById("gameover-sound");
 
-    let board = ["", "", "", "", "", "", "", "", ""];
+    let board = Array(9).fill("");
     let gameActive = true;
-    let waitingForComputer = false;
-    let points = 0;
+    let xp = 0;
 
     const winningCombinations = [
-      [0,1,2], [3,4,5], [6,7,8],
-      [0,3,6], [1,4,7], [2,5,8],
-      [0,4,8], [2,4,6]
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
     ];
+
+    function getLevel() {
+      return xp + 1;
+    }
 
     function createBoard() {
       game.innerHTML = "";
@@ -147,16 +128,17 @@
     }
 
     function updateBoard() {
-      const cells = game.querySelectorAll(".cell");
-      cells.forEach((cell, i) => {
+      document.querySelectorAll(".cell").forEach((cell, i) => {
         cell.textContent = board[i];
-        cell.className = "cell";
+        cell.classList.remove("X", "O", "flash");
         if(board[i]) cell.classList.add(board[i]);
       });
+      levelText.textContent = `Level: ${getLevel()}`;
+      pointsText.textContent = `XP: ${xp}`;
     }
 
     function getEmptyIndices() {
-      return board.map((val, idx) => val === "" ? idx : -1).filter(i => i !== -1);
+      return board.map((v, i) => v === "" ? i : -1).filter(i => i !== -1);
     }
 
     function checkWin(player) {
@@ -167,123 +149,91 @@
       return board.every(cell => cell !== "");
     }
 
-    function flashWinningCells(combo) {
-      combo.forEach(i => {
-        const cell = game.querySelector(`.cell[data-index="${i}"]`);
-        cell.classList.add("flash");
-      });
+    function flashCells(combo) {
+      combo.forEach(i => document.querySelector(`.cell[data-index='${i}']`).classList.add("flash"));
     }
 
-    function showFireworks() {
-      const colors = ['#ff3f6c', '#00ff88', '#ffff33'];
-      for(let i = 0; i < 40; i++) {
-        const particle = document.createElement("div");
-        particle.classList.add("particle");
-        particle.style.color = colors[i % colors.length];
-        particle.style.top = Math.random() * 100 + 'vh';
-        particle.style.left = Math.random() * 100 + 'vw';
-        particle.style.setProperty('--dx', (Math.random() * 100 - 50) + 'px');
-        particle.style.setProperty('--dy', (Math.random() * -100 - 50) + 'px');
-        particlesContainer.appendChild(particle);
-        setTimeout(() => particle.remove(), 1500);
-      }
-    }
-
-    function showResultOverlay(text) {
+    function showResult(text) {
       resultOverlay.textContent = text;
       resultOverlay.classList.add("show");
       setTimeout(() => resultOverlay.classList.remove("show"), 2000);
     }
 
-    function playGameOverSound() {
+    function playSound() {
       gameoverSound.currentTime = 0;
       gameoverSound.play();
     }
 
-    function updatePoints(val) {
-      points += val;
-      pointsText.textContent = `Points: ${points}`;
-    }
-
-    function handleEndGame(message, winCombo, pointChange) {
-      flashWinningCells(winCombo);
-      gameActive = false;
-      playGameOverSound();
-      showFireworks();
-      updatePoints(pointChange);
-      showResultOverlay(message);
-      window.showGiga?.().catch(console.error);
-    }
-
-    function handleDraw() {
-      gameActive = false;
-      showResultOverlay("Draw!");
-    }
-
     function computerMove() {
-      if(!gameActive) return;
+      if (!gameActive) return;
       const empty = getEmptyIndices();
+      if (empty.length === 0) return;
       const move = empty[Math.floor(Math.random() * empty.length)];
       board[move] = "O";
       updateBoard();
-
       const win = checkWin("O");
-      if(win) {
-        handleEndGame("You Lose!", win, -1);
-        return;
+      if (win) {
+        flashCells(win);
+        gameActive = false;
+        playSound();
+        showResult("You Lose!");
+        window.showGiga?.();
+      } else if (isDraw()) {
+        gameActive = false;
+        showResult("Draw!");
+        window.showGiga?.();
+      } else {
+        statusText.textContent = "Your turn (X)";
       }
-
-      if(isDraw()) return handleDraw();
-      statusText.textContent = "Your turn (X)";
     }
 
     function playerMove(i) {
-      if(!gameActive || board[i] !== "" || waitingForComputer) return;
-
+      if (!gameActive || board[i] !== "") return;
       board[i] = "X";
       updateBoard();
-
       const win = checkWin("X");
-      if(win) return handleEndGame("You Win!", win, 1);
-      if(isDraw()) return handleDraw();
-
+      if (win) {
+        flashCells(win);
+        gameActive = false;
+        playSound();
+        xp++;
+        updateBoard();
+        showResult("You Win!");
+        window.showGiga?.();
+        return;
+      }
+      if (isDraw()) {
+        gameActive = false;
+        showResult("Draw!");
+        window.showGiga?.();
+        return;
+      }
       statusText.textContent = "Computer's turn (O)";
-      waitingForComputer = true;
-      setTimeout(() => {
-        computerMove();
-        waitingForComputer = false;
-      }, 600);
+      setTimeout(computerMove, 500);
     }
 
     function resetGame() {
-      board = ["", "", "", "", "", "", "", "", ""];
+      board = Array(9).fill("");
       gameActive = true;
-      waitingForComputer = false;
       statusText.textContent = "Your turn (X)";
       updateBoard();
     }
 
     restartBtn.addEventListener("click", () => {
       if (window.adexiumReady && window.adexiumWidget) {
-        window.adexiumWidget.showInterstitial()
-          .then(resetGame)
-          .catch(() => {
-            console.error("Adexium ad error");
-            resetGame();
-          });
+        window.adexiumWidget.showInterstitial().then(resetGame).catch(resetGame);
       } else {
         resetGame();
       }
     });
 
-    // Adexium setup
-    window.adexiumReady = false;
     window.addEventListener('DOMContentLoaded', () => {
       const adexium = new AdexiumWidget({
         wid: '7bced712-e334-4cef-8623-824223fb2b9b',
         adFormat: 'interstitial',
-        onReady: () => { window.adexiumReady = true; },
-        onError: console.error
+        onReady: () => window.adexiumReady = true,
+        onClose: () => {},
+        onError: (e) => console.error("Ad error:", e)
       });
       window.adexiumWidget = adexium;
     });
