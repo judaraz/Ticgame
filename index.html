@@ -22,38 +22,6 @@
       height: 100vh;
       padding-top: 40px;
     }
-    #timer {
-      font-size: 22px;
-      font-weight: bold;
-    }
-    #ad-container {
-      margin: 20px auto;
-      width: 320px;
-      height: 180px;
-      background: #ddd;
-      border-radius: 12px;
-      position: relative;
-    }
-    #click-ad {
-      position: absolute;
-      inset: 0;
-      cursor: pointer;
-    }
-    #reward-text {
-      font-size: 16px;
-      margin-top: 10px;
-    }
-    #continue-btn {
-      margin-top: 20px;
-      padding: 12px 24px;
-      font-size: 18px;
-      background: #0066cc;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      display: none;
-      cursor: pointer;
-    }
     #main-game { display: block; }
     h2 { margin-top: 20px; font-size: 24px; font-weight: 600; }
     #status, #level, #points {
@@ -105,208 +73,167 @@
   </style>
 </head>
 <body>
-
-<!-- Ad Screen -->
-<div id="reward-ui">
-  <div id="timer">00:15</div>
-  <div id="ad-container">
-    <div id="click-ad"></div>
+  <div id="main-game">
+    <h2>Player vs Computer</h2>
+    <div id="status">Your turn (X)</div>
+    <div id="level">Level: 1 (Easy)</div>
+    <div id="points">XP: 0</div>
+    <div id="game"></div>
+    <button id="restart">Restart</button>
+    <div id="result-overlay"></div>
+    <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
   </div>
-  <div id="reward-text">Click to get the reward!</div>
-  <button id="continue-btn">Continue</button>
-</div>
 
-<!-- Main Game -->
-<div id="main-game">
-  <h2>Player vs Computer</h2>
-  <div id="status">Your turn (X)</div>
-  <div id="level">Level: 1 (Easy)</div>
-  <div id="points">XP: 0</div>
-  <div id="game"></div>
-  <button id="restart">Restart</button>
-  <div id="result-overlay"></div>
-  <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
-</div>
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-<script>
-  const game = document.getElementById("game");
-  const statusText = document.getElementById("status");
-  const restartBtn = document.getElementById("restart");
-  const levelText = document.getElementById("level");
-  const pointsText = document.getElementById("points");
-  const resultOverlay = document.getElementById("result-overlay");
-  const gameoverSound = document.getElementById("gameover-sound");
-  const rewardUI = document.getElementById("reward-ui");
-  const mainGame = document.getElementById("main-game");
+    const game = document.getElementById("game");
+    const statusText = document.getElementById("status");
+    const restartBtn = document.getElementById("restart");
+    const levelText = document.getElementById("level");
+    const pointsText = document.getElementById("points");
+    const resultOverlay = document.getElementById("result-overlay");
+    const gameoverSound = document.getElementById("gameover-sound");
 
-  let board = Array(9).fill("");
-  let gameActive = true;
-  let xp = 0;
+    let board = Array(9).fill("");
+    let gameActive = true;
+    let xp = 0;
 
-  const winningCombinations = [
-    [0,1,2],[3,4,5],[6,7,8],
-    [0,3,6],[1,4,7],[2,5,8],
-    [0,4,8],[2,4,6]
-  ];
+    const winningCombinations = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
 
-  function getLevelName(xp) {
-    if (xp < 10) return "Easy";
-    if (xp < 40) return "Medium";
-    if (xp < 47) return "Hard";
-    return "Hardest";
-  }
-
-  function getLevel() {
-    return Math.min(xp + 1, 50);
-  }
-
-  function createBoard() {
-    game.innerHTML = "";
-    for (let i = 0; i < 9; i++) {
-      const cell = document.createElement("div");
-      cell.classList.add("cell");
-      cell.dataset.index = i;
-      cell.addEventListener("click", () => playerMove(i));
-      game.appendChild(cell);
+    function getLevelName(xp) {
+      if (xp < 10) return "Easy";
+      if (xp < 40) return "Medium";
+      if (xp < 47) return "Hard";
+      return "Hardest";
     }
-  }
 
-  function updateBoard() {
-    document.querySelectorAll(".cell").forEach((cell, i) => {
-      cell.textContent = board[i];
-      cell.classList.remove("X", "O", "flash");
-      if (board[i]) cell.classList.add(board[i]);
-    });
-    const level = getLevel();
-    levelText.textContent = `Level: ${level} (${getLevelName(xp)})`;
-    pointsText.textContent = `XP: ${xp}`;
-  }
-
-  function getEmptyIndices() {
-    return board.map((v, i) => v === "" ? i : -1).filter(i => i !== -1);
-  }
-
-  function checkWin(player) {
-    return winningCombinations.find(combo => combo.every(i => board[i] === player));
-  }
-
-  function isDraw() {
-    return board.every(cell => cell !== "");
-  }
-
-  function flashCells(combo) {
-    combo.forEach(i => document.querySelector(`.cell[data-index='${i}']`).classList.add("flash"));
-  }
-
-  function showResult(text) {
-    resultOverlay.textContent = text;
-    resultOverlay.classList.add("show");
-    setTimeout(() => resultOverlay.classList.remove("show"), 2000);
-  }
-
-  function playSound() {
-    gameoverSound.currentTime = 0;
-    gameoverSound.play();
-  }
-
-  function computerMove() {
-    if (!gameActive) return;
-    const empty = getEmptyIndices();
-    if (empty.length === 0) return;
-    const move = empty[Math.floor(Math.random() * empty.length)];
-    board[move] = "O";
-    updateBoard();
-    const win = checkWin("O");
-    if (win) {
-      flashCells(win);
-      gameActive = false;
-      playSound();
-      showResult("You Lose!");
-      restartBtn.style.display = 'inline-block';
-    } else if (isDraw()) {
-      gameActive = false;
-      showResult("Draw!");
-      restartBtn.style.display = 'inline-block';
-    } else {
-      statusText.textContent = "Your turn (X)";
+    function getLevel() {
+      return Math.min(xp + 1, 50);
     }
-  }
 
-  function playerMove(i) {
-    if (!gameActive || board[i] !== "") return;
-    board[i] = "X";
-    updateBoard();
-    const win = checkWin("X");
-    if (win) {
-      flashCells(win);
-      gameActive = false;
-      playSound();
-      showResult("You Win!");
-      xp = Math.min(xp + 1, 49);
-      updateBoard();
-      setTimeout(() => {
-        mainGame.style.display = "none";
-        rewardUI.style.display = "block";
-        startRewardAd();
-      }, 1500);
-      return;
-    }
-    if (isDraw()) {
-      gameActive = false;
-      showResult("Draw!");
-      restartBtn.style.display = 'inline-block';
-      return;
-    }
-    statusText.textContent = "Computer's turn (O)";
-    setTimeout(computerMove, 500);
-  }
-
-  function resetGame() {
-    board = Array(9).fill("");
-    gameActive = true;
-    statusText.textContent = "Your turn (X)";
-    updateBoard();
-    restartBtn.style.display = 'none';
-  }
-
-  restartBtn.addEventListener("click", resetGame);
-
-  function startRewardAd() {
-    let seconds = 15;
-    const timerEl = document.getElementById("timer");
-    const clickAd = document.getElementById("click-ad");
-    const continueBtn = document.getElementById("continue-btn");
-    const rewardText = document.getElementById("reward-text");
-    const adLink = "https://onlinegamex.xyz";
-
-    timerEl.textContent = `00:${seconds}`;
-    continueBtn.style.display = "none";
-    rewardText.textContent = "Click to get the reward!";
-
-    const countdown = setInterval(() => {
-      seconds--;
-      timerEl.textContent = `00:${seconds < 10 ? "0" + seconds : seconds}`;
-      if (seconds <= 0) {
-        clearInterval(countdown);
-        timerEl.textContent = "Reward unlocked!";
-        continueBtn.style.display = "inline-block";
+    function createBoard() {
+      game.innerHTML = "";
+      for(let i = 0; i < 9; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.dataset.index = i;
+        cell.addEventListener("click", () => playerMove(i));
+        game.appendChild(cell);
       }
-    }, 1000);
+    }
 
-    clickAd.onclick = () => {
-      window.open(adLink, "_blank");
-      rewardText.textContent = "Ad clicked! Thank you 😊";
-    };
+    function updateBoard() {
+      document.querySelectorAll(".cell").forEach((cell, i) => {
+        cell.textContent = board[i];
+        cell.classList.remove("X", "O", "flash");
+        if(board[i]) cell.classList.add(board[i]);
+      });
+      const level = getLevel();
+      levelText.textContent = `Level: ${level} (${getLevelName(xp)})`;
+      pointsText.textContent = `XP: ${xp}`;
+    }
 
-    continueBtn.onclick = () => {
-      rewardUI.style.display = "none";
-      mainGame.style.display = "block";
-      resetGame();
-    };
-  }
+    function getEmptyIndices() {
+      return board.map((v, i) => v === "" ? i : -1).filter(i => i !== -1);
+    }
 
-  createBoard();
-  updateBoard();
-</script>
+    function checkWin(player) {
+      return winningCombinations.find(combo => combo.every(i => board[i] === player));
+    }
+
+    function isDraw() {
+      return board.every(cell => cell !== "");
+    }
+
+    function flashCells(combo) {
+      combo.forEach(i => document.querySelector(`.cell[data-index='${i}']`).classList.add("flash"));
+    }
+
+    function showResult(text) {
+      resultOverlay.textContent = text;
+      resultOverlay.classList.add("show");
+      setTimeout(() => resultOverlay.classList.remove("show"), 2000);
+    }
+
+    function playSound() {
+      gameoverSound.currentTime = 0;
+      gameoverSound.play();
+    }
+
+    function showAdThen(callback) {
+      if (typeof window.showGiga === 'function') {
+        window.showGiga().then(callback).catch(callback);
+      } else {
+        callback();
+      }
+    }
+
+    function computerMove() {
+      if (!gameActive) return;
+      const empty = getEmptyIndices();
+      if (empty.length === 0) return;
+      const move = empty[Math.floor(Math.random() * empty.length)];
+      board[move] = "O";
+      updateBoard();
+      const win = checkWin("O");
+      if (win) {
+        flashCells(win);
+        gameActive = false;
+        playSound();
+        showResult("You Lose!");
+        showAdThen(() => restartBtn.style.display = 'inline-block');
+      } else if (isDraw()) {
+        gameActive = false;
+        showResult("Draw!");
+        showAdThen(() => restartBtn.style.display = 'inline-block');
+      } else {
+        statusText.textContent = "Your turn (X)";
+      }
+    }
+
+    function playerMove(i) {
+      if (!gameActive || board[i] !== "") return;
+      board[i] = "X";
+      updateBoard();
+      const win = checkWin("X");
+      if (win) {
+        flashCells(win);
+        gameActive = false;
+        playSound();
+        showResult("You Win!");
+        xp = Math.min(xp + 1, 49);
+        updateBoard();
+        showAdThen(() => restartBtn.style.display = 'inline-block');
+        return;
+      }
+      if (isDraw()) {
+        gameActive = false;
+        showResult("Draw!");
+        showAdThen(() => restartBtn.style.display = 'inline-block');
+        return;
+      }
+      statusText.textContent = "Computer's turn (O)";
+      setTimeout(computerMove, 500);
+    }
+
+    function resetGame() {
+      board = Array(9).fill("");
+      gameActive = true;
+      statusText.textContent = "Your turn (X)";
+      updateBoard();
+      restartBtn.style.display = 'none';
+    }
+
+    restartBtn.addEventListener("click", resetGame);
+
+    createBoard();
+    updateBoard();
+  </script>
 </body>
 </html>
