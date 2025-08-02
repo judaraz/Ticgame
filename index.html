@@ -61,6 +61,12 @@
     #status, #level, #points {
       margin-top: 10px; font-size: 18px; font-weight: 500;
     }
+    #notification {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #ffcc00;
+      font-weight: 600;
+    }
     #game {
       display: grid;
       grid-template-columns: repeat(3, 90px);
@@ -127,6 +133,7 @@
     <div id="status">Your turn (X)</div>
     <div id="level">Level: 1 (Easy)</div>
     <div id="points">XP: 0</div>
+    <div id="notification"></div>
     <div id="game"></div>
     <button id="restart">Restart</button>
     <button id="next">Next</button>
@@ -147,6 +154,7 @@
     const rewardBtn = document.getElementById("reward-btn");
     const levelText = document.getElementById("level");
     const pointsText = document.getElementById("points");
+    const notification = document.getElementById("notification");
     const resultOverlay = document.getElementById("result-overlay");
     const gameoverSound = document.getElementById("gameover-sound");
     const rewardUI = document.getElementById("reward-ui");
@@ -154,7 +162,12 @@
 
     let board = Array(9).fill("");
     let gameActive = true;
+
+    // XP is the current level index starting at 0 (level 1 = xp=0)
     let xp = 0;
+
+    // Track if notification shown this level
+    let notificationShown = false;
 
     const winningCombinations = [
       [0,1,2],[3,4,5],[6,7,8],
@@ -162,15 +175,15 @@
       [0,4,8],[2,4,6]
     ];
 
-    function getLevelName(xp) {
-      if (xp < 10) return "Easy";
-      if (xp < 40) return "Medium";
-      if (xp < 47) return "Hard";
-      return "Hardest";
+    // Define difficulty for each level in cycles of 4: easy, medium, hard, hardest
+    function getLevelName(levelNum) {
+      const names = ["Easy", "Medium", "Hard", "Hardest"];
+      return names[(levelNum - 1) % names.length];
     }
 
+    // Max 150 levels, xp is zero-based index of level, display level is xp+1
     function getLevel() {
-      return Math.min(xp + 1, 50);
+      return Math.min(xp + 1, 150);
     }
 
     function createBoard() {
@@ -191,7 +204,7 @@
         if(board[i]) cell.classList.add(board[i]);
       });
       const level = getLevel();
-      levelText.textContent = `Level: ${level} (${getLevelName(xp)})`;
+      levelText.textContent = `Level: ${level} (${getLevelName(level)})`;
       pointsText.textContent = `XP: ${xp}`;
     }
 
@@ -226,6 +239,7 @@
       if (!gameActive) return;
       const empty = getEmptyIndices();
       if (empty.length === 0) return;
+      // Simple random AI; difficulty could be improved based on level if desired
       const move = empty[Math.floor(Math.random() * empty.length)];
       board[move] = "O";
       updateBoard();
@@ -235,12 +249,14 @@
         gameActive = false;
         playSound();
         showResult("You Lose!");
+        showSkipNotificationOnce();
         restartBtn.style.display = 'inline-block';
         nextBtn.style.display = 'none';
         return;
       } else if (isDraw()) {
         gameActive = false;
         showResult("Draw!");
+        showSkipNotificationOnce();
         restartBtn.style.display = 'inline-block';
         nextBtn.style.display = 'none';
         return;
@@ -259,15 +275,18 @@
         gameActive = false;
         playSound();
         showResult("You Win!");
-        xp = Math.min(xp + 1, 49);
+        xp = Math.min(xp + 1, 149); // max 149 for level 150
         updateBoard();
         nextBtn.style.display = 'inline-block';
         restartBtn.style.display = 'none';
+        notification.textContent = "";
+        notificationShown = false; // Reset notification for next level
         return;
       }
       if (isDraw()) {
         gameActive = false;
         showResult("Draw!");
+        showSkipNotificationOnce();
         restartBtn.style.display = 'inline-block';
         nextBtn.style.display = 'none';
         return;
@@ -283,6 +302,16 @@
       updateBoard();
       restartBtn.style.display = 'none';
       nextBtn.style.display = 'none';
+      notification.textContent = "";
+      notificationShown = false;
+    }
+
+    // Show notification once per level after lose/draw
+    function showSkipNotificationOnce() {
+      if (!notificationShown) {
+        notification.textContent = "You can skip the level by clicking Reward Button";
+        notificationShown = true;
+      }
     }
 
     // Show ads and then continue/reset or next level
@@ -290,7 +319,9 @@
       try {
         await window.showGiga();
         if (incrementLevel) {
-          xp = Math.min(xp + 1, 49);
+          xp = Math.min(xp + 1, 149);
+          notificationShown = false; // reset notification for new level
+          notification.textContent = "";
         }
         resetGame();
       } catch(e) {
