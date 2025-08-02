@@ -15,14 +15,6 @@
       color: #fff;
       text-align: center;
     }
-    #reward-ui {
-      display: none;
-      background: #f9f9f9;
-      color: #000;
-      height: 100vh;
-      padding-top: 40px;
-    }
-    #main-game { display: block; }
     h2 { margin-top: 20px; font-size: 24px; font-weight: 600; }
     #status, #level, #points {
       margin-top: 10px; font-size: 18px; font-weight: 500;
@@ -45,14 +37,20 @@
     .cell:hover { transform: scale(1.05); }
     .cell.X { color: #00ffcc; text-shadow: 0 0 8px #00ffcc, 0 0 12px #00ffcc; }
     .cell.O { color: #ff4d6d; text-shadow: 0 0 8px #ff4d6d, 0 0 12px #ff4d6d; }
-    #restart {
+    #restart, #next {
       margin-top: 30px; padding: 12px 28px;
       font-size: 18px;
-      background: linear-gradient(to right, #ff416c, #ff4b2b);
       border: none; color: white;
       border-radius: 30px;
       box-shadow: 0 0 18px rgba(255, 65, 108, 0.8);
       cursor: pointer; display: none;
+    }
+    #restart {
+      background: linear-gradient(to right, #ff416c, #ff4b2b);
+    }
+    #next {
+      background: linear-gradient(to right, #36d1dc, #5b86e5);
+      margin-top: 12px;
     }
     #result-overlay {
       position: fixed; top: 40%; left: 50%;
@@ -73,24 +71,26 @@
   </style>
 </head>
 <body>
-  <div id="main-game">
-    <h2>Player vs Computer</h2>
-    <div id="status">Your turn (X)</div>
-    <div id="level">Level: 1 (Easy)</div>
-    <div id="points">XP: 0</div>
-    <div id="game"></div>
-    <button id="restart">Restart</button>
-    <div id="result-overlay"></div>
-    <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
-  </div>
+
+  <h2>Player vs Computer</h2>
+  <div id="status">Your turn (X)</div>
+  <div id="level">Level: 1 (Easy)</div>
+  <div id="points">XP: 0</div>
+  <div id="game"></div>
+  <button id="restart">Restart</button>
+  <button id="next">Next</button>
+  <div id="result-overlay"></div>
+  <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
 
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
+    // DOM refs
     const game = document.getElementById("game");
     const statusText = document.getElementById("status");
     const restartBtn = document.getElementById("restart");
+    const nextBtn = document.getElementById("next");
     const levelText = document.getElementById("level");
     const pointsText = document.getElementById("points");
     const resultOverlay = document.getElementById("result-overlay");
@@ -166,14 +166,6 @@
       gameoverSound.play();
     }
 
-    function showAdThen(callback) {
-      if (typeof window.showGiga === 'function') {
-        window.showGiga().then(callback).catch(callback);
-      } else {
-        callback();
-      }
-    }
-
     function computerMove() {
       if (!gameActive) return;
       const empty = getEmptyIndices();
@@ -187,11 +179,13 @@
         gameActive = false;
         playSound();
         showResult("You Lose!");
-        showAdThen(() => restartBtn.style.display = 'inline-block');
+        restartBtn.style.display = 'inline-block';
+        nextBtn.style.display = 'inline-block';
       } else if (isDraw()) {
         gameActive = false;
         showResult("Draw!");
-        showAdThen(() => restartBtn.style.display = 'inline-block');
+        restartBtn.style.display = 'inline-block';
+        nextBtn.style.display = 'inline-block';
       } else {
         statusText.textContent = "Your turn (X)";
       }
@@ -209,13 +203,14 @@
         showResult("You Win!");
         xp = Math.min(xp + 1, 49);
         updateBoard();
-        showAdThen(() => restartBtn.style.display = 'inline-block');
+        nextBtn.style.display = 'inline-block';
         return;
       }
       if (isDraw()) {
         gameActive = false;
         showResult("Draw!");
-        showAdThen(() => restartBtn.style.display = 'inline-block');
+        restartBtn.style.display = 'inline-block';
+        nextBtn.style.display = 'inline-block';
         return;
       }
       statusText.textContent = "Computer's turn (O)";
@@ -228,9 +223,24 @@
       statusText.textContent = "Your turn (X)";
       updateBoard();
       restartBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
     }
 
     restartBtn.addEventListener("click", resetGame);
+
+    nextBtn.addEventListener("click", () => {
+      if (typeof window.showGiga === 'function') {
+        window.showGiga()
+          .then(() => {
+            resetGame();
+          })
+          .catch(() => {
+            resetGame();
+          });
+      } else {
+        resetGame();
+      }
+    });
 
     createBoard();
     updateBoard();
