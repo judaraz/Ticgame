@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="https://js.onclckvd.com/in-stream-ad-admanager/tma.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Player vs Computer</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://ad.gigapub.tech/script?id=978"></script>
+  <script src="https://js.onclckvd.com/in-stream-ad-admanager/tma.js"></script>
   <style>
     body {
       margin: 0;
@@ -55,8 +55,6 @@
       display: none;
       cursor: pointer;
     }
-
-    /* Game styles preserved */
     #main-game { display: block; }
     h2 { margin-top: 20px; font-size: 24px; font-weight: 600; }
     #status, #level, #points {
@@ -147,7 +145,6 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // DOM refs
     const game = document.getElementById("game");
     const statusText = document.getElementById("status");
     const restartBtn = document.getElementById("restart");
@@ -158,16 +155,10 @@
     const notification = document.getElementById("notification");
     const resultOverlay = document.getElementById("result-overlay");
     const gameoverSound = document.getElementById("gameover-sound");
-    const rewardUI = document.getElementById("reward-ui");
-    const mainGame = document.getElementById("main-game");
 
     let board = Array(9).fill("");
     let gameActive = true;
-
-    // XP is the current level index starting at 0 (level 1 = xp=0)
     let xp = 0;
-
-    // Track if notification shown this level
     let notificationShown = false;
 
     const winningCombinations = [
@@ -176,20 +167,18 @@
       [0,4,8],[2,4,6]
     ];
 
-    // Define difficulty for each level in cycles of 4: easy, medium, hard, hardest
     function getLevelName(levelNum) {
       const names = ["Easy", "Medium", "Hard", "Hardest"];
       return names[(levelNum - 1) % names.length];
     }
 
-    // Max 150 levels, xp is zero-based index of level, display level is xp+1
     function getLevel() {
       return Math.min(xp + 1, 150);
     }
 
     function createBoard() {
       game.innerHTML = "";
-      for(let i = 0; i < 9; i++) {
+      for (let i = 0; i < 9; i++) {
         const cell = document.createElement("div");
         cell.classList.add("cell");
         cell.dataset.index = i;
@@ -202,7 +191,7 @@
       document.querySelectorAll(".cell").forEach((cell, i) => {
         cell.textContent = board[i];
         cell.classList.remove("X", "O", "flash");
-        if(board[i]) cell.classList.add(board[i]);
+        if (board[i]) cell.classList.add(board[i]);
       });
       const level = getLevel();
       levelText.textContent = `Level: ${level} (${getLevelName(level)})`;
@@ -240,7 +229,6 @@
       if (!gameActive) return;
       const empty = getEmptyIndices();
       if (empty.length === 0) return;
-      // Simple random AI; difficulty could be improved based on level if desired
       const move = empty[Math.floor(Math.random() * empty.length)];
       board[move] = "O";
       updateBoard();
@@ -276,12 +264,12 @@
         gameActive = false;
         playSound();
         showResult("You Win!");
-        xp = Math.min(xp + 1, 149); // max 149 for level 150
+        xp = Math.min(xp + 1, 149);
         updateBoard();
         nextBtn.style.display = 'inline-block';
         restartBtn.style.display = 'none';
         notification.textContent = "";
-        notificationShown = false; // Reset notification for next level
+        notificationShown = false;
         return;
       }
       if (isDraw()) {
@@ -307,7 +295,6 @@
       notificationShown = false;
     }
 
-    // Show notification once per level after lose/draw
     function showSkipNotificationOnce() {
       if (!notificationShown) {
         notification.textContent = "You can skip the level by clicking Reward Button";
@@ -315,41 +302,47 @@
       }
     }
 
-    // Show ads and then continue/reset or next level
     async function showAdsAndContinue(incrementLevel = false) {
       try {
-        await window.showGiga();
+        await window.showGiga(); // GigaPub ad
         if (incrementLevel) {
           xp = Math.min(xp + 1, 149);
-          notificationShown = false; // reset notification for new level
+          notificationShown = false;
           notification.textContent = "";
         }
         resetGame();
-      } catch(e) {
+      } catch (e) {
         alert("Ad failed to load. Please try again.");
       }
     }
 
     restartBtn.addEventListener("click", resetGame);
 
-    nextBtn.addEventListener("click", () => {
-      showAdsAndContinue(true);  // Show ad then next level (increment xp)
+    rewardBtn.addEventListener("click", () => {
+      showAdsAndContinue(true); // GigaPub
     });
 
-    rewardBtn.addEventListener("click", () => {
-      showAdsAndContinue(true); // Show ad then skip/next level (increment xp)
+    nextBtn.addEventListener("click", async () => {
+      try {
+        await window.showTMA?.(); // OnClickA ad
+        xp = Math.min(xp + 1, 149);
+        notificationShown = false;
+        notification.textContent = "";
+        resetGame();
+      } catch (e) {
+        alert("Ad failed to load. Please try again.");
+      }
     });
 
     createBoard();
     updateBoard();
   </script>
+
   <script>
-		// Initialize the ad engine and get the SHOW method to display ads
-		window.initCdTma?.({ id: 6084887 }).then(show => window.show = show).catch(e => console.log(e))
-	</script>
-	// When the button is pressed, we activate the obtained SHOW method, which will return a Promise with the result of the ad display success.
-	<button onclick="window.show?.().then(() => console.log('tma ad played')).catch(e => console.log(e))">
-		Play Ad
-  </button>
+    // Init OnClickA (TMA)
+    window.initCdTma?.({ id: 6084887 }).then(show => {
+      window.showTMA = show;
+    }).catch(e => console.warn("TMA init failed:", e));
+  </script>
 </body>
 </html>
