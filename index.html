@@ -93,8 +93,17 @@ function getLevelName(n){ const names=["Easy","Medium","Hard","Legendary"]; retu
 function getLevel(){ return Math.min(xp+1,201); }
 
 // Firebase
-async function loadUserData(){ try{ const doc=await db.collection("users").doc(tg.initDataUnsafe.user.id||"guest").get(); if(doc.exists){ xp=doc.data().xp||0; } } catch(e){ console.error(e); } }
-function saveUserData(){ db.collection("users").doc(tg.initDataUnsafe.user.id||"guest").set({xp:xp}).catch(e=>console.error(e)); }
+async function loadUserData(){ 
+  try{ 
+    const userId = tg?.initDataUnsafe?.user?.id || "guest";
+    const doc = await db.collection("users").doc(userId.toString()).get();
+    if(doc.exists){ xp=doc.data().xp || 0; updateBoard(); } 
+  } catch(e){ console.error(e); } 
+}
+function saveUserData(){ 
+  const userId = tg?.initDataUnsafe?.user?.id || "guest";
+  db.collection("users").doc(userId.toString()).set({xp:xp}).catch(e=>console.error(e)); 
+}
 
 // Board
 function createBoard(){ gameEl.innerHTML=""; for(let i=0;i<9;i++){ const cell=document.createElement("div"); cell.classList.add("cell"); cell.dataset.index=i; cell.addEventListener("click",()=>playerMove(i)); gameEl.appendChild(cell); } }
@@ -105,7 +114,7 @@ function getEmptyIndices(){ return board.map((v,i)=>v===""?i:-1).filter(i=>i!==-
 function checkWin(p){ return winningCombinations.find(c=>c.every(i=>board[i]===p)); }
 function isDraw(){ return board.every(c=>c!==""); }
 function flashCells(combo){ combo.forEach(i=>document.querySelector(`.cell[data-index='${i}']`).classList.add("flash")); }
-function showResult(text,win=false){ resultOverlay.textContent=text; resultOverlay.style.display="block"; setTimeout(()=>{ resultOverlay.style.display="none"; },2000); }
+function showResult(text){ resultOverlay.textContent=text; resultOverlay.style.display="block"; setTimeout(()=>{ resultOverlay.style.display="none"; },2000); }
 function playSound(){ gameoverSound.currentTime=0; gameoverSound.play(); }
 
 // AI
@@ -113,14 +122,14 @@ function computerMove(){ if(!gameActive) return; const empty=getEmptyIndices(); 
 let move=-1; for(let c of winningCombinations){ const vals=c.map(i=>board[i]); if(vals.filter(v=>"O"===v).length===2 && vals.includes("")) move=c[vals.indexOf("")]; } 
 if(move===-1){ for(let c of winningCombinations){ const vals=c.map(i=>board[i]); if(vals.filter(v=>"X"===v).length===2 && vals.includes("")) move=c[vals.indexOf("")]; } } 
 if(move===-1) move=empty[Math.floor(Math.random()*empty.length)]; board[move]="O"; updateBoard();
-const win=checkWin("O"); if(win){ flashCells(win); gameActive=false; playSound(); failCount++; showResult("You Lose!", false); restartBtn.style.display='inline-block'; nextBtn.style.display='none'; if(failCount>=2 && !notificationShown){ notification.textContent="You Can Skip this Level By Click Reward Button"; notificationShown=true; } return; } 
-else if(isDraw()){ gameActive=false; failCount++; showResult("Draw!", false); restartBtn.style.display='inline-block'; nextBtn.style.display='none'; if(failCount>=2 && !notificationShown){ notification.textContent="You Can Skip this Level By Click Reward Button"; notificationShown=true; } return; } 
+const win=checkWin("O"); if(win){ flashCells(win); gameActive=false; playSound(); failCount++; showResult("You Lose!"); restartBtn.style.display='inline-block'; nextBtn.style.display='none'; if(failCount>=2 && !notificationShown){ notification.textContent="You Can Skip this Level By Click Reward Button"; notificationShown=true; } return; } 
+else if(isDraw()){ gameActive=false; failCount++; showResult("Draw!"); restartBtn.style.display='inline-block'; nextBtn.style.display='none'; if(failCount>=2 && !notificationShown){ notification.textContent="You Can Skip this Level By Click Reward Button"; notificationShown=true; } return; } 
 else{ statusText.textContent="Your turn (X)"; } }
 
 // Player Move
 function playerMove(i){ if(!gameActive || board[i]!=="") return; board[i]="X"; updateBoard(); const win=checkWin("X"); 
-if(win){ flashCells(win); gameActive=false; playSound(); xp=Math.min(xp+1,201); saveUserData(); showResult("You Win!", true); nextBtn.style.display='inline-block'; restartBtn.style.display='none'; notification.textContent=""; notificationShown=false; failCount=0; return; } 
-if(isDraw()){ gameActive=false; failCount++; showResult("Draw!", false); restartBtn.style.display='inline-block'; nextBtn.style.display='none'; if(failCount>=2 && !notificationShown){ notification.textContent="You Can Skip this Level By Click Reward Button"; notificationShown=true; } return; } 
+if(win){ flashCells(win); gameActive=false; playSound(); xp=Math.min(xp+1,201); saveUserData(); showResult("You Win!"); nextBtn.style.display='inline-block'; restartBtn.style.display='none'; notification.textContent=""; notificationShown=false; failCount=0; return; } 
+if(isDraw()){ gameActive=false; failCount++; showResult("Draw!"); restartBtn.style.display='inline-block'; nextBtn.style.display='none'; if(failCount>=2 && !notificationShown){ notification.textContent="You Can Skip this Level By Click Reward Button"; notificationShown=true; } return; } 
 statusText.textContent="Computer's turn (O)"; setTimeout(computerMove,500); }
 
 // Reset
@@ -134,14 +143,21 @@ restartBtn.addEventListener("click",resetGame);
 rewardBtn.addEventListener("click",showAdsAndNextLevel);
 nextBtn.addEventListener("click",showAdsAndNextLevel);
 
-createBoard(); updateBoard(); loadUserData();
+createBoard(); updateBoard();
 
 // Intro Splash
-setTimeout(()=>{ document.getElementById("intro-screen").style.opacity=0; setTimeout(()=>{ document.getElementById("intro-screen").style.display="none"; document.getElementById("main-game").style.display="block"; },800); },3000);
+setTimeout(()=>{
+  document.getElementById("intro-screen").style.opacity=0;
+  setTimeout(()=>{
+    document.getElementById("intro-screen").style.display="none";
+    document.getElementById("main-game").style.display="block";
+    loadUserData(); // Load XP in background
+  },800);
+},3000);
 
 // Falling Stars
 const canvas=document.getElementById("stars"); const ctx=canvas.getContext("2d"); canvas.width=window.innerWidth; canvas.height=window.innerHeight;
-let stars=[]; for(let i=0;i<100;i++){ stars.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, radius:Math.random()*1.5+0.5, speed:Math.random()*0.3+0.1}); }
+let stars=[]; for(let i=0;i<100;i++){ stars.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, radius:Math.random()*1.5+0.5, speed:Math.random()*0.2+0.05}); }
 function animateStars(){ ctx.clearRect(0,0,canvas.width,canvas.height); for(let s of stars){ s.y+=s.speed; if(s.y>canvas.height) s.y=0; ctx.beginPath(); ctx.arc(s.x,s.y,s.radius,0,Math.PI*2); ctx.fillStyle="#fff"; ctx.fill(); ctx.closePath(); } requestAnimationFrame(animateStars); }
 animateStars();
 </script>
