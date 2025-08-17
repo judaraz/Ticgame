@@ -82,6 +82,11 @@
       background: #333;
       color: gold;
     }
+    .location {
+      font-size: 13px;
+      color: gold;
+      margin-top: 12px;
+    }
   </style>
 </head>
 <body>
@@ -101,6 +106,9 @@
     <button class="btn-gold" id="watchBtn">Watch Ad</button>
     <button class="btn-gold" id="autoOnBtn">Auto Show Ads</button>
     <button class="btn-gold" id="autoOffBtn">Stop Auto Ads</button>
+
+    <!-- Location Info -->
+    <div class="location" id="userLocation">Detecting location...</div>
   </div>
 
   <script>
@@ -136,7 +144,7 @@
     function startAutoShow() {
       if (autoInterval) return;
       playAd();
-      autoInterval = setInterval(playAd, 10000); // প্রতি 10 সেকেন্ডে অ্যাড
+      autoInterval = setInterval(playAd, 20000); // প্রতি 20 সেকেন্ডে অ্যাড
     }
 
     function stopAutoShow() {
@@ -149,6 +157,20 @@
     document.getElementById('autoOffBtn').onclick = stopAutoShow;
 
     updateUI();
+
+    // Detect location using ip-api.com
+    async function getUserLocation() {
+      try {
+        let res = await fetch("https://ip-api.com/json/");
+        let data = await res.json();
+        document.getElementById("userLocation").textContent =
+          `🌍 ${data.country}, ${data.city} | ISP: ${data.isp}`;
+      } catch (err) {
+        document.getElementById("userLocation").textContent =
+          "⚠️ Location not available";
+      }
+    }
+    getUserLocation();
   </script>
 </body>
 </html>
