@@ -1,230 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Player vs Computer</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tic Tac Toe Game</title>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://ad.gigapub.tech/script?id=978"></script>
+<!-- Telegram Web App -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <style>
-    body { margin:0; font-family:'Segoe UI',sans-serif; background:#0a0a0a; color:#fff; overflow:hidden; }
-    #intro-screen { position:fixed; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center;
-      background:linear-gradient(45deg,#ff5f6d,#ffc371,#47fced,#ff3d7f); color:#fff; font-size:2em; font-weight:bold; text-align:center; z-index:1000; }
-    #intro-screen span { margin:10px 0; display:block; }
-    #main-game { display:none; text-align:center; position:relative; z-index:1; }
-    #status,#level,#points,#notification { margin:8px; font-size:18px; font-weight:500; }
-    #game { display:grid; grid-template-columns:repeat(3,90px); grid-gap:16px; justify-content:center; margin:30px auto; }
-    .cell { width:90px; height:90px; border-radius:24px; background:linear-gradient(145deg,#5022aa,#2f0e63);
-    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:2.5em; transition: transform 0.2s; }
-    .cell:hover { transform: scale(1.05); }
-    .cell.X { color:#00ffcc; text-shadow:0 0 8px #00ffcc,0 0 12px #00ffcc; }
-    .cell.O { color:#ff4d6d; text-shadow:0 0 8px #ff4d6d,0 0 12px #ff4d6d; }
-    #restart,#next,#reward-btn { margin:20px 8px; padding:12px 28px;font-size:18px;border:none;border-radius:30px; cursor:pointer; display:inline-block; background:linear-gradient(to right,#ff416c,#ff4b2b); box-shadow:0 0 18px rgba(255,65,108,0.8);}
-    #next{display:none;}
-    #result-overlay { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%);
-      font-size:2em; background:rgba(0,0,0,0.75); padding:20px 40px; border-radius:16px; display:none; z-index:1000;}
-    #result-overlay.show { display:block; }
-    .flash { animation: flash 0.5s alternate 4; }
-    @keyframes flash { from{background-color: rgba(255,255,255,0.12);} to{background-color: rgba(255,255,255,0.05);} }
-    .star { position:absolute; width:2px;height:8px;background:white; opacity:0.8; border-radius:50%; animation: fall linear infinite;}
-    @keyframes fall { 0%{transform:translateY(-10px);} 100%{transform:translateY(110vh);} }
-    #moon { position:absolute; right:10%; top:10%; width:80px; height:80px; background:radial-gradient(circle,#fff,#ccc); border-radius:50%; opacity:0; z-index:0; transition:opacity 1s;}
-    #lose-glow { position:absolute; inset:0; background:red; opacity:0; pointer-events:none; z-index:0; transition:opacity 0.5s;}
-  </style>
-</head>
-<body>
+<!-- GigaPub Ads -->
+<script src="https://ad.gigapub.tech/script?id=978"></script>
 
-<div id="intro-screen">
-  <span>Welcome</span>
-  <span>Tic Tac Toe</span>
-  <span>If you win you are Legend</span>
-</div>
-
-<div id="moon"></div>
-<div id="lose-glow"></div>
-
-<div id="main-game">
-  <h2>Player vs Computer</h2>
-  <div id="status">Your turn (X)</div>
-  <div id="level">Level: 1</div>
-  <div id="points">XP: 0</div>
-  <div id="notification"></div>
-  <div id="game"></div>
-  <button id="restart">Restart</button>
-  <button id="next">Next</button>
-  <button id="reward-btn">Reward</button>
-  <div id="result-overlay"></div>
-  <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
-</div>
-
+<!-- Firebase SDK -->
 <script type="module">
-const tg = window.Telegram.WebApp;
-tg.expand();
-const userId = tg.initDataUnsafe?.user?.id?.toString() || "guest";
-const userName = tg.initDataUnsafe?.user?.first_name || "Guest";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-let board = Array(9).fill(""); 
-let gameActive = true; 
-let xp = 0; 
-let loseOnce = false;
+  const firebaseConfig = {
+    apiKey: "AIzaSyA3palpYZDFdNpBDIF564YsiOAN2dtbxzA",
+    authDomain: "tic-tac-toe-87d49.firebaseapp.com",
+    projectId: "tic-tac-toe-87d49",
+    storageBucket: "tic-tac-toe-87d49.firebasestorage.app",
+    messagingSenderId: "1051665363188",
+    appId: "1:1051665363188:web:c6389dddb74491a14ceea1",
+    measurementId: "G-V7Y7B4VVVP"
+  };
 
-const statusText = document.getElementById("status");
-const restartBtn = document.getElementById("restart");
-const nextBtn = document.getElementById("next");
-const rewardBtn = document.getElementById("reward-btn");
-const levelText = document.getElementById("level");
-const pointsText = document.getElementById("points");
-const notification = document.getElementById("notification");
-const resultOverlay = document.getElementById("result-overlay");
-const gameoverSound = document.getElementById("gameover-sound");
-const moon = document.getElementById("moon");
-const loseGlow = document.getElementById("lose-glow");
-const gameDiv = document.getElementById("game");
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-const winningCombinations = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-
-function getLevel() { return xp + 1; }
-
-function createBoard() { 
-  gameDiv.innerHTML = ""; 
-  for (let i = 0; i < 9; i++) { 
-    const cell = document.createElement("div"); 
-    cell.classList.add("cell"); 
-    cell.dataset.index = i; 
-    cell.addEventListener("click", () => playerMove(i)); 
-    gameDiv.appendChild(cell); 
-  } 
-}
-
-function updateBoard() { 
-  document.querySelectorAll(".cell").forEach((cell, i) => { 
-    cell.textContent = board[i]; 
-    cell.classList.remove("X", "O", "flash"); 
-    if (board[i]) cell.classList.add(board[i]); 
-  }); 
-  levelText.textContent = `Level: ${getLevel()}`; 
-  pointsText.textContent = `XP: ${xp}`; 
-}
-
-function getEmptyIndices() { return board.map((v, i) => v === "" ? i : -1).filter(i => i !== -1); }
-function checkWin(player) { return winningCombinations.find(combo => combo.every(i => board[i] === player)); }
-function isDraw() { return board.every(cell => cell !== ""); }
-function flashCells(combo) { combo.forEach(i => document.querySelector(`.cell[data-index='${i}']`).classList.add("flash")); }
-function showResult(text) { resultOverlay.textContent = text; resultOverlay.classList.add("show"); setTimeout(() => resultOverlay.classList.remove("show"), 2000); }
-function playSound() { gameoverSound.currentTime = 0; gameoverSound.play(); }
-
-function computerMove() {
-  if (!gameActive) return;
-  const empty = getEmptyIndices();
-  if (empty.length === 0) return;
-  let move = -1;
-  for (const i of empty) { board[i] = "O"; if (checkWin("O")) { move = i; board[i] = ""; break; } board[i] = ""; }
-  if (move === -1) { for (const i of empty) { board[i] = "X"; if (checkWin("X")) { move = i; board[i] = ""; break; } board[i] = ""; } }
-  if (move === -1) { move = empty[Math.floor(Math.random() * empty.length)]; }
-  board[move] = "O"; updateBoard();
-  const win = checkWin("O");
-  if (win) {
-    flashCells(win); gameActive = false; playSound(); showResult("You Lose!");
-    loseGlow.style.opacity = 0.4;
-    moon.style.opacity = 0;
-    restartBtn.style.display = "inline-block";
-    nextBtn.style.display = "none";
-    if (!loseOnce) {
-      notification.textContent = "You Can Skip level, Click Reward Button";
-      loseOnce = true;
-    }
-    return;
+  export async function saveUserData(userId, userName, level, xp){
+    try {
+      await setDoc(doc(db, "users", userId), { name: userName, level: level, xp: xp });
+    } catch(e){ console.error("Firebase save error:", e); }
   }
-  if (isDraw()) {
-    gameActive = false;
-    showResult("Draw!");
-    restartBtn.style.display = "inline-block";
-    nextBtn.style.display = "none";
-    return;
+
+  export async function loadUserData(userId){
+    try {
+      const docSnap = await getDoc(doc(db, "users", userId));
+      if(docSnap.exists()){ return docSnap.data(); }
+    } catch(e){ console.error("Firebase load error:", e); }
+    return null;
   }
-  statusText.textContent = "Your turn (X)";
-}
-
-function playerMove(i) {
-  if (!gameActive || board[i] !== "") return;
-  board[i] = "X";
-  updateBoard();
-  const win = checkWin("X");
-  if (win) {
-    flashCells(win);
-    gameActive = false;
-    playSound();
-    showResult("You Win!");
-    xp++;
-    moon.style.opacity = 1;
-    loseGlow.style.opacity = 0;
-    updateBoard();
-    nextBtn.style.display = "inline-block";
-    restartBtn.style.display = "none";
-    return;
-  }
-  if (isDraw()) {
-    gameActive = false;
-    showResult("Draw!");
-    restartBtn.style.display = "inline-block";
-    nextBtn.style.display = "none";
-    return;
-  }
-  statusText.textContent = "Computer's turn (O)";
-  setTimeout(computerMove, 500);
-}
-
-function resetGame() {
-  board = Array(9).fill("");
-  gameActive = true;
-  statusText.textContent = "Your turn (X)";
-  updateBoard();
-  restartBtn.style.display = 'none';
-  nextBtn.style.display = 'none';
-  notification.textContent = "";
-  moon.style.opacity = 0;
-  loseGlow.style.opacity = 0;
-}
-
-async function showAdsAndContinue() {
-  try {
-    await window.showGiga();
-    xp++;
-    updateBoard();
-    resetGame();
-  } catch (e) {
-    alert("Ad failed to load. Please try again.");
-  }
-}
-
-restartBtn.addEventListener("click", resetGame);
-rewardBtn.addEventListener("click", showAdsAndContinue);
-nextBtn.addEventListener("click", showAdsAndContinue);
-
-function createStars() {
-  for (let i = 0; i < 40; i++) {
-    const star = document.createElement("div");
-    star.classList.add("star");
-    star.style.left = Math.random() * 100 + "vw";
-    star.style.animationDuration = 5 + Math.random() * 5 + "s";
-    star.style.width = 1 + Math.random() * 2 + "px";
-    star.style.height = 2 + Math.random() * 5 + "px";
-    document.body.appendChild(star);
-  }
-}
-createStars();
-
-(async () => {
-  createBoard();
-})();
-
-setTimeout(() => {
-  document.getElementById("intro-screen").style.display = "none";
-  document.getElementById("main-game").style.display = "block";
-}, 4000);
 </script>
 
+<style>
+  body { margin:0; font-family: Arial, sans-serif; background:#0a0a0a; overflow:hidden; color:white;}
+  #intro { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; z-index:2000; }
+  #intro h1 { font-size:3em; margin:0; color:#FFD700; text-shadow:2px 2px #000;}
+  #intro h2 { font-size:2em; margin:5px 0; color:#00FFCC; text-shadow:2px 2px #000;}
+  #intro h3 { font-size:1.5em; margin:5px 0; color:#FF4D6D; text-shadow:2px 2px #000;}
+  #game-container { position:relative; width:100%; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:1;}
+  #game { display:grid; grid-template-columns:repeat(3,100px); grid-gap:16px; margin-top:20px; }
+  .cell { width:100px; height:100px; font-size:3em; border-radius:20px; background:linear-gradient(145deg,#5022aa,#2f0e63); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .cell.X { color:#00FFCC; text-shadow:0 0 8px #00FFCC; }
+  .cell.O { color:#FF4D6D; text-shadow:0 0 8px #FF4D6D; }
+  #status,#level,#points,#notification { margin:5px; font-size:18px; font-weight:bold;}
+  #restart,#next,#reward-btn { margin:10px; padding:10px 20px; font-size:18px; border:none; border-radius:20px; cursor:pointer; }
+  #restart{background:linear-gradient(to right,#ff416c,#ff4b2b); color:white;}
+  #next{background:linear-gradient(to right,#ffb700,#ffd700); color:black; display:none;}
+  #reward-btn{background:linear-gradient(to right,#00ffcc,#00bfff); color:black;}
+  #result-overlay { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); font-size:2em; background:rgba(0,0,0,0.75); padding:20px 40px; border-radius:16px; display:none; z-index:1000; }
+  #stars, #moon, #win-glow, #lose-glow { position:absolute; inset:0; z-index:0; pointer-events:none; }
+  #moon { background:url('https://i.ibb.co/rQ0Jt6d/moon.png') center/contain no-repeat; opacity:0; }
+</style>
+</head>
+
+<body>
+  <!-- Intro -->
+  <div id="intro">
+    <h1>Welcome</h1>
+    <h2>Tic Tac Toe</h2>
+    <h3>If you win you are Legend</h3>
+  </div>
+
+  <!-- Game Container -->
+  <div id="game-container">
+    <canvas id="stars"></canvas>
+    <div id="moon"></div>
+    <div id="win-glow"></div>
+    <div id="lose-glow"></div>
+
+    <h2>Player vs Computer</h2>
+    <div id="status">Your turn (X)</div>
+    <div id="level">Level: 1 (Easy)</div>
+    <div id="points">XP: 0</div>
+    <div id="notification"></div>
+    <div id="game"></div>
+    <button id="restart">Restart</button>
+    <button id="next">Next</button>
+    <button id="reward-btn">Reward</button>
+    <div id="result-overlay"></div>
+
+    <!-- Sounds -->
+    <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
+    <audio id="win-sound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
+    <audio id="lose-sound" src="https://www.soundjay.com/misc/sounds/fail-buzzer-01.mp3" preload="auto"></audio>
+  </div>
+
+<script>
+const tg=window.Telegram.WebApp;
+tg.expand();
+
+const game=document.getElementById("game"), statusText=document.getElementById("status"), restartBtn=document.getElementById("restart"), nextBtn=document.getElementById("next"), rewardBtn=document.getElementById("reward-btn"), levelText=document.getElementById("level"), pointsText=document.getElementById("points"), notification=document.getElementById("notification"), resultOverlay=document.getElementById("result-overlay"), gameoverSound=document.getElementById("gameover-sound"), winSound=document.getElementById("win-sound"), loseSound=document.getElementById("lose-sound"), moon=document.getElementById("moon"), winGlow=document.getElementById("win-glow"), loseGlow=document.getElementById("lose-glow");
+
+let board=Array(9).fill(""), gameActive=true, xp=0, notificationShown=false;
+
+const winningCombinations=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+function getLevelName(levelNum){const names=["Easy","Medium","Hard","Hardest"]; return names[(levelNum-1)%names.length];}
+function getLevel(){return Math.min(xp+1,201);}
+function createBoard(){game.innerHTML=""; for(let i=0;i<9;i++){const cell=document.createElement("div"); cell.classList.add("cell"); cell.dataset.index=i; cell.addEventListener("click",()=>playerMove(i)); game.appendChild(cell);}}
+function updateBoard(){document.querySelectorAll(".cell").forEach((cell,i)=>{cell.textContent=board[i]; cell.classList.remove("X","O"); if(board[i]) cell.classList.add(board[i]);}); const level=getLevel(); levelText.textContent=`Level: ${level} (${getLevelName(level)})`; pointsText.textContent=`XP: ${xp}`;}
+function getEmptyIndices(){return board.map((v,i)=>v===""?i:-1).filter(i=>i!==-1);}
+function checkWin(player){return winningCombinations.find(combo=>combo.every(i=>board[i]===player));}
+function isDraw(){return board.every(cell=>cell!=="");}
+function flashCells(combo){combo.forEach(i=>document.querySelector(`.cell[data-index='${i}']`).classList.add("flash"));}
+function showResult(text){resultOverlay.textContent=text; resultOverlay.style.display="block"; setTimeout(()=>resultOverlay.style.display="none",2000);}
+function playSound(){gameoverSound.currentTime=0; gameoverSound.play();}
+
+function playerMove(i){
+  if(!gameActive||board[i]!=="") return;
+  board[i]="X"; updateBoard();
+  const win=checkWin("X");
+  if(win){flashCells(win); gameActive=false; playSound(); winSound.currentTime=0; winSound.play(); showResult("You Win!"); xp=Math.min(xp+1,201); moon.style.opacity=1; loseGlow.style.opacity=0; nextBtn.style.display="inline-block"; restartBtn.style.display="none"; return;}
+  if(isDraw()){gameActive=false; showResult("Draw!"); loseSound.currentTime=0; loseSound.play(); restartBtn.style.display="inline-block"; nextBtn.style.display="none"; return;}
+  statusText.textContent="Computer's turn (O)";
+  setTimeout(computerMove,500);
+}
+
+function computerMove(){
+  if(!gameActive) return;
+  const empty=getEmptyIndices();
+  if(empty.length===0) return;
+  let move=-1;
+  for(const i of empty){board[i]="O"; if(checkWin("O")){move=i; board[i]=""; break;} board[i]="";}
+  if(move===-1){for(const i of empty){board[i]="X"; if(checkWin("X")){move=i; board[i]=""; break;} board[i]="";}}
+  if(move===-1){move=empty[Math.floor(Math.random()*empty.length)];}
+  board[move]="O"; updateBoard();
+  const win=checkWin("O");
+  if(win){flashCells(win); gameActive=false; playSound(); loseSound.currentTime=0; loseSound.play(); showResult("You Lose!"); loseGlow.style.opacity=0.4; moon.style.opacity=0; restartBtn.style.display="inline-block"; nextBtn.style.display="none"; return;}
+  if(isDraw()){gameActive=false; showResult("Draw!"); loseSound.currentTime=0; loseSound.play(); restartBtn.style.display="inline-block"; nextBtn.style.display="none"; return;}
+  statusText.textContent="Your turn (X)";
+}
+
+function resetGame(){board=Array(9).fill(""); gameActive=true; statusText.textContent="Your turn (X)"; updateBoard(); restartBtn.style.display="none"; nextBtn.style.display="none"; notification.textContent=""; notificationShown=false; moon.style.opacity=0; loseGlow.style.opacity=0;}
+
+restartBtn.addEventListener("click",resetGame);
+rewardBtn.addEventListener("click",async()=>{try{await window.showGiga(); xp=Math.min(xp+1,201); resetGame();}catch(e){alert("Ad failed!");}});
+nextBtn.addEventListener("click",async()=>{try{await window.showGiga(); xp=Math.min(xp+1,201); resetGame();}catch(e){alert("Ad failed!");}});
+
+createBoard(); updateBoard();
+
+// Intro Animation
+const intro=document.getElementById("intro");
+setTimeout(()=>intro.style.display="none",3000);
+
+// Stars Background
+const canvas=document.getElementById("stars");
+const ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+let stars=[];
+for(let i=0;i<150;i++){stars.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, r:Math.random()*2+1, d:Math.random()*0.5+0.2});}
+function drawStars(){ctx.clearRect(0,0,canvas.width,canvas.height); for(let s of stars){ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fillStyle="white"; ctx.fill(); s.y+=s.d; if(s.y>canvas.height){s.y=0; s.x=Math.random()*canvas.width;}} requestAnimationFrame(drawStars);}
+drawStars();
+
+</script>
 </body>
 </html>
