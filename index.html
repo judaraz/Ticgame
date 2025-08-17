@@ -1,129 +1,180 @@
 <!doctype html>
 <html lang="bn">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Auto GigaPub Ads</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Auto GigaPub Ads</title>
 
-<script src="https://ad.gigapub.tech/script?id=978"></script>
+  <!-- GigaPub Script -->
+  <script src="https://ad.gigapub.tech/script?id=978"></script>
 
-<style>
-body { background-color:#0e0e0e; font-family:Arial,sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; color:white; }
-.card { background-color:#1a1a1a; border-radius:16px; padding:20px; width:300px; text-align:center; box-shadow:0 0 15px rgba(255,215,0,0.2);}
-h2 { font-size:20px; font-weight:bold; color:gold; margin-bottom:4px; }
-.subtitle { font-size:14px; color:#aaa; margin-bottom:16px; }
-.stats { font-size:14px; margin-bottom:10px; }
-.progress-ring { width:140px; height:140px; border-radius:50%; background:conic-gradient(gold 0%, #333 0%); display:flex; align-items:center; justify-content:center; margin:0 auto 15px auto; }
-.progress-text { background-color:#1a1a1a; width:100px; height:100px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:bold; color:gold; }
-button { width:100%; padding:10px; margin-top:8px; border:none; border-radius:8px; font-weight:bold; font-size:15px; cursor:pointer; }
-.btn-gold { background:linear-gradient(to right,#ffd700,#ffb700); color:black; }
-.btn-dark { background:#333; color:gold; }
-.location { font-size:13px; color:gold; margin-top:12px; }
-</style>
+  <style>
+    body {
+      background-color: #0e0e0e;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: white;
+    }
+    .card {
+      background-color: #1a1a1a;
+      border-radius: 16px;
+      padding: 20px;
+      width: 300px;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: bold;
+      color: gold;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 16px;
+    }
+    .stats {
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .progress-ring {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: conic-gradient(gold 0%, #333 0%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px auto;
+    }
+    .progress-text {
+      background-color: #1a1a1a;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: bold;
+      color: gold;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .btn-gold {
+      background: linear-gradient(to right, #ffd700, #ffb700);
+      color: black;
+    }
+    .btn-dark {
+      background: #333;
+      color: gold;
+    }
+    .location {
+      font-size: 13px;
+      color: gold;
+      margin-top: 12px;
+    }
+  </style>
 </head>
 <body>
-<div class="card">
-<h2>Auto GigaPub Ads</h2>
-<div class="subtitle">Edited By Rynnogaming</div>
+  <div class="card">
+    <h2>Auto GigaPub Ads</h2>
+    <div class="subtitle">Edited By Rynnogaming</div>
+      <div class="subtitle">৭-৮ টা অ্যাড দেখার পর ক্লিক করে ১ মিনিট অপেক্ষা করবেন, ক্লিক দেয়ার পর Account করার অপশন থাকলে  Account করবেন</div>
 
-<div class="stats">
-Watched Ads: <span id="watchedCount">0</span><br>
-Earned Points: <span id="earnedPoints">0</span>
-</div>
+    <div class="stats">
+      Watched Ads: <span id="watchedCount">0</span><br>
+      Earned Points: <span id="earnedPoints">0</span>
+    </div>
 
-<div class="progress-ring" id="progressRing">
-<div class="progress-text" id="progressText">0%</div>
-</div>
+    <div class="progress-ring" id="progressRing">
+      <div class="progress-text" id="progressText">0%</div>
+    </div>
 
-<button class="btn-gold" id="watchBtn">Watch Ad</button>
-<button class="btn-gold" id="autoOnBtn">Auto Show Ads</button>
-<button class="btn-gold" id="autoOffBtn">Stop Auto Ads</button>
+    <button class="btn-gold" id="watchBtn">Watch Ad</button>
+    <button class="btn-gold" id="autoOnBtn">Auto Show Ads</button>
+    <button class="btn-gold" id="autoOffBtn">Stop Auto Ads</button>
 
-<div class="location" id="userLocation">Detecting location...</div>
-</div>
+    <!-- Location Info -->
+    <div class="location" id="userLocation">Detecting location...</div>
+  </div>
 
-<script>
-let watched = 0;
-let points = 0;
-let autoActive = false;
+  <script>
+    let watched = 0;
+    let points = 0;
+    let autoInterval = null;
 
-function updateUI() {
-    document.getElementById('watchedCount').textContent = watched;
-    document.getElementById('earnedPoints').textContent = points;
-    let percent = Math.min(100, (points % 100));
-    document.getElementById('progressText').textContent = percent + "%";
-    document.getElementById('progressRing').style.background =
+    function updateUI() {
+      document.getElementById('watchedCount').textContent = watched;
+      document.getElementById('earnedPoints').textContent = points;
+      let percent = Math.min(100, (points % 100));
+      document.getElementById('progressText').textContent = percent + "%";
+      document.getElementById('progressRing').style.background =
         `conic-gradient(gold ${percent}%, #333 ${percent}%)`;
-}
-
-function playAd() {
-    return new Promise(resolve => {
-        if(typeof window.showGiga === "function"){
-            window.showGiga()
-            .then(() => {
-                watched++;
-                points += 5;
-                updateUI();
-                resolve();
-            })
-            .catch(e=>{
-                console.error("Ad error:", e);
-                resolve();
-            });
-        } else {
-            alert("GigaPub script not loaded yet!");
-            resolve();
-        }
-    });
-}
-
-// Auto ad loop
-async function autoAdsLoop() {
-    while(autoActive){
-        await playAd();                // show ad first
-        await new Promise(r=>setTimeout(r, 20000)); // wait 20s AFTER ad finished
     }
-}
 
-function startAutoShow(){
-    if(!autoActive){
-        autoActive = true;
-        autoAdsLoop();
+    function playAd() {
+      if (typeof window.showGiga === "function") {
+        window.showGiga()
+          .then(() => {
+            watched++;
+            points += 5; // প্রতিটি অ্যাডে 5 পয়েন্ট
+            updateUI();
+          })
+          .catch(e => {
+            console.error("Ad error:", e);
+          });
+      } else {
+        alert("GigaPub script not loaded yet!");
+      }
     }
-}
 
-function stopAutoShow(){
-    autoActive = false;
-}
+    function startAutoShow() {
+      if (autoInterval) return;
+      playAd();
+      autoInterval = setInterval(playAd, 20000); // প্রতি 20 সেকেন্ডে অ্যাড
+    }
 
-document.getElementById('watchBtn').onclick = () => playAd();
-document.getElementById('autoOnBtn').onclick = startAutoShow;
-document.getElementById('autoOffBtn').onclick = stopAutoShow;
+    function stopAutoShow() {
+      clearInterval(autoInterval);
+      autoInterval = null;
+    }
 
-updateUI();
+    document.getElementById('watchBtn').onclick = playAd;
+    document.getElementById('autoOnBtn').onclick = startAutoShow;
+    document.getElementById('autoOffBtn').onclick = stopAutoShow;
 
-// Location check
-async function getUserLocation(){
-    try{
-        const res = await fetch("https://ipinfo.io/json?token=728d72207e9fbc");
-        const data = await res.json();
+    updateUI();
+
+    // Detect location using ipinfo.io (Telegram Mini App safe)
+    async function getUserLocation() {
+      try {
+        let res = await fetch("https://ipinfo.io/json?token=728d72207e9fbc");
+        let data = await res.json();
+
         document.getElementById("userLocation").textContent =
-            `🌍 ${data.country}${data.city ? ", "+data.city:""} | ISP: ${data.org||"N/A"} | IP: ${data.ip}`;
-
-        const allowedCountries = ["AU","US","CA", "BD"];
-        if(!allowedCountries.includes(data.country)){
-            document.getElementById("watchBtn").style.display="none";
-            document.getElementById("autoOnBtn").style.display="none";
-            document.getElementById("autoOffBtn").style.display="none";
-            document.getElementById("userLocation").textContent += " ⚠️ Sorry, this game is not available in your country.";
-        }
-    } catch(err){
-        console.error("Location fetch failed:",err);
-        document.getElementById("userLocation").textContent = "⚠️ Location not available";
+          `🌍 ${data.country}${data.city ? ", " + data.city : ""} | ISP: ${data.org || "N/A"} | IP: ${data.ip}`;
+      } catch (err) {
+        console.error("Location fetch failed:", err);
+        document.getElementById("userLocation").textContent =
+          "⚠️ Location not available";
+      }
     }
-}
 
-getUserLocation();
-</script>
+    getUserLocation();
+  </script>
 </body>
 </html>
