@@ -9,45 +9,36 @@
 <style>
 /* Intro Screen */
 #intro-screen{
-  position:fixed;
-  top:0; left:0; right:0; bottom:0;
-  background: linear-gradient(45deg, #ff416c, #ff4b2b, #1c92d2, #f2fcfe);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  color:white;
-  font-family:'Segoe UI',sans-serif;
-  font-weight:bold;
-  font-size:2em;
-  text-align:center;
-  animation: backgroundAnimation 5s linear infinite;
-  z-index:9999;
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  background: linear-gradient(45deg, #ff4b2b, #ff416c, #1c92d2, #f2fcfe);
+  background-size: 400% 400%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  font-family:'Segoe UI',sans-serif; font-weight:bold; font-size:2.5em;
+  text-align:center; z-index:9999;
+  animation: gradientMove 8s ease infinite;
 }
-@keyframes backgroundAnimation{
+@keyframes gradientMove {
   0%{background-position:0% 50%;}
   50%{background-position:100% 50%;}
   100%{background-position:0% 50%;}
 }
 #intro-screen div{
-  opacity:0;
-  animation: fadeIn 1s forwards;
+  opacity:0; transform:scale(0.8);
+  animation: fadeInScale 1s forwards;
 }
-#intro-screen div:nth-child(1){animation-delay:0.5s;}
-#intro-screen div:nth-child(2){animation-delay:1.5s;}
-#intro-screen div:nth-child(3){animation-delay:2.5s;}
-@keyframes fadeIn{
-  to{opacity:1;}
+#intro-screen div:nth-child(1){animation-delay:0.5s; color:#ffffff;}
+#intro-screen div:nth-child(2){animation-delay:1.5s; color:#ffff00;}
+#intro-screen div:nth-child(3){animation-delay:2.5s; color:#00ffcc;}
+@keyframes fadeInScale{
+  to{opacity:1; transform:scale(1);}
 }
-/* Rainbow Text */
+
+/* Rainbow Text for 2nd line */
 #rainbow-text {
-  font-weight: bold;
-  font-size: 2.2em;
+  font-weight: bold; font-size: 2.8em;
   background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-size: 400% 400%;
-  animation: rainbowMove 3s linear infinite;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-size: 400% 400%; animation: rainbowMove 3s linear infinite;
 }
 @keyframes rainbowMove {
   0% {background-position:0% 50%;}
@@ -56,15 +47,11 @@
 }
 
 /* Star Canvas */
-#star-canvas{
-  position:fixed; top:0; left:0;
-  width:100%; height:100%;
-  z-index:0; pointer-events:none;
-}
+#star-canvas{position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;}
 
 /* Game Styles */
 body{margin:0;padding:0;font-family:'Segoe UI',sans-serif;background:#0e0e0e;color:#fff;text-align:center;}
-#main-game{display:none; position:relative; z-index:1;} /* Hidden initially */
+#main-game{display:none; position:relative; z-index:1;}
 h2{margin-top:20px;font-size:24px;font-weight:600;}
 #status,#level,#points{margin-top:10px;font-size:18px;font-weight:500;}
 #notification{margin-top:12px;font-size:14px;color:#ffcc00;font-weight:600;}
@@ -79,11 +66,25 @@ h2{margin-top:20px;font-size:24px;font-weight:600;}
 #result-overlay.show{display:block;}
 .flash{animation:flash 0.5s alternate 4;}
 @keyframes flash{from{background-color:rgba(255,255,255,0.12);}to{background-color:rgba(255,255,255,0.05);}}
+/* Win Moon */
+#moon{
+  position:fixed; right:50px; top:50px; width:100px; height:100px; border-radius:50%;
+  background: radial-gradient(circle, #ffffff, #cccccc);
+  opacity:0; z-index:0; pointer-events:none;
+  transition:opacity 2s;
+}
+/* Lose red glow overlay */
+#lose-glow{
+  position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,0,0,0.2);
+  pointer-events:none; opacity:0; transition:opacity 1s; z-index:0;
+}
 </style>
 </head>
 <body>
 
 <canvas id="star-canvas"></canvas>
+<div id="moon"></div>
+<div id="lose-glow"></div>
 
 <!-- Intro Screen -->
 <div id="intro-screen">
@@ -111,8 +112,7 @@ h2{margin-top:20px;font-size:24px;font-weight:600;}
 // Star background
 const canvas = document.getElementById('star-canvas');
 const ctx = canvas.getContext('2d');
-let stars=[];
-let shootingStars=[];
+let stars=[], shootingStars=[];
 function resizeCanvas(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
 window.addEventListener('resize',resizeCanvas);
 resizeCanvas();
@@ -120,7 +120,12 @@ resizeCanvas();
 function initStars(count){
   stars=[];
   for(let i=0;i<count;i++){
-    stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,size:Math.random()*2+1,speed:Math.random()*1.5+0.5});
+    stars.push({
+      x:Math.random()*canvas.width,
+      y:Math.random()*canvas.height,
+      size:Math.random()*2+1,
+      speed:Math.random()*0.2+0.1 // slower
+    });
   }
 }
 initStars(200);
@@ -130,7 +135,7 @@ function createShootingStar(){
     x:Math.random()*canvas.width,
     y:Math.random()*50,
     len:Math.random()*80+50,
-    speed:Math.random()*10+6
+    speed:Math.random()*3+2 // slower
   });
 }
 setInterval(createShootingStar,2000);
@@ -147,14 +152,10 @@ function drawStars(){
     if(s.y>canvas.height){ s.y=0; s.x=Math.random()*canvas.width; }
   }
   // shooting stars
-  ctx.strokeStyle="white";
-  ctx.lineWidth=2;
+  ctx.strokeStyle="white"; ctx.lineWidth=2;
   for(let i=shootingStars.length-1;i>=0;i--){
     let s=shootingStars[i];
-    ctx.beginPath();
-    ctx.moveTo(s.x,s.y);
-    ctx.lineTo(s.x+s.len,s.y+s.len);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(s.x+s.len,s.y+s.len); ctx.stroke();
     s.x+=s.speed; s.y+=s.speed;
     if(s.y>canvas.height || s.x>canvas.width){ shootingStars.splice(i,1); }
   }
@@ -175,6 +176,8 @@ const pointsText=document.getElementById("points");
 const notification=document.getElementById("notification");
 const resultOverlay=document.getElementById("result-overlay");
 const gameoverSound=document.getElementById("gameover-sound");
+const moon=document.getElementById("moon");
+const loseGlow=document.getElementById("lose-glow");
 
 let board=Array(9).fill("");
 let gameActive=true;
@@ -194,7 +197,7 @@ function getEmptyIndices(){ return board.map((v,i)=>v===""?i:-1).filter(i=>i!==-
 function checkWin(player){ return winningCombinations.find(combo=>combo.every(i=>board[i]===player)); }
 function isDraw(){ return board.every(cell=>cell!==""); }
 function flashCells(combo){ combo.forEach(i=>document.querySelector(`.cell[data-index='${i}']`).classList.add("flash")); }
-function showResult(text){ resultOverlay.textContent=text; resultOverlay.classList.add("show"); setTimeout(()=>resultOverlay.classList.remove("show"),2000); }
+function showResult(text, win=false){ resultOverlay.textContent=text; resultOverlay.classList.add("show"); setTimeout(()=>resultOverlay.classList.remove("show"),2000); if(win){moon.style.opacity=1; setTimeout(()=>moon.style.opacity=0,4000);} else{loseGlow.style.opacity=0.3; setTimeout(()=>loseGlow.style.opacity=0,3000);} }
 function playSound(){ gameoverSound.currentTime=0; gameoverSound.play(); }
 function showSkipNotificationOnce(){ if(!notificationShown){ notification.textContent="You can skip the level by clicking Reward Button"; notificationShown=true; } }
 
@@ -216,25 +219,23 @@ function computerMove(){
   const move=empty[Math.floor(Math.random()*empty.length)]; board[move]="O"; finishComputerMove(move,"O");
 }
 
-function finishComputerMove(move,player){ updateBoard(); const win=checkWin(player); if(win){ flashCells(win); gameActive=false; playSound(); showResult("You Lose!"); showSkipNotificationOnce(); restartBtn.style.display='inline-block'; nextBtn.style.display='none'; return; } if(isDraw()){ gameActive=false; showResult("Draw!"); showSkipNotificationOnce(); restartBtn.style.display='inline-block'; nextBtn.style.display='none'; return; } statusText.textContent="Your turn (X)"; }
+function finishComputerMove(move,player){ updateBoard(); const win=checkWin(player); if(win){ flashCells(win); gameActive=false; playSound(); showResult("You Lose!",false); showSkipNotificationOnce(); restartBtn.style.display='inline-block'; nextBtn.style.display='none'; return; } if(isDraw()){ gameActive=false; showResult("Draw!"); showSkipNotificationOnce(); restartBtn.style.display='inline-block'; nextBtn.style.display='none'; return; } statusText.textContent="Your turn (X)"; }
 
-function playerMove(i){ if(!gameActive || board[i]!=="") return; board[i]="X"; updateBoard(); const win=checkWin("X"); if(win){ flashCells(win); gameActive=false; playSound(); showResult("You Win!"); xp=Math.min(xp+1,149); updateBoard(); nextBtn.style.display='inline-block'; restartBtn.style.display='none'; notification.textContent=""; notificationShown=false; return; } if(isDraw()){ gameActive=false; showResult("Draw!"); showSkipNotificationOnce(); restartBtn.style.display='inline-block'; nextBtn.style.display='none'; return; } statusText.textContent="Computer's turn (O)"; setTimeout(computerMove,500); }
+function playerMove(i){ if(!gameActive || board[i]!=="") return; board[i]="X"; updateBoard(); const win=checkWin("X"); if(win){ flashCells(win); gameActive=false; playSound(); showResult("You Win!",true); xp=Math.min(xp+1,149); updateBoard(); nextBtn.style.display='inline-block'; restartBtn.style.display='none'; notification.textContent=""; notificationShown=false; return; } if(isDraw()){ gameActive=false; showResult("Draw!",false); showSkipNotificationOnce(); restartBtn.style.display='inline-block'; nextBtn.style.display='none'; return; } statusText.textContent="Computer's turn (O)"; setTimeout(computerMove,500); }
 
-function resetGame(){ board=Array(9).fill(""); gameActive=true; statusText.textContent="Your turn (X)"; updateBoard(); restartBtn.style.display='none'; nextBtn.style.display='none'; notification.textContent=""; notificationShown=false; }
+function resetGame(){ board=Array(9).fill(""); gameActive=true; statusText.textContent="Your turn (X)"; updateBoard(); restartBtn.style.display='none'; nextBtn.style.display='none'; notification.textContent=""; notificationShown=false; moon.style.opacity=0; loseGlow.style.opacity=0; }
 
 async function showAdsAndContinue(incrementLevel=false){ try{ await window.showGiga(); if(incrementLevel){ xp=Math.min(xp+1,149); notificationShown=false; notification.textContent=""; } resetGame(); }catch(e){ alert("Ad failed to load. Please try again."); } }
 
 restartBtn.addEventListener("click",resetGame);
-rewardBtn.addEventListener("click",()=>{ showAdsAndContinue(true); });
-nextBtn.addEventListener("click",()=>{ showAdsAndContinue(true); });
+rewardBtn.addEventListener("click",()=>showAdsAndContinue(true));
+nextBtn.addEventListener("click",()=>showAdsAndContinue(true));
 
-createBoard(); updateBoard();
+createBoard();
+updateBoard();
 
-/* Intro screen timer */
-setTimeout(()=>{
-  document.getElementById("intro-screen").style.display="none";
-  document.getElementById("main-game").style.display="block";
-},4000);
+// Hide intro after 4s
+setTimeout(()=>{ document.getElementById("intro-screen").style.display="none"; document.getElementById("main-game").style.display="block"; },4000);
 </script>
 </body>
 </html>
