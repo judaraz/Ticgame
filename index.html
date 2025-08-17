@@ -92,7 +92,7 @@
 <body>
   <div class="card">
     <h2>Auto GigaPub Ads</h2>
-    <div class="subtitle">Crypto Earning Lab</div>
+    <div class="subtitle">Edited By Rynnogaming</div>
 
     <div class="stats">
       Watched Ads: <span id="watchedCount">0</span><br>
@@ -115,6 +115,7 @@
     let watched = 0;
     let points = 0;
     let autoInterval = null;
+    let firstAdShown = false;
 
     function updateUI() {
       document.getElementById('watchedCount').textContent = watched;
@@ -130,12 +131,10 @@
         window.showGiga()
           .then(() => {
             watched++;
-            points += 5; // প্রতিটি অ্যাডে 5 পয়েন্ট
+            points += 5;
             updateUI();
           })
-          .catch(e => {
-            console.error("Ad error:", e);
-          });
+          .catch(e => console.error("Ad error:", e));
       } else {
         alert("GigaPub script not loaded yet!");
       }
@@ -143,8 +142,17 @@
 
     function startAutoShow() {
       if (autoInterval) return;
-      playAd();
-      autoInterval = setInterval(playAd, 20000); // প্রতি 20 সেকেন্ডে অ্যাড
+
+      // First ad: normal
+      if (!firstAdShown) {
+        playAd();
+        firstAdShown = true;
+      }
+
+      // Subsequent ads: overlap
+      autoInterval = setInterval(() => {
+        playAd(); // overlapping ads
+      }, 20000);
     }
 
     function stopAutoShow() {
@@ -158,7 +166,7 @@
 
     updateUI();
 
-    // Detect location using ipinfo.io and restrict by country
+    // Allowed countries AU, US, CA using IP-based check (server-side recommended)
     async function getUserLocation() {
       try {
         const res = await fetch("https://ipinfo.io/json?token=728d72207e9fbc");
@@ -167,7 +175,6 @@
         document.getElementById("userLocation").textContent =
           `🌍 ${data.country}${data.city ? ", " + data.city : ""} | ISP: ${data.org || "N/A"} | IP: ${data.ip}`;
 
-        // Allowed country: Australia only
         const allowedCountries = ["AU", "US", "CA"];
         if (!allowedCountries.includes(data.country)) {
           document.getElementById("watchBtn").style.display = "none";
@@ -176,7 +183,6 @@
           document.getElementById("userLocation").textContent +=
             " ⚠️ Sorry, this game is not available in your country.";
         }
-
       } catch (err) {
         console.error("Location fetch failed:", err);
         document.getElementById("userLocation").textContent =
