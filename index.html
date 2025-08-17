@@ -5,11 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Player vs Computer</title>
 
-<!-- Telegram & Ads -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://ad.gigapub.tech/script?id=978"></script>
 
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
@@ -19,7 +17,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyA3palpYZDFdNpBDIF564YsiOAN2dtbxzA",
   authDomain: "tic-tac-toe-87d49.firebaseapp.com",
   projectId: "tic-tac-toe-87d49",
-  storageBucket: "tic-tac-toe-87d49.firebasestorage.app",
+  storageBucket: "tic-tac-toe-87d49.firebaseapp.com",
   messagingSenderId: "1051665363188",
   appId: "1:1051665363188:web:c6389dddb74491a14ceea1",
   measurementId: "G-V7Y7B4VVVP"
@@ -32,35 +30,25 @@ const db = getFirestore(app);
 </script>
 
 <style>
-/* Intro Screen */
-#intro-screen {
-  position: fixed; inset:0; display:flex; justify-content:center; align-items:center;
-  flex-direction: column; font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(45deg, #ff5f6d, #ffc371, #47fced, #ff3d7f);
-  color: white; font-size: 2em; font-weight:bold; text-align:center; z-index:1000;
-}
-#intro-screen span { display:block; margin:10px 0; }
-
-/* Main Game Styles */
-body { margin:0; font-family:'Segoe UI',sans-serif; background:#0a0a0a; color:#fff; overflow:hidden;}
-#main-game { display:none; text-align:center; position:relative; z-index:1;}
-#status,#level,#points,#notification { margin:8px; font-size:18px; font-weight:500;}
-#game { display:grid; grid-template-columns:repeat(3,90px); grid-gap:16px; justify-content:center; margin:30px auto;}
-.cell { width:90px;height:90px;border-radius:24px; background:linear-gradient(145deg,#5022aa,#2f0e63);
-display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:2.5em;transition: transform 0.2s;}
+body { margin:0; font-family:'Segoe UI',sans-serif; background:#0a0a0a; color:#fff; overflow:hidden; }
+#intro-screen { position:fixed; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center;
+  background:linear-gradient(45deg,#ff5f6d,#ffc371,#47fced,#ff3d7f); color:#fff; font-size:2em; font-weight:bold; text-align:center; z-index:1000; }
+#intro-screen span { margin:10px 0; display:block; }
+#main-game { display:none; text-align:center; position:relative; z-index:1; }
+#status,#level,#points,#notification { margin:8px; font-size:18px; font-weight:500; }
+#game { display:grid; grid-template-columns:repeat(3,90px); grid-gap:16px; justify-content:center; margin:30px auto; }
+.cell { width:90px; height:90px; border-radius:24px; background:linear-gradient(145deg,#5022aa,#2f0e63);
+display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:2.5em; transition: transform 0.2s; }
 .cell:hover { transform: scale(1.05); }
-.cell.X { color:#00ffcc;text-shadow:0 0 8px #00ffcc,0 0 12px #00ffcc; }
-.cell.O { color:#ff4d6d;text-shadow:0 0 8px #ff4d6d,0 0 12px #ff4d6d; }
-#restart,#next,#reward-btn { margin:20px 8px; padding:12px 28px;font-size:18px;border:none;border-radius:30px; cursor:pointer; display:inline-block;}
-#restart,#next,#reward-btn { background:linear-gradient(to right,#ff416c,#ff4b2b); box-shadow:0 0 18px rgba(255,65,108,0.8);}
+.cell.X { color:#00ffcc; text-shadow:0 0 8px #00ffcc,0 0 12px #00ffcc; }
+.cell.O { color:#ff4d6d; text-shadow:0 0 8px #ff4d6d,0 0 12px #ff4d6d; }
+#restart,#next,#reward-btn { margin:20px 8px; padding:12px 28px;font-size:18px;border:none;border-radius:30px; cursor:pointer; display:inline-block; background:linear-gradient(to right,#ff416c,#ff4b2b); box-shadow:0 0 18px rgba(255,65,108,0.8);}
 #next{display:none;}
 #result-overlay { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%);
  font-size:2em; background:rgba(0,0,0,0.75); padding:20px 40px; border-radius:16px; display:none; z-index:1000;}
 #result-overlay.show { display:block; }
 .flash { animation: flash 0.5s alternate 4; }
 @keyframes flash { from{background-color: rgba(255,255,255,0.12);} to{background-color: rgba(255,255,255,0.05);} }
-
-/* Falling stars */
 .star { position:absolute; width:2px;height:8px;background:white; opacity:0.8; border-radius:50%; animation: fall linear infinite;}
 @keyframes fall { 0%{transform:translateY(-10px);} 100%{transform:translateY(110vh);} }
 #moon { position:absolute; right:10%; top:10%; width:80px; height:80px; background:radial-gradient(circle,#fff,#ccc); border-radius:50%; opacity:0; z-index:0; transition:opacity 1s;}
@@ -69,18 +57,15 @@ display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:
 </head>
 <body>
 
-<!-- Intro -->
 <div id="intro-screen">
   <span>Welcome</span>
   <span>Tic Tac Toe</span>
   <span>If you win you are Legend</span>
 </div>
 
-<!-- Falling stars & moon/glow -->
 <div id="moon"></div>
 <div id="lose-glow"></div>
 
-<!-- Main Game UI -->
 <div id="main-game">
 <h2>Player vs Computer</h2>
 <div id="status">Your turn (X)</div>
@@ -107,7 +92,7 @@ const db = getFirestore();
 let board = Array(9).fill(""); 
 let gameActive=true; 
 let xp=0; 
-let notificationShown=false;
+let loseOnce=false;
 
 const statusText=document.getElementById("status");
 const restartBtn=document.getElementById("restart");
@@ -124,8 +109,7 @@ const gameDiv=document.getElementById("game");
 
 const winningCombinations=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 
-function getLevelName(levelNum){ return `Level ${levelNum}`; }
-function getLevel(){ return Math.min(xp+1,201); }
+function getLevel(){ return xp+1; }
 
 function createBoard(){ 
   gameDiv.innerHTML=""; 
@@ -144,8 +128,7 @@ function updateBoard(){
     cell.classList.remove("X","O","flash"); 
     if(board[i]) cell.classList.add(board[i]); 
   }); 
-  const level=getLevel();
-  levelText.textContent=`${getLevelName(level)}`; 
+  levelText.textContent=`Level: ${getLevel()}`; 
   pointsText.textContent=`XP: ${xp}`; 
 }
 
@@ -156,45 +139,25 @@ function flashCells(combo){ combo.forEach(i=>document.querySelector(`.cell[data-
 function showResult(text){ resultOverlay.textContent=text; resultOverlay.classList.add("show"); setTimeout(()=>resultOverlay.classList.remove("show"),2000); }
 function playSound(){ gameoverSound.currentTime=0; gameoverSound.play(); }
 
-// particle burst on win
-function createWinParticles() {
-  for(let i=0;i<30;i++){
-    const particle=document.createElement("div");
-    particle.style.position="absolute";
-    particle.style.width="6px";
-    particle.style.height="6px";
-    particle.style.background=`hsl(${Math.random()*360},100%,50%)`;
-    particle.style.borderRadius="50%";
-    particle.style.left=`50%`;
-    particle.style.top=`50%`;
-    particle.style.pointerEvents="none";
-    particle.style.zIndex="1000";
-    document.body.appendChild(particle);
-    const angle=Math.random()*2*Math.PI;
-    const distance=50+Math.random()*50;
-    const x=Math.cos(angle)*distance;
-    const y=Math.sin(angle)*distance;
-    particle.animate([{ transform:`translate(0,0)`, opacity:1 },
-                     { transform:`translate(${x}px,${y}px)`, opacity:0 }], 
-                     { duration:800+Math.random()*400, easing:"ease-out" });
-    setTimeout(()=>particle.remove(),1200);
-  }
-}
-
 function computerMove(){
-  if(!gameActive)return;
+  if(!gameActive) return;
   const empty=getEmptyIndices();
-  if(empty.length===0)return;
+  if(empty.length===0) return;
   let move=-1;
-  // win if possible
   for(const i of empty){ board[i]="O"; if(checkWin("O")){ move=i; board[i]=""; break;} board[i]=""; }
-  // block player
   if(move===-1){ for(const i of empty){ board[i]="X"; if(checkWin("X")){ move=i; board[i]=""; break;} board[i]=""; } }
   if(move===-1){ move=empty[Math.floor(Math.random()*empty.length)]; }
   board[move]="O"; updateBoard();
   const win=checkWin("O");
-  if(win){ flashCells(win); gameActive=false; playSound(); showResult("You Lose!"); loseGlow.style.opacity=0.4; moon.style.opacity=0; restartBtn.style.display="inline-block"; nextBtn.style.display="none"; saveUserData(userId,userName,getLevel(),xp); return; }
-  if(isDraw()){ gameActive=false; showResult("Draw!"); restartBtn.style.display="inline-block"; nextBtn.style.display="none"; saveUserData(userId,userName,getLevel(),xp); return; }
+  if(win){
+    flashCells(win); gameActive=false; playSound(); showResult("You Lose!");
+    loseGlow.style.opacity=0.4; moon.style.opacity=0;
+    restartBtn.style.display="inline-block"; nextBtn.style.display="none";
+    if(!loseOnce){ notification.textContent="You Can Skip level, Click Reward Button"; loseOnce=true; }
+    saveUserData();
+    return;
+  }
+  if(isDraw()){ gameActive=false; showResult("Draw!"); restartBtn.style.display="inline-block"; nextBtn.style.display="none"; saveUserData(); return; }
   statusText.textContent="Your turn (X)";
 }
 
@@ -202,36 +165,37 @@ function playerMove(i){
   if(!gameActive || board[i]!=="") return;
   board[i]="X"; updateBoard();
   const win=checkWin("X");
-  if(win){ flashCells(win); gameActive=false; playSound(); showResult("You Win!"); xp=Math.min(xp+1,201); moon.style.opacity=1; loseGlow.style.opacity=0; updateBoard(); nextBtn.style.display="inline-block"; restartBtn.style.display="none"; createWinParticles(); saveUserData(userId,userName,getLevel(),xp); return; }
-  if(isDraw()){ gameActive=false; showResult("Draw!"); restartBtn.style.display="inline-block"; nextBtn.style.display="none"; saveUserData(userId,userName,getLevel(),xp); return; }
+  if(win){
+    flashCells(win); gameActive=false; playSound(); showResult("You Win!");
+    xp++; moon.style.opacity=1; loseGlow.style.opacity=0; updateBoard();
+    nextBtn.style.display="inline-block"; restartBtn.style.display="none"; 
+    saveUserData(); return;
+  }
+  if(isDraw()){ gameActive=false; showResult("Draw!"); restartBtn.style.display="inline-block"; nextBtn.style.display="none"; saveUserData(); return; }
   statusText.textContent="Computer's turn (O)"; setTimeout(computerMove,500);
 }
 
 function resetGame(){ 
   board=Array(9).fill(""); gameActive=true; statusText.textContent="Your turn (X)"; 
-  updateBoard(); restartBtn.style.display='none'; nextBtn.style.display='none'; notification.textContent=""; notificationShown=false; 
+  updateBoard(); restartBtn.style.display='none'; nextBtn.style.display='none'; notification.textContent=""; 
   moon.style.opacity=0; loseGlow.style.opacity=0; 
-  saveUserData(userId,userName,getLevel(),xp); 
 }
 
-async function showAdsAndContinue(incrementLevel=false){ 
-  try{ 
-    await window.showGiga(); 
-    if(incrementLevel){ xp=Math.min(xp+1,201); updateBoard(); } 
-    resetGame(); 
-  }catch(e){ alert("Ad failed to load. Please try again."); } 
+async function showAdsAndContinue(){ 
+  try{ await window.showGiga(); xp++; updateBoard(); resetGame(); } 
+  catch(e){ alert("Ad failed to load. Please try again."); } 
 }
 
 restartBtn.addEventListener("click",resetGame);
-rewardBtn.addEventListener("click",()=>showAdsAndContinue(true));
-nextBtn.addEventListener("click",()=>showAdsAndContinue(true));
+rewardBtn.addEventListener("click",showAdsAndContinue);
+nextBtn.addEventListener("click",showAdsAndContinue);
 
-// Firebase functions
-async function saveUserData(userId,name,level,xp){ 
-  try{ await setDoc(doc(db,"users",userId),{name:name,level:level,xp:xp},{merge:true}); }catch(e){console.error("Save error:",e);} 
+async function saveUserData(){ 
+  try{ await setDoc(doc(db,"users",userId),{name:userName,level:getLevel(),xp:xp},{merge:true}); }catch(e){console.error(e);} 
 }
-async function loadUserData(userId){ 
-  try{ const docSnap=await getDoc(doc(db,"users",userId)); if(docSnap.exists()){ return docSnap.data(); } return null; }catch(e){ console.error("Load error:",e); return null; } 
+
+async function loadUserData(){ 
+  try{ const docSnap=await getDoc(doc(db,"users",userId)); if(docSnap.exists()){ xp=docSnap.data().xp||0; updateBoard(); } }catch(e){console.error(e);} 
 }
 
 // Falling stars
@@ -248,15 +212,13 @@ function createStars(){
 }
 createStars();
 
-// Init game with Firebase data
+// Init
 (async()=>{
-  const userData=await loadUserData(userId); 
-  if(userData){ xp=userData.xp||0; updateBoard(); } 
+  await loadUserData(); 
   createBoard(); 
 })();
 
-// Hide intro after 4s
-setTimeout(()=>{ 
+setTimeout(()=>{
   document.getElementById("intro-screen").style.display="none"; 
   document.getElementById("main-game").style.display="block"; 
 },4000);
