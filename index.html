@@ -107,15 +107,14 @@
     <button class="btn-gold" id="autoOnBtn">Auto Show Ads</button>
     <button class="btn-gold" id="autoOffBtn">Stop Auto Ads</button>
 
-    <!-- Location Info -->
     <div class="location" id="userLocation">Detecting location...</div>
   </div>
 
   <script>
     let watched = 0;
     let points = 0;
-    let autoInterval = null;
-    let firstAdShown = false;
+    let autoActive = false;
+    let isSecondAd = false; // flag for overlapping ads
 
     function updateUI() {
       document.getElementById('watchedCount').textContent = watched;
@@ -126,47 +125,56 @@
         `conic-gradient(gold ${percent}%, #333 ${percent}%)`;
     }
 
-    function playAd() {
-      if (typeof window.showGiga === "function") {
-        window.showGiga()
-          .then(() => {
-            watched++;
-            points += 5;
-            updateUI();
-          })
-          .catch(e => console.error("Ad error:", e));
-      } else {
-        alert("GigaPub script not loaded yet!");
+    function playAd(overlap=false) {
+      return new Promise((resolve) => {
+        if (typeof window.showGiga === "function") {
+          if(overlap){
+            // Attempt overlapping ad by calling showGiga in parallel
+            window.showGiga().then(()=>{}).catch(()=>{});
+          }
+          window.showGiga()
+            .then(() => {
+              watched++;
+              points += 5;
+              updateUI();
+              resolve();
+            })
+            .catch(e => {
+              console.error("Ad error:", e);
+              resolve();
+            });
+        } else {
+          alert("GigaPub script not loaded yet!");
+          resolve();
+        }
+      });
+    }
+
+    async function autoAdsLoop() {
+      while (autoActive) {
+        await playAd(isSecondAd); // use overlap from second ad
+        if(!isSecondAd) isSecondAd = true; // mark first ad done
+        await new Promise(r => setTimeout(r, 20000)); // wait 20s
       }
     }
 
     function startAutoShow() {
-      if (autoInterval) return;
-
-      // First ad: normal
-      if (!firstAdShown) {
-        playAd();
-        firstAdShown = true;
+      if (!autoActive) {
+        autoActive = true;
+        autoAdsLoop();
       }
-
-      // Subsequent ads: overlap
-      autoInterval = setInterval(() => {
-        playAd(); // overlapping ads
-      }, 20000);
     }
 
     function stopAutoShow() {
-      clearInterval(autoInterval);
-      autoInterval = null;
+      autoActive = false;
     }
 
-    document.getElementById('watchBtn').onclick = playAd;
+    document.getElementById('watchBtn').onclick = () => playAd();
     document.getElementById('autoOnBtn').onclick = startAutoShow;
     document.getElementById('autoOffBtn').onclick = stopAutoShow;
 
     updateUI();
 
-    // Allowed countries AU, US, CA using IP-based check (server-side recommended)
     async function getUserLocation() {
       try {
         const res = await fetch("https://ipinfo.io/json?token=728d72207e9fbc");
