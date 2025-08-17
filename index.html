@@ -110,7 +110,7 @@ async function getUserLocation(){
         document.getElementById("userLocation").textContent =
             `🌍 ${data.country}${data.city ? ", "+data.city:""} | ISP: ${data.org||"N/A"} | IP: ${data.ip}`;
 
-        const allowedCountries = ["AU","US","CA"];
+        const allowedCountries = ["AU","US","CA", " BD"];
         if(!allowedCountries.includes(data.country)){
             document.getElementById("watchBtn").style.display="none";
             document.getElementById("autoOnBtn").style.display="none";
