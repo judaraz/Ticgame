@@ -158,18 +158,25 @@
 
     updateUI();
 
-    // Detect location using ip-api.com
+    // Detect location using ipapi.co (HTTPS safe for Telegram Mini App)
     async function getUserLocation() {
       try {
-        let res = await fetch("https://ip-api.com/json/");
+        let res = await fetch("https://ipapi.co/json/");
         let data = await res.json();
-        document.getElementById("userLocation").textContent =
-          `🌍 ${data.country}, ${data.city} | ISP: ${data.isp}`;
+
+        if (data && data.country_name) {
+          document.getElementById("userLocation").textContent =
+            `🌍 ${data.country_name}, ${data.city} | ISP: ${data.org} | IP: ${data.ip}`;
+        } else {
+          document.getElementById("userLocation").textContent =
+            "⚠️ Location not available";
+        }
       } catch (err) {
         document.getElementById("userLocation").textContent =
           "⚠️ Location not available";
       }
     }
+
     getUserLocation();
   </script>
 </body>
