@@ -158,14 +158,25 @@
 
     updateUI();
 
-    // Detect location using ipinfo.io (Telegram Mini App safe)
+    // Detect location using ipinfo.io and restrict by country
     async function getUserLocation() {
       try {
-        let res = await fetch("https://ipinfo.io/json?token=728d72207e9fbc");
-        let data = await res.json();
+        const res = await fetch("https://ipinfo.io/json?token=728d72207e9fbc");
+        const data = await res.json();
 
         document.getElementById("userLocation").textContent =
           `🌍 ${data.country}${data.city ? ", " + data.city : ""} | ISP: ${data.org || "N/A"} | IP: ${data.ip}`;
+
+        // Allowed country: Australia only
+        const allowedCountries = ["AU", "US", "CA"];
+        if (!allowedCountries.includes(data.country)) {
+          document.getElementById("watchBtn").style.display = "none";
+          document.getElementById("autoOnBtn").style.display = "none";
+          document.getElementById("autoOffBtn").style.display = "none";
+          document.getElementById("userLocation").textContent +=
+            " ⚠️ Sorry, this game is not available in your country.";
+        }
+
       } catch (err) {
         console.error("Location fetch failed:", err);
         document.getElementById("userLocation").textContent =
