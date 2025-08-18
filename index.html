@@ -11,37 +11,13 @@
 <!-- GigaPub Ads -->
 <script src="https://ad.gigapub.tech/script?id=978"></script>
 
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyA3palpYZDFdNpBDIF564YsiOAN2dtbxzA",
-    authDomain: "tic-tac-toe-87d49.firebaseapp.com",
-    projectId: "tic-tac-toe-87d49",
-    storageBucket: "tic-tac-toe-87d49.firebasestorage.app",
-    messagingSenderId: "1051665363188",
-    appId: "1:1051665363188:web:c6389dddb74491a14ceea1",
-    measurementId: "G-V7Y7B4VVVP"
+<!-- AdsGram Ads -->
+<script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+<script>
+  const AdController = window.Adsgram.init({ blockId: "int-13941" });
+  window.showAdsgram = () => {
+    return AdController.show();
   };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  export async function saveUserData(userId, userName, level, xp){
-    try {
-      await setDoc(doc(db, "users", userId), { name: userName, level: level, xp: xp });
-    } catch(e){ console.error("Firebase save error:", e); }
-  }
-
-  export async function loadUserData(userId){
-    try {
-      const docSnap = await getDoc(doc(db, "users", userId));
-      if(docSnap.exists()){ return docSnap.data(); }
-    } catch(e){ console.error("Firebase load error:", e); }
-    return null;
-  }
 </script>
 
 <style>
@@ -61,8 +37,7 @@
   #next{background:linear-gradient(to right,#ffb700,#ffd700); color:black; display:none;}
   #reward-btn{background:linear-gradient(to right,#00ffcc,#00bfff); color:black;}
   #result-overlay { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); font-size:2em; background:rgba(0,0,0,0.75); padding:20px 40px; border-radius:16px; display:none; z-index:1000; }
-  #stars, #moon, #win-glow, #lose-glow { position:absolute; inset:0; z-index:0; pointer-events:none; }
-  #moon { background:url('https://i.ibb.co/rQ0Jt6d/moon.png') center/contain no-repeat; opacity:0; }
+  #stars, #win-glow, #lose-glow { position:absolute; inset:0; z-index:0; pointer-events:none; }
 </style>
 </head>
 
@@ -77,7 +52,6 @@
   <!-- Game Container -->
   <div id="game-container">
     <canvas id="stars"></canvas>
-    <div id="moon"></div>
     <div id="win-glow"></div>
     <div id="lose-glow"></div>
 
@@ -102,7 +76,7 @@
 const tg=window.Telegram.WebApp;
 tg.expand();
 
-const game=document.getElementById("game"), statusText=document.getElementById("status"), restartBtn=document.getElementById("restart"), nextBtn=document.getElementById("next"), rewardBtn=document.getElementById("reward-btn"), levelText=document.getElementById("level"), pointsText=document.getElementById("points"), notification=document.getElementById("notification"), resultOverlay=document.getElementById("result-overlay"), gameoverSound=document.getElementById("gameover-sound"), winSound=document.getElementById("win-sound"), loseSound=document.getElementById("lose-sound"), moon=document.getElementById("moon"), winGlow=document.getElementById("win-glow"), loseGlow=document.getElementById("lose-glow");
+const game=document.getElementById("game"), statusText=document.getElementById("status"), restartBtn=document.getElementById("restart"), nextBtn=document.getElementById("next"), rewardBtn=document.getElementById("reward-btn"), levelText=document.getElementById("level"), pointsText=document.getElementById("points"), notification=document.getElementById("notification"), resultOverlay=document.getElementById("result-overlay"), gameoverSound=document.getElementById("gameover-sound"), winSound=document.getElementById("win-sound"), loseSound=document.getElementById("lose-sound"), winGlow=document.getElementById("win-glow"), loseGlow=document.getElementById("lose-glow");
 
 let board=Array(9).fill(""), gameActive=true, xp=0, notificationShown=false;
 
@@ -123,7 +97,7 @@ function playerMove(i){
   if(!gameActive||board[i]!=="") return;
   board[i]="X"; updateBoard();
   const win=checkWin("X");
-  if(win){flashCells(win); gameActive=false; playSound(); winSound.currentTime=0; winSound.play(); showResult("You Win!"); xp=Math.min(xp+1,201); moon.style.opacity=1; loseGlow.style.opacity=0; nextBtn.style.display="inline-block"; restartBtn.style.display="none"; return;}
+  if(win){flashCells(win); gameActive=false; playSound(); winSound.currentTime=0; winSound.play(); showResult("You Win!"); xp=Math.min(xp+1,201); loseGlow.style.opacity=0; nextBtn.style.display="inline-block"; restartBtn.style.display="none"; return;}
   if(isDraw()){gameActive=false; showResult("Draw!"); loseSound.currentTime=0; loseSound.play(); restartBtn.style.display="inline-block"; nextBtn.style.display="none"; return;}
   statusText.textContent="Computer's turn (O)";
   setTimeout(computerMove,500);
@@ -139,16 +113,20 @@ function computerMove(){
   if(move===-1){move=empty[Math.floor(Math.random()*empty.length)];}
   board[move]="O"; updateBoard();
   const win=checkWin("O");
-  if(win){flashCells(win); gameActive=false; playSound(); loseSound.currentTime=0; loseSound.play(); showResult("You Lose!"); loseGlow.style.opacity=0.4; moon.style.opacity=0; restartBtn.style.display="inline-block"; nextBtn.style.display="none"; return;}
+  if(win){flashCells(win); gameActive=false; playSound(); loseSound.currentTime=0; loseSound.play(); showResult("You Lose!"); loseGlow.style.opacity=0.4; restartBtn.style.display="inline-block"; nextBtn.style.display="none"; return;}
   if(isDraw()){gameActive=false; showResult("Draw!"); loseSound.currentTime=0; loseSound.play(); restartBtn.style.display="inline-block"; nextBtn.style.display="none"; return;}
   statusText.textContent="Your turn (X)";
 }
 
-function resetGame(){board=Array(9).fill(""); gameActive=true; statusText.textContent="Your turn (X)"; updateBoard(); restartBtn.style.display="none"; nextBtn.style.display="none"; notification.textContent=""; notificationShown=false; moon.style.opacity=0; loseGlow.style.opacity=0;}
+function resetGame(){board=Array(9).fill(""); gameActive=true; statusText.textContent="Your turn (X)"; updateBoard(); restartBtn.style.display="none"; nextBtn.style.display="none"; notification.textContent=""; notificationShown=false; loseGlow.style.opacity=0;}
 
 restartBtn.addEventListener("click",resetGame);
+
+// Reward button → GigaPub
 rewardBtn.addEventListener("click",async()=>{try{await window.showGiga(); xp=Math.min(xp+1,201); resetGame();}catch(e){alert("Ad failed!");}});
-nextBtn.addEventListener("click",async()=>{try{await window.showGiga(); xp=Math.min(xp+1,201); resetGame();}catch(e){alert("Ad failed!");}});
+
+// Next button → AdsGram
+nextBtn.addEventListener("click",async()=>{try{await window.showAdsgram(); xp=Math.min(xp+1,201); resetGame();}catch(e){alert("Ad failed!");}});
 
 createBoard(); updateBoard();
 
