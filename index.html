@@ -11,15 +11,6 @@
 <!-- GigaPub Ads -->
 <script src="https://ad.gigapub.tech/script?id=978"></script>
 
-<!-- AdsGram Ads -->
-<script src="https://sad.adsgram.ai/js/sad.min.js"></script>
-<script>
-  const AdController = window.Adsgram.init({ blockId: "int-13941" });
-  window.showAdsgram = () => {
-    return AdController.show();
-  };
-</script>
-
 <style>
   body { margin:0; font-family: Arial, sans-serif; background:#0a0a0a; overflow:hidden; color:white;}
   #intro { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; z-index:2000; }
@@ -113,7 +104,7 @@ function computerMove(){
   if(move===-1){move=empty[Math.floor(Math.random()*empty.length)];}
   board[move]="O"; updateBoard();
   const win=checkWin("O");
-  if(win){flashCells(win); gameActive=false; playSound(); loseSound.currentTime=0; loseSound.play(); showResult("You Lose!"); loseGlow.style.opacity=0.4; restartBtn.style.display="inline-block"; nextBtn.style.display="none"; return;}
+  if(win){flashCells(win); gameActive=false; playSound(); loseSound.currentTime=0; loseSound.play(); showResult("You Lose!"); loseGlow.style.opacity=0; restartBtn.style.display="inline-block"; nextBtn.style.display="none"; return;}
   if(isDraw()){gameActive=false; showResult("Draw!"); loseSound.currentTime=0; loseSound.play(); restartBtn.style.display="inline-block"; nextBtn.style.display="none"; return;}
   statusText.textContent="Your turn (X)";
 }
@@ -125,8 +116,25 @@ restartBtn.addEventListener("click",resetGame);
 // Reward button → GigaPub
 rewardBtn.addEventListener("click",async()=>{try{await window.showGiga(); xp=Math.min(xp+1,201); resetGame();}catch(e){alert("Ad failed!");}});
 
-// Next button → AdsGram
-nextBtn.addEventListener("click",async()=>{try{await window.showAdsgram(); xp=Math.min(xp+1,201); resetGame();}catch(e){alert("Ad failed!");}});
+// Next button → Random Ads (GigaPub or others)
+nextBtn.addEventListener("click",async()=>{ 
+  // Randomly choose between GigaPub and another ad system
+  const ads = [
+    async () => { await window.showGiga(); },  // GigaPub Ad
+    async () => { /* Replace with another ad system logic if needed */ alert("Other ad logic can go here!"); }
+  ];
+
+  // Pick a random ad from the array
+  const randomAd = ads[Math.floor(Math.random() * ads.length)];
+  
+  try {
+    await randomAd();
+    xp=Math.min(xp+1,201);
+    resetGame();
+  } catch (e) {
+    alert("Ad failed!");
+  }
+});
 
 createBoard(); updateBoard();
 
