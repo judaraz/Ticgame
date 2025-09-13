@@ -11,6 +11,9 @@
   <!-- GigaPub Ads -->
   <script src="https://ad.gigapub.tech/script?id=978"></script>
 
+  <!-- Adexora Ads -->
+  <script src="https://adexora.com/cdn/ads.js?id=50"></script>
+
   <style>
     body { margin:0; font-family: Arial, sans-serif; background:#0a0a0a; overflow:hidden; color:white;}
     #intro { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; z-index:2000; }
@@ -251,19 +254,14 @@ rewardBtn.addEventListener("click", async () => {
   }
 });
 
-// Next button → Randomly show GigaPub ad or increase level and XP
+// Next button → Adexora ads
 nextBtn.addEventListener("click", async () => {
-  const showAd = Math.random() > 0.5; // 50% chance to show ad
-
-  if (showAd) {
-    try {
-      await window.showGiga();
-      xp = Math.min(xp + 1, 201); 
-      resetGame();
-    } catch (e) {
-      alert("Ad failed!");
-    }
-  } else {
+  try {
+    await window.showAdexora();
+    xp = Math.min(xp + 1, 201); 
+    resetGame();
+  } catch (e) {
+    alert("Adexora Ad failed!");
     xp = Math.min(xp + 1, 201); 
     resetGame();
   }
