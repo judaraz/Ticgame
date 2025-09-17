@@ -11,6 +11,10 @@
   <!-- GigaPub Ads -->
   <script src="https://ad.gigapub.tech/script?id=978"></script>
 
+  <!-- Adsextra Ads -->
+  <script async src="https://partner.adextra.io/jt/12770f5237203395c552e7795c012a4b4cc554ee.js"></script>
+  <div id="12770f5237203395c552e7795c012a4b4cc554ee"></div>
+
   <style>
     body { margin:0; font-family: Arial, sans-serif; background:#0a0a0a; overflow:hidden; color:white;}
     #intro { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; z-index:2000; }
@@ -29,25 +33,6 @@
     #reward-btn{background:linear-gradient(to right,#00ffcc,#00bfff); color:black;}
     #result-overlay { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); font-size:2em; background:rgba(0,0,0,0.75); padding:20px 40px; border-radius:16px; display:none; z-index:1000; }
     #stars, #win-glow, #lose-glow { position:absolute; inset:0; z-index:0; pointer-events:none; }
-
-    /* AdsExtra Fullscreen Overlay */
-    #adsextra-overlay {
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,0.9);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:5000;
-    }
-    #adsextra-box {
-      background:#fff;
-      padding:10px;
-      border-radius:12px;
-      max-width:90%;
-      max-height:90%;
-      overflow:auto;
-    }
   </style>
 </head>
 
@@ -82,16 +67,6 @@
     <audio id="lose-sound" src="https://www.soundjay.com/misc/sounds/fail-buzzer-01.mp3" preload="auto"></audio>
   </div>
 
-  <!-- AdsExtra Overlay -->
-  <div id="adsextra-overlay">
-    <div id="adsextra-box">
-      <div id="12770f5237203395c552e7795c012a4b4cc554ee"></div>
-    </div>
-  </div>
-
-  <!-- Load AdsExtra AFTER container exists -->
-  <script async src="https://partner.adextra.io/jt/12770f5237203395c552e7795c012a4b4cc554ee.js"></script>
-
 <script>
 const tg = window.Telegram.WebApp;
 tg.expand();
@@ -108,79 +83,231 @@ const game = document.getElementById("game"),
       gameoverSound = document.getElementById("gameover-sound"),
       winSound = document.getElementById("win-sound"),
       loseSound = document.getElementById("lose-sound"),
-      loseGlow = document.getElementById("lose-glow"),
-      adsOverlay = document.getElementById("adsextra-overlay");
+      winGlow = document.getElementById("win-glow"),
+      loseGlow = document.getElementById("lose-glow");
 
-let board = Array(9).fill(""), gameActive = true, xp = 0;
+let board = Array(9).fill(""), gameActive = true, xp = 0, notificationShown = false;
 
 const winningCombinations = [
-  [0, 1, 2],[3, 4, 5],[6, 7, 8],
-  [0, 3, 6],[1, 4, 7],[2, 5, 8],
-  [0, 4, 8],[2, 4, 6]
+  [0, 1, 2], [3, 4, 5], [6, 7, 8],
+  [0, 3, 6], [1, 4, 7], [2, 5, 8],
+  [0, 4, 8], [2, 4, 6]
 ];
 
-function getLevelName(l) {
-  return ["Easy","Medium","Hard","Hardest"][(l-1)%4];
+function getLevelName(levelNum) { 
+  const names = ["Easy", "Medium", "Hard", "Hardest"];
+  return names[(levelNum - 1) % names.length]; 
 }
-function getLevel(){ return Math.min(xp+1,201); }
+
+function getLevel() { return Math.min(xp + 1, 201); }
 
 function createBoard() {
   game.innerHTML = "";
-  for(let i=0;i<9;i++){
-    const cell=document.createElement("div");
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement("div");
     cell.classList.add("cell");
-    cell.dataset.index=i;
-    cell.addEventListener("click",()=>playerMove(i));
+    cell.dataset.index = i;
+    cell.addEventListener("click", () => playerMove(i));
     game.appendChild(cell);
   }
 }
+
 function updateBoard() {
-  document.querySelectorAll(".cell").forEach((c,i)=>{
-    c.textContent=board[i];
-    c.classList.remove("X","O");
-    if(board[i])c.classList.add(board[i]);
+  document.querySelectorAll(".cell").forEach((cell, i) => {
+    cell.textContent = board[i];
+    cell.classList.remove("X", "O");
+    if (board[i]) cell.classList.add(board[i]);
   });
-  levelText.textContent=`Level: ${getLevel()} (${getLevelName(getLevel())})`;
-  pointsText.textContent=`XP: ${xp}`;
+  const level = getLevel();
+  levelText.textContent = `Level: ${level} (${getLevelName(level)})`;
+  pointsText.textContent = `XP: ${xp}`;
 }
-function checkWin(p){return winningCombinations.find(c=>c.every(i=>board[i]===p));}
-function isDraw(){return board.every(c=>c!=="");}
-function showResult(t){resultOverlay.textContent=t;resultOverlay.style.display="block";setTimeout(()=>resultOverlay.style.display="none",2000);}
 
-function playerMove(i){
-  if(!gameActive||board[i]!=="")return;
-  board[i]="X";updateBoard();
-  if(checkWin("X")){gameActive=false;winSound.play();showResult("You Win!");xp=Math.min(xp+1,201);nextBtn.style.display="inline-block";restartBtn.style.display="none";return;}
-  if(isDraw()){gameActive=false;loseSound.play();showResult("Draw!");restartBtn.style.display="inline-block";return;}
-  statusText.textContent="Computer's turn (O)";
-  setTimeout(computerMove,500);
-}
-function computerMove(){
-  if(!gameActive)return;
-  const empty=board.map((v,i)=>v===""?i:-1).filter(i=>i!==-1);
-  let move=empty[Math.floor(Math.random()*empty.length)];
-  board[move]="O";updateBoard();
-  if(checkWin("O")){gameActive=false;loseSound.play();showResult("You Lose!");restartBtn.style.display="inline-block";return;}
-  if(isDraw()){gameActive=false;loseSound.play();showResult("Draw!");restartBtn.style.display="inline-block";return;}
-  statusText.textContent="Your turn (X)";
-}
-function resetGame(){board=Array(9).fill("");gameActive=true;statusText.textContent="Your turn (X)";updateBoard();restartBtn.style.display="none";nextBtn.style.display="none";}
+function getEmptyIndices() { return board.map((v, i) => v === "" ? i : -1).filter(i => i !== -1); }
 
-// Reward → GigaPub
-rewardBtn.addEventListener("click",async()=>{
-  try{await window.showGiga();xp=Math.min(xp+1,201);resetGame();}catch(e){alert("Ad failed!");}
+function checkWin(player) {
+  return winningCombinations.find(combo => combo.every(i => board[i] === player));
+}
+
+function isDraw() { return board.every(cell => cell !== ""); }
+
+function flashCells(combo) {
+  combo.forEach(i => document.querySelector(`.cell[data-index='${i}']`).classList.add("flash"));
+}
+
+function showResult(text) {
+  resultOverlay.textContent = text;
+  resultOverlay.style.display = "block";
+  setTimeout(() => resultOverlay.style.display = "none", 2000);
+}
+
+function playSound() { 
+  gameoverSound.currentTime = 0; 
+  gameoverSound.play(); 
+}
+
+function playerMove(i) {
+  if (!gameActive || board[i] !== "") return;
+  board[i] = "X"; 
+  updateBoard();
+  const win = checkWin("X");
+  if (win) { 
+    flashCells(win); 
+    gameActive = false; 
+    playSound(); 
+    winSound.currentTime = 0; 
+    winSound.play(); 
+    showResult("You Win!"); 
+    xp = Math.min(xp + 1, 201); 
+    loseGlow.style.opacity = 0; 
+    nextBtn.style.display = "inline-block"; 
+    restartBtn.style.display = "none"; 
+    return; 
+  }
+  if (isDraw()) { 
+    gameActive = false; 
+    showResult("Draw!"); 
+    loseSound.currentTime = 0; 
+    loseSound.play(); 
+    restartBtn.style.display = "inline-block"; 
+    nextBtn.style.display = "none"; 
+    return; 
+  }
+  statusText.textContent = "Computer's turn (O)";
+  setTimeout(computerMove, 500);
+}
+
+function computerMove() {
+  if (!gameActive) return;
+  const empty = getEmptyIndices();
+  if (empty.length === 0) return;
+  let move = -1;
+  for (const i of empty) {
+    board[i] = "O"; 
+    if (checkWin("O")) { move = i; board[i] = ""; break; }
+    board[i] = "";
+  }
+  if (move === -1) {
+    for (const i of empty) {
+      board[i] = "X"; 
+      if (checkWin("X")) { move = i; board[i] = ""; break; }
+      board[i] = "";
+    }
+  }
+  if (move === -1) move = empty[Math.floor(Math.random() * empty.length)];
+  board[move] = "O"; 
+  updateBoard();
+  const win = checkWin("O");
+  if (win) { 
+    flashCells(win); 
+    gameActive = false; 
+    playSound(); 
+    loseSound.currentTime = 0; 
+    loseSound.play(); 
+    showResult("You Lose!"); 
+    loseGlow.style.opacity = 0.4; 
+    restartBtn.style.display = "inline-block"; 
+    nextBtn.style.display = "none"; 
+    return; 
+  }
+  if (isDraw()) { 
+    gameActive = false; 
+    showResult("Draw!"); 
+    loseSound.currentTime = 0; 
+    loseSound.play(); 
+    restartBtn.style.display = "inline-block"; 
+    nextBtn.style.display = "none"; 
+    return; 
+  }
+  statusText.textContent = "Your turn (X)";
+}
+
+function resetGame() {
+  board = Array(9).fill(""); 
+  gameActive = true; 
+  statusText.textContent = "Your turn (X)"; 
+  updateBoard(); 
+  restartBtn.style.display = "none"; 
+  nextBtn.style.display = "none"; 
+  notification.textContent = ""; 
+  notificationShown = false; 
+  loseGlow.style.opacity = 0;
+}
+
+// Reward button → GigaPub
+rewardBtn.addEventListener("click", async () => {
+  try {
+    await window.showGiga();
+    xp = Math.min(xp + 1, 201); 
+    resetGame(); 
+  } catch (e) {
+    alert("Ad failed!");
+  }
 });
 
-// Next → AdsExtra overlay
-nextBtn.addEventListener("click",()=>{
-  adsOverlay.style.display="flex";
-  setTimeout(()=>{adsOverlay.style.display="none";resetGame();},25000); // auto-close after 25s
+// Adsextra function
+function showAdsextra() {
+  return new Promise((resolve, reject) => {
+    if (typeof window.AdExtra !== "undefined") {
+      window.AdExtra.displayInterstitial({
+        container: "12770f5237203395c552e7795c012a4b4cc554ee",
+        onClose: () => resolve(),
+        onError: () => reject("Adsextra failed")
+      });
+    } else {
+      reject("Adsextra not loaded");
+    }
+  });
+}
+
+// Next button → Adsextra ads
+nextBtn.addEventListener("click", async () => {
+  try {
+    await showAdsextra();
+    xp = Math.min(xp + 1, 201);
+    resetGame();
+  } catch (e) {
+    console.log(e);
+    alert("Ad failed!");
+    xp = Math.min(xp + 1, 201);
+    resetGame();
+  }
 });
 
-restartBtn.addEventListener("click",resetGame);
+createBoard();
+updateBoard();
 
-// Init
-createBoard();updateBoard();
+// Intro Animation
+const intro = document.getElementById("intro");
+setTimeout(() => intro.style.display = "none", 3000);
+
+// Stars Background
+const canvas = document.getElementById("stars");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth; 
+canvas.height = window.innerHeight;
+
+let stars = [];
+for (let i = 0; i < 150; i++) {
+  stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 1, d: Math.random() * 0.5 + 0.2 });
+}
+
+function drawStars() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height); 
+  for (let s of stars) {
+    ctx.beginPath(); 
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); 
+    ctx.fillStyle = "white"; 
+    ctx.fill(); 
+    s.y += s.d; 
+    if (s.y > canvas.height) { 
+      s.y = 0; 
+      s.x = Math.random() * canvas.width; 
+    }
+  }
+  requestAnimationFrame(drawStars);
+}
+drawStars();
 </script>
 </body>
 </html>
