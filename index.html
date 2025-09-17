@@ -245,18 +245,24 @@ rewardBtn.addEventListener("click", async () => {
   }
 });
 
-// Adsextra function
+// Adsextra function with ready-check
 function showAdsextra() {
   return new Promise((resolve, reject) => {
-    if (typeof window.AdExtra !== "undefined") {
-      window.AdExtra.displayInterstitial({
-        container: "12770f5237203395c552e7795c012a4b4cc554ee",
-        onClose: () => resolve(),
-        onError: () => reject("Adsextra failed")
-      });
-    } else {
-      reject("Adsextra not loaded");
-    }
+    const checkInterval = setInterval(() => {
+      if (window.AdExtra && typeof window.AdExtra.displayInterstitial === "function") {
+        clearInterval(checkInterval);
+        window.AdExtra.displayInterstitial({
+          container: "12770f5237203395c552e7795c012a4b4cc554ee",
+          onClose: () => resolve(),
+          onError: () => reject("Adsextra failed")
+        });
+      }
+    }, 100);
+
+    setTimeout(() => {
+      clearInterval(checkInterval);
+      reject("Adsextra script failed to load");
+    }, 5000);
   });
 }
 
