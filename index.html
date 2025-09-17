@@ -11,8 +11,8 @@
   <!-- GigaPub Ads -->
   <script src="https://ad.gigapub.tech/script?id=978"></script>
 
-  <!-- Adexora Ads -->
-  <script src="https://adexora.com/cdn/ads.js?id=50"></script>
+  <!-- AdsExtra Ads -->
+  <script async src="https://partner.adextra.io/jt/12770f5237203395c552e7795c012a4b4cc554ee.js"></script>
 
   <style>
     body { margin:0; font-family: Arial, sans-serif; background:#0a0a0a; overflow:hidden; color:white;}
@@ -32,6 +32,25 @@
     #reward-btn{background:linear-gradient(to right,#00ffcc,#00bfff); color:black;}
     #result-overlay { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); font-size:2em; background:rgba(0,0,0,0.75); padding:20px 40px; border-radius:16px; display:none; z-index:1000; }
     #stars, #win-glow, #lose-glow { position:absolute; inset:0; z-index:0; pointer-events:none; }
+
+    /* AdsExtra Fullscreen Overlay */
+    #adsextra-overlay {
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.9);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:5000;
+    }
+    #adsextra-box {
+      background:#fff;
+      padding:10px;
+      border-radius:12px;
+      max-width:90%;
+      max-height:90%;
+      overflow:auto;
+    }
   </style>
 </head>
 
@@ -66,6 +85,13 @@
     <audio id="lose-sound" src="https://www.soundjay.com/misc/sounds/fail-buzzer-01.mp3" preload="auto"></audio>
   </div>
 
+  <!-- AdsExtra Overlay -->
+  <div id="adsextra-overlay">
+    <div id="adsextra-box">
+      <div id="12770f5237203395c552e7795c012a4b4cc554ee"></div>
+    </div>
+  </div>
+
 <script>
 const tg = window.Telegram.WebApp;
 tg.expand();
@@ -83,7 +109,8 @@ const game = document.getElementById("game"),
       winSound = document.getElementById("win-sound"),
       loseSound = document.getElementById("lose-sound"),
       winGlow = document.getElementById("win-glow"),
-      loseGlow = document.getElementById("lose-glow");
+      loseGlow = document.getElementById("lose-glow"),
+      adsOverlay = document.getElementById("adsextra-overlay");
 
 let board = Array(9).fill(""), gameActive = true, xp = 0, notificationShown = false;
 
@@ -254,14 +281,18 @@ rewardBtn.addEventListener("click", async () => {
   }
 });
 
-// Next button → Adexora ads
+// Next button → AdsExtra fullscreen
 nextBtn.addEventListener("click", async () => {
   try {
-    await window.showAdexora();
-    xp = Math.min(xp + 1, 201); 
-    resetGame();
+    adsOverlay.style.display = "flex";
+    // Auto-close after 8 seconds
+    setTimeout(() => {
+      adsOverlay.style.display = "none";
+      xp = Math.min(xp + 1, 201); 
+      resetGame();
+    }, 8000);
   } catch (e) {
-    alert("Adexora Ad failed!");
+    alert("AdsExtra Ad failed!");
     xp = Math.min(xp + 1, 201); 
     resetGame();
   }
