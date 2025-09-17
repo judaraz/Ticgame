@@ -1,337 +1,197 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tic Tac Toe Game</title>
-
-  <!-- Telegram Web App -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-  <!-- GigaPub Ads -->
-  <script src="https://ad.gigapub.tech/script?id=978"></script>
-
-  <!-- AdsExtra Ads -->
-  <script async src="https://partner.adextra.io/jt/12770f5237203395c552e7795c012a4b4cc554ee.js"></script>
-
+  <title>Tic Tac Toe - Mini App</title>
   <style>
-    body { margin:0; font-family: Arial, sans-serif; background:#0a0a0a; overflow:hidden; color:white;}
-    #intro { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; z-index:2000; }
-    #intro h1 { font-size:3em; margin:0; color:#FFD700; text-shadow:2px 2px #000;}
-    #intro h2 { font-size:2em; margin:5px 0; color:#00FFCC; text-shadow:2px 2px #000;}
-    #intro h3 { font-size:1.5em; margin:5px 0; color:#FF4D6D; text-shadow:2px 2px #000;}
-    #game-container { position:relative; width:100%; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:1;}
-    #game { display:grid; grid-template-columns:repeat(3,100px); grid-gap:16px; margin-top:20px; }
-    .cell { width:100px; height:100px; font-size:3em; border-radius:20px; background:linear-gradient(145deg,#5022aa,#2f0e63); display:flex; align-items:center; justify-content:center; cursor:pointer; }
-    .cell.X { color:#00FFCC; text-shadow:0 0 8px #00FFCC; }
-    .cell.O { color:#FF4D6D; text-shadow:0 0 8px #FF4D6D; }
-    #status,#level,#points,#notification { margin:5px; font-size:18px; font-weight:bold;}
-    #restart,#next,#reward-btn { margin:10px; padding:10px 20px; font-size:18px; border:none; border-radius:20px; cursor:pointer; }
-    #restart{background:linear-gradient(to right,#ff416c,#ff4b2b); color:white;}
-    #next{background:linear-gradient(to right,#ffb700,#ffd700); color:black; display:none;}
-    #reward-btn{background:linear-gradient(to right,#00ffcc,#00bfff); color:black;}
-    #result-overlay { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); font-size:2em; background:rgba(0,0,0,0.75); padding:20px 40px; border-radius:16px; display:none; z-index:1000; }
-    #stars, #win-glow, #lose-glow { position:absolute; inset:0; z-index:0; pointer-events:none; }
-
-    /* AdsExtra Fullscreen Overlay */
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+    }
+    #game {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 5px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: #fff;
+      border: 2px solid #333;
+      font-size: 2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    #status { margin-top: 20px; font-size: 1.2em; }
+    #nextBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1em;
+      background: #333;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #xpBar {
+      width: 80%;
+      height: 20px;
+      background: #ddd;
+      margin: 20px auto;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    #xpFill {
+      height: 100%;
+      width: 0%;
+      background: green;
+    }
+    /* Fullscreen overlay for AdsExtra */
     #adsextra-overlay {
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,0.9);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:5000;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
     }
     #adsextra-box {
-      background:#fff;
-      padding:10px;
-      border-radius:12px;
-      max-width:90%;
-      max-height:90%;
-      overflow:auto;
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      max-width: 90%;
+      max-height: 90%;
+      overflow: auto;
     }
   </style>
 </head>
-
 <body>
-  <!-- Intro -->
-  <div id="intro">
-    <h1>Welcome</h1>
-    <h2>Tic Tac Toe</h2>
-    <h3>If you win you are Legend</h3>
-  </div>
+  <h1>Tic Tac Toe</h1>
+  <div id="xpBar"><div id="xpFill"></div></div>
+  <div id="game"></div>
+  <div id="status">Your turn!</div>
+  <button id="nextBtn">Next</button>
 
-  <!-- Game Container -->
-  <div id="game-container">
-    <canvas id="stars"></canvas>
-    <div id="win-glow"></div>
-    <div id="lose-glow"></div>
-
-    <h2>Player vs Computer</h2>
-    <div id="status">Your turn (X)</div>
-    <div id="level">Level: 1 (Easy)</div>
-    <div id="points">XP: 0</div>
-    <div id="notification"></div>
-    <div id="game"></div>
-    <button id="restart">Restart</button>
-    <button id="next">Next</button>
-    <button id="reward-btn">Watch Ads to Get Next Level</button>
-    <div id="result-overlay"></div>
-
-    <!-- Sounds -->
-    <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
-    <audio id="win-sound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
-    <audio id="lose-sound" src="https://www.soundjay.com/misc/sounds/fail-buzzer-01.mp3" preload="auto"></audio>
-  </div>
-
-  <!-- AdsExtra Overlay -->
+  <!-- AdsExtra fullscreen overlay -->
   <div id="adsextra-overlay">
     <div id="adsextra-box">
       <div id="12770f5237203395c552e7795c012a4b4cc554ee"></div>
     </div>
   </div>
+  <script async src="https://partner.adextra.io/jt/12770f5237203395c552e7795c012a4b4cc554ee.js"></script>
 
-<script>
-const tg = window.Telegram.WebApp;
-tg.expand();
+  <script>
+    const game = document.getElementById("game");
+    const status = document.getElementById("status");
+    const nextBtn = document.getElementById("nextBtn");
+    const xpFill = document.getElementById("xpFill");
+    const adsOverlay = document.getElementById("adsextra-overlay");
 
-const game = document.getElementById("game"),
-      statusText = document.getElementById("status"),
-      restartBtn = document.getElementById("restart"),
-      nextBtn = document.getElementById("next"),
-      rewardBtn = document.getElementById("reward-btn"),
-      levelText = document.getElementById("level"),
-      pointsText = document.getElementById("points"),
-      notification = document.getElementById("notification"),
-      resultOverlay = document.getElementById("result-overlay"),
-      gameoverSound = document.getElementById("gameover-sound"),
-      winSound = document.getElementById("win-sound"),
-      loseSound = document.getElementById("lose-sound"),
-      winGlow = document.getElementById("win-glow"),
-      loseGlow = document.getElementById("lose-glow"),
-      adsOverlay = document.getElementById("adsextra-overlay");
+    let board = Array(9).fill(null);
+    let currentPlayer = "X";
+    let gameActive = true;
+    let xp = 0;
 
-let board = Array(9).fill(""), gameActive = true, xp = 0, notificationShown = false;
-
-const winningCombinations = [
-  [0, 1, 2], [3, 4, 5], [6, 7, 8],
-  [0, 3, 6], [1, 4, 7], [2, 5, 8],
-  [0, 4, 8], [2, 4, 6]
-];
-
-function getLevelName(levelNum) { 
-  const names = ["Easy", "Medium", "Hard", "Hardest"];
-  return names[(levelNum - 1) % names.length]; 
-}
-
-function getLevel() { return Math.min(xp + 1, 201); }
-
-function createBoard() {
-  game.innerHTML = "";
-  for (let i = 0; i < 9; i++) {
-    const cell = document.createElement("div");
-    cell.classList.add("cell");
-    cell.dataset.index = i;
-    cell.addEventListener("click", () => playerMove(i));
-    game.appendChild(cell);
-  }
-}
-
-function updateBoard() {
-  document.querySelectorAll(".cell").forEach((cell, i) => {
-    cell.textContent = board[i];
-    cell.classList.remove("X", "O");
-    if (board[i]) cell.classList.add(board[i]);
-  });
-  const level = getLevel();
-  levelText.textContent = `Level: ${level} (${getLevelName(level)})`;
-  pointsText.textContent = `XP: ${xp}`;
-}
-
-function getEmptyIndices() { return board.map((v, i) => v === "" ? i : -1).filter(i => i !== -1); }
-
-function checkWin(player) {
-  return winningCombinations.find(combo => combo.every(i => board[i] === player));
-}
-
-function isDraw() { return board.every(cell => cell !== ""); }
-
-function flashCells(combo) {
-  combo.forEach(i => document.querySelector(`.cell[data-index='${i}']`).classList.add("flash"));
-}
-
-function showResult(text) {
-  resultOverlay.textContent = text;
-  resultOverlay.style.display = "block";
-  setTimeout(() => resultOverlay.style.display = "none", 2000);
-}
-
-function playSound() { 
-  gameoverSound.currentTime = 0; 
-  gameoverSound.play(); 
-}
-
-function playerMove(i) {
-  if (!gameActive || board[i] !== "") return;
-  board[i] = "X"; 
-  updateBoard();
-  const win = checkWin("X");
-  if (win) { 
-    flashCells(win); 
-    gameActive = false; 
-    playSound(); 
-    winSound.currentTime = 0; 
-    winSound.play(); 
-    showResult("You Win!"); 
-    xp = Math.min(xp + 1, 201); 
-    loseGlow.style.opacity = 0; 
-    nextBtn.style.display = "inline-block"; 
-    restartBtn.style.display = "none"; 
-    return; 
-  }
-  if (isDraw()) { 
-    gameActive = false; 
-    showResult("Draw!"); 
-    loseSound.currentTime = 0; 
-    loseSound.play(); 
-    restartBtn.style.display = "inline-block"; 
-    nextBtn.style.display = "none"; 
-    return; 
-  }
-  statusText.textContent = "Computer's turn (O)";
-  setTimeout(computerMove, 500);
-}
-
-function computerMove() {
-  if (!gameActive) return;
-  const empty = getEmptyIndices();
-  if (empty.length === 0) return;
-  let move = -1;
-  for (const i of empty) {
-    board[i] = "O"; 
-    if (checkWin("O")) { 
-      move = i; 
-      board[i] = ""; 
-      break; 
+    function renderBoard() {
+      game.innerHTML = "";
+      board.forEach((cell, idx) => {
+        const div = document.createElement("div");
+        div.className = "cell";
+        div.textContent = cell || "";
+        div.addEventListener("click", () => makeMove(idx));
+        game.appendChild(div);
+      });
     }
-    board[i] = "";
-  }
-  if (move === -1) {
-    for (const i of empty) {
-      board[i] = "X"; 
-      if (checkWin("X")) { 
-        move = i; 
-        board[i] = ""; 
-        break; 
+
+    function makeMove(index) {
+      if (!gameActive || board[index]) return;
+      board[index] = currentPlayer;
+      if (checkWin(currentPlayer)) {
+        status.textContent = `${currentPlayer} wins!`;
+        gameActive = false;
+        return;
       }
-      board[i] = "";
+      if (board.every(cell => cell)) {
+        status.textContent = "Draw!";
+        gameActive = false;
+        return;
+      }
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+      status.textContent = currentPlayer === "X" ? "Your turn!" : "Computer's turn!";
+      renderBoard();
+      if (currentPlayer === "O") {
+        setTimeout(computerMove, 500);
+      }
     }
-  }
-  if (move === -1) {
-    move = empty[Math.floor(Math.random() * empty.length)];
-  }
-  board[move] = "O"; 
-  updateBoard();
-  const win = checkWin("O");
-  if (win) { 
-    flashCells(win); 
-    gameActive = false; 
-    playSound(); 
-    loseSound.currentTime = 0; 
-    loseSound.play(); 
-    showResult("You Lose!"); 
-    loseGlow.style.opacity = 0.4; 
-    restartBtn.style.display = "inline-block"; 
-    nextBtn.style.display = "none"; 
-    return; 
-  }
-  if (isDraw()) { 
-    gameActive = false; 
-    showResult("Draw!"); 
-    loseSound.currentTime = 0; 
-    loseSound.play(); 
-    restartBtn.style.display = "inline-block"; 
-    nextBtn.style.display = "none"; 
-    return; 
-  }
-  statusText.textContent = "Your turn (X)";
-}
 
-function resetGame() {
-  board = Array(9).fill(""); 
-  gameActive = true; 
-  statusText.textContent = "Your turn (X)"; 
-  updateBoard(); 
-  restartBtn.style.display = "none"; 
-  nextBtn.style.display = "none"; 
-  notification.textContent = ""; 
-  notificationShown = false; 
-  loseGlow.style.opacity = 0;
-}
+    function computerMove() {
+      let emptyIndices = board.map((v,i) => v? null:i).filter(v=>v!==null);
+      if (emptyIndices.length === 0) return;
+      let move = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+      board[move] = "O";
+      if (checkWin("O")) {
+        status.textContent = "Computer wins!";
+        gameActive = false;
+        renderBoard();
+        return;
+      }
+      if (board.every(cell => cell)) {
+        status.textContent = "Draw!";
+        gameActive = false;
+        renderBoard();
+        return;
+      }
+      currentPlayer = "X";
+      status.textContent = "Your turn!";
+      renderBoard();
+    }
 
-// Reward button → GigaPub
-rewardBtn.addEventListener("click", async () => {
-  try {
-    await window.showGiga();
-    xp = Math.min(xp + 1, 201); 
-    resetGame(); 
-  } catch (e) {
-    alert("Ad failed!");
-  }
-});
+    function checkWin(player) {
+      const wins = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+      ];
+      return wins.some(combo => combo.every(i => board[i] === player));
+    }
 
-// Next button → AdsExtra fullscreen
-nextBtn.addEventListener("click", async () => {
-  try {
-    adsOverlay.style.display = "flex";
-    // Auto-close after 8 seconds
-    setTimeout(() => {
-      adsOverlay.style.display = "none";
-      xp = Math.min(xp + 1, 201); 
-      resetGame();
-    }, 8000);
-  } catch (e) {
-    alert("AdsExtra Ad failed!");
-    xp = Math.min(xp + 1, 201); 
+    function resetGame() {
+      board = Array(9).fill(null);
+      currentPlayer = "X";
+      gameActive = true;
+      status.textContent = "Your turn!";
+      renderBoard();
+      xpFill.style.width = (xp/201*100) + "%";
+    }
+
+    // Next button → show AdsExtra ad
+    nextBtn.addEventListener("click", async () => {
+      try {
+        adsOverlay.style.display = "flex"; // show overlay
+        setTimeout(() => {
+          adsOverlay.style.display = "none"; // hide after 8s
+          xp = Math.min(xp + 1, 201); 
+          resetGame();
+        }, 8000);
+      } catch (e) {
+        alert("AdsExtra Ad failed!");
+        xp = Math.min(xp + 1, 201); 
+        resetGame();
+      }
+    });
+
     resetGame();
-  }
-});
-
-createBoard();
-updateBoard();
-
-// Intro Animation
-const intro = document.getElementById("intro");
-setTimeout(() => intro.style.display = "none", 3000);
-
-// Stars Background
-const canvas = document.getElementById("stars");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth; 
-canvas.height = window.innerHeight;
-
-let stars = [];
-for (let i = 0; i < 150; i++) {
-  stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 1, d: Math.random() * 0.5 + 0.2 });
-}
-
-function drawStars() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height); 
-  for (let s of stars) {
-    ctx.beginPath(); 
-    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); 
-    ctx.fillStyle = "white"; 
-    ctx.fill(); 
-    s.y += s.d; 
-    if (s.y > canvas.height) { 
-      s.y = 0; 
-      s.x = Math.random() * canvas.width; 
-    }
-  }
-  requestAnimationFrame(drawStars);
-}
-drawStars();
-</script>
+  </script>
 </body>
 </html>
