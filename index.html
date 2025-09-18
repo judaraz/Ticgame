@@ -11,8 +11,8 @@
   <!-- GigaPub Ads -->
   <script src="https://ad.gigapub.tech/script?id=978"></script>
 
-  <!-- Adsextra Full-Screen Ads -->
-  <script async src="https://partner.adextra.io/jt/12770f5237203395c552e7795c012a4b4cc554ee.js"></script>
+  <!-- AdXora Ads -->
+  <script src="https://adexora.com/cdn/ads.js?id=50"></script>
 
   <style>
     body { margin:0; font-family: Arial, sans-serif; background:#0a0a0a; overflow:hidden; color:white;}
@@ -59,9 +59,6 @@
     <button id="next">Next</button>
     <button id="reward-btn">Watch Ads to Get Next Level</button>
     <div id="result-overlay"></div>
-
-    <!-- Adsextra Container -->
-    <div id="12770f5237203395c552e7795c012a4b4cc554ee"></div>
 
     <!-- Sounds -->
     <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
@@ -242,28 +239,19 @@ rewardBtn.addEventListener("click", async () => {
   }
 });
 
-// Adsextra Full-Screen Integration
-function showAdsextraFullScreen() {
-    return new Promise((resolve, reject) => {
-        try {
-            const onSuccess = () => resolve();
-            const onError = () => reject("Ad failed");
-            p_adextra(onSuccess, onError); // show instantly
-        } catch (e) {
-            reject(e);
-        }
-    });
-}
-
-// Next button → Always works
+// Next button → AdXora
 nextBtn.addEventListener("click", async () => {
-  try {
-    await showAdsextraFullScreen();
-    xp = Math.min(xp + 1, 201);
-    resetGame();
-  } catch (e) {
-    console.log(e);
-    alert("Ad failed!");
+  if (window.showAdexora) {
+    try {
+      await window.showAdexora();
+      xp = Math.min(xp + 1, 201);
+      resetGame();
+    } catch (e) {
+      console.log("AdXora error:", e);
+      xp = Math.min(xp + 1, 201);
+      resetGame();
+    }
+  } else {
     xp = Math.min(xp + 1, 201);
     resetGame();
   }
