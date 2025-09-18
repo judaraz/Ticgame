@@ -28,7 +28,7 @@
     #status,#level,#points,#notification { margin:5px; font-size:18px; font-weight:bold;}
     #restart,#next,#reward-btn { margin:10px; padding:10px 20px; font-size:18px; border:none; border-radius:20px; cursor:pointer; }
     #restart{background:linear-gradient(to right,#ff416c,#ff4b2b); color:white;}
-    #next{background:linear-gradient(to right,#ffb700,#ffd700); color:black; display:none;}
+    #next{background:linear-gradient(to right,#ffb700,#ffd700); color:black; display:inline-block;} /* always visible */
     #reward-btn{background:linear-gradient(to right,#00ffcc,#00bfff); color:black;}
     #result-overlay { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); font-size:2em; background:rgba(0,0,0,0.75); padding:20px 40px; border-radius:16px; display:none; z-index:1000; }
     #stars, #win-glow, #lose-glow { position:absolute; inset:0; z-index:0; pointer-events:none; }
@@ -162,7 +162,6 @@ function playerMove(i) {
     showResult("You Win!"); 
     xp = Math.min(xp + 1, 201); 
     loseGlow.style.opacity = 0; 
-    nextBtn.style.display = "inline-block"; 
     restartBtn.style.display = "none"; 
     return; 
   }
@@ -172,7 +171,6 @@ function playerMove(i) {
     loseSound.currentTime = 0; 
     loseSound.play(); 
     restartBtn.style.display = "inline-block"; 
-    nextBtn.style.display = "none"; 
     return; 
   }
   statusText.textContent = "Computer's turn (O)";
@@ -209,7 +207,6 @@ function computerMove() {
     showResult("You Lose!"); 
     loseGlow.style.opacity = 0.4; 
     restartBtn.style.display = "inline-block"; 
-    nextBtn.style.display = "none"; 
     return; 
   }
   if (isDraw()) { 
@@ -218,7 +215,6 @@ function computerMove() {
     loseSound.currentTime = 0; 
     loseSound.play(); 
     restartBtn.style.display = "inline-block"; 
-    nextBtn.style.display = "none"; 
     return; 
   }
   statusText.textContent = "Your turn (X)";
@@ -230,7 +226,6 @@ function resetGame() {
   statusText.textContent = "Your turn (X)"; 
   updateBoard(); 
   restartBtn.style.display = "none"; 
-  nextBtn.style.display = "none"; 
   notification.textContent = ""; 
   notificationShown = false; 
   loseGlow.style.opacity = 0;
@@ -253,19 +248,14 @@ function showAdsextraFullScreen() {
         try {
             const onSuccess = () => resolve();
             const onError = () => reject("Ad failed");
-
-            // Delay 2 seconds before showing ad
-            setTimeout(() => {
-                p_adextra(onSuccess, onError);
-            }, 2000);
-
+            p_adextra(onSuccess, onError); // show instantly
         } catch (e) {
             reject(e);
         }
     });
 }
 
-// Next button → Adsextra Full-Screen
+// Next button → Always works
 nextBtn.addEventListener("click", async () => {
   try {
     await showAdsextraFullScreen();
