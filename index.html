@@ -263,17 +263,18 @@ nextBtn.addEventListener("click", async () => {
   }
 });
 
-// Auruads button
-auruadsBtn.addEventListener("click", async () => {
-  if (window.AuruAds && typeof window.AuruAds.showAd === "function") {
-    try {
-      await window.AuruAds.showAd();
-      xp = Math.min(xp + 1, 201);
-      resetGame();
-    } catch (e) {
-      console.log("Auruads error:", e);
-      alert("Ad failed to load!");
-    }
+// Auruads button → window.showAuruads
+auruadsBtn.addEventListener("click", () => {
+  if (typeof window.showAuruads === "function") {
+    window.showAuruads()
+      .then(() => {
+        xp = Math.min(xp + 1, 201);
+        resetGame();
+      })
+      .catch(e => {
+        console.log("Auruads error:", e);
+        alert("Auruads failed to load!");
+      });
   } else {
     alert("Auruads SDK not loaded!");
   }
