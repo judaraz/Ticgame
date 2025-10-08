@@ -15,7 +15,7 @@
   <script src="https://adexora.com/cdn/ads.js?id=50"></script>
 
   <!-- AdsXuit SDK -->
-  <script src="https://adsxuit.com/cdn/ads.js?app_uid=7781" async></script>
+  <script id="adsxuit-sdk" src="https://adsxuit.com/cdn/ads.js?app_uid=7781" async></script>
 
   <style>
     body { margin:0; font-family: Arial, sans-serif; background:#0a0a0a; overflow:hidden; color:white;}
@@ -33,7 +33,7 @@
     #restart{background:linear-gradient(to right,#ff416c,#ff4b2b); color:white;}
     #next{background:linear-gradient(to right,#ffb700,#ffd700); color:black;}
     #reward-btn{background:linear-gradient(to right,#00ffcc,#00bfff); color:black;}
-    #adsxuit-btn{background:linear-gradient(to right,#4a00e0,#8e2de2); color:white;}
+    #adsxuit-btn{background:linear-gradient(to right,#4a00e0,#8e2de2); color:white; opacity:0.6; cursor:not-allowed;}
     #result-overlay { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); font-size:2em; background:rgba(0,0,0,0.75); padding:20px 40px; border-radius:16px; display:none; z-index:1000; }
     #stars, #win-glow, #lose-glow { position:absolute; inset:0; z-index:0; pointer-events:none; }
     .button-row { display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
@@ -41,14 +41,12 @@
 </head>
 
 <body>
-  <!-- Intro -->
   <div id="intro">
     <h1>Welcome</h1>
     <h2>Tic Tac Toe</h2>
     <h3>If you win you are Legend</h3>
   </div>
 
-  <!-- Game Container -->
   <div id="game-container">
     <canvas id="stars"></canvas>
     <div id="win-glow"></div>
@@ -64,16 +62,11 @@
     <div class="button-row">
       <button id="restart">Restart</button>
       <button id="next">Next</button>
-      <button id="adsxuit-btn">AdsXuit</button>
+      <button id="adsxuit-btn" disabled>AdsXuit</button>
     </div>
 
     <button id="reward-btn">Watch Ads to Get Next Level</button>
     <div id="result-overlay"></div>
-
-    <!-- Sounds -->
-    <audio id="gameover-sound" src="https://www.soundjay.com/button/sounds/button-29.mp3" preload="auto"></audio>
-    <audio id="win-sound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
-    <audio id="lose-sound" src="https://www.soundjay.com/misc/sounds/fail-buzzer-01.mp3" preload="auto"></audio>
   </div>
 
 <script>
@@ -81,18 +74,11 @@ const tg = window.Telegram.WebApp;
 tg.expand();
 
 const game = document.getElementById("game"),
-      statusText = document.getElementById("status"),
       restartBtn = document.getElementById("restart"),
       nextBtn = document.getElementById("next"),
       rewardBtn = document.getElementById("reward-btn"),
       adsxuitBtn = document.getElementById("adsxuit-btn"),
-      levelText = document.getElementById("level"),
-      pointsText = document.getElementById("points"),
-      notification = document.getElementById("notification"),
-      resultOverlay = document.getElementById("result-overlay"),
-      gameoverSound = document.getElementById("gameover-sound"),
-      winSound = document.getElementById("win-sound"),
-      loseSound = document.getElementById("lose-sound");
+      resultOverlay = document.getElementById("result-overlay");
 
 let board = Array(9).fill(""), gameActive = true, xp = 0;
 
@@ -101,9 +87,6 @@ const winningCombinations = [
   [0,3,6],[1,4,7],[2,5,8],
   [0,4,8],[2,4,6]
 ];
-
-function getLevelName(levelNum){ const names=["Easy","Medium","Hard","Hardest"]; return names[(levelNum-1)%names.length]; }
-function getLevel(){ return Math.min(xp+1,201); }
 
 function createBoard(){
   game.innerHTML="";
@@ -121,83 +104,63 @@ function updateBoard(){
     cell.classList.remove("X","O");
     if(board[i]) cell.classList.add(board[i]);
   });
-  const level=getLevel();
-  levelText.textContent=`Level: ${level} (${getLevelName(level)})`;
-  pointsText.textContent=`XP: ${xp}`;
 }
+
 function getEmptyIndices(){ return board.map((v,i)=>v===""?i:-1).filter(i=>i!==-1); }
 function checkWin(p){ return winningCombinations.find(c=>c.every(i=>board[i]===p)); }
 function isDraw(){ return board.every(c=>c!==""); }
-
-function showResult(text){ resultOverlay.textContent=text; resultOverlay.style.display="block"; setTimeout(()=>resultOverlay.style.display="none",2000); }
-function playSound(){ gameoverSound.currentTime=0; gameoverSound.play(); }
 
 function playerMove(i){
   if(!gameActive || board[i]!=="") return;
   board[i]="X"; updateBoard();
   const win=checkWin("X");
-  if(win){ gameActive=false; playSound(); winSound.play(); showResult("You Win!"); xp=Math.min(xp+1,201); restartBtn.style.display="none"; return; }
-  if(isDraw()){ gameActive=false; showResult("Draw!"); loseSound.play(); restartBtn.style.display="inline-block"; return; }
-  statusText.textContent="Computer's turn (O)";
+  if(win){ gameActive=false; alert("You Win!"); xp++; return; }
+  if(isDraw()){ gameActive=false; alert("Draw!"); return; }
   setTimeout(computerMove,500);
 }
-
 function computerMove(){
-  if(!gameActive) return;
-  const empty=getEmptyIndices();
-  if(empty.length===0) return;
-  let move=-1;
-  for(const i of empty){ board[i]="O"; if(checkWin("O")){move=i;board[i]="";break;} board[i]=""; }
-  if(move===-1){ for(const i of empty){ board[i]="X"; if(checkWin("X")){move=i;board[i]="";break;} board[i]=""; } }
-  if(move===-1) move=empty[Math.floor(Math.random()*empty.length)];
+  const empty=getEmptyIndices(); if(empty.length===0)return;
+  const move=empty[Math.floor(Math.random()*empty.length)];
   board[move]="O"; updateBoard();
   const win=checkWin("O");
-  if(win){ gameActive=false; playSound(); loseSound.play(); showResult("You Lose!"); restartBtn.style.display="inline-block"; return; }
-  if(isDraw()){ gameActive=false; showResult("Draw!"); loseSound.play(); restartBtn.style.display="inline-block"; return; }
-  statusText.textContent="Your turn (X)";
+  if(win){ gameActive=false; alert("You Lose!"); return; }
 }
+function resetGame(){ board=Array(9).fill(""); gameActive=true; updateBoard(); }
 
-function resetGame(){ board=Array(9).fill(""); gameActive=true; statusText.textContent="Your turn (X)"; updateBoard(); restartBtn.style.display="none"; }
-
-// Reward button → GigaPub
+// --- Ad Buttons ---
 rewardBtn.addEventListener("click", async ()=>{
-  try{ await window.showGiga(); xp++; resetGame(); }
-  catch(e){ alert("Ad failed!"); }
+  if(window.showGiga){ await window.showGiga(); xp++; resetGame(); }
+  else alert("GigaPub not loaded");
 });
 
-// Next button → AdXora
 nextBtn.addEventListener("click", async ()=>{
-  if(window.showAdexora){ try{ await window.showAdexora(); xp++; resetGame(); }
-    catch(e){ console.log("AdXora error:",e); xp++; resetGame(); } }
+  if(window.showAdexora){ await window.showAdexora(); xp++; resetGame(); }
   else { xp++; resetGame(); }
 });
 
-// AdsXuit button → window.showAdsxuit
 adsxuitBtn.addEventListener("click", async ()=>{
   if(typeof window.showAdsxuit === "function"){
-    try{
-      await window.showAdsxuit();
-      xp++; resetGame();
-    }catch(e){
-      console.log("AdsXuit error:", e);
-      alert("AdsXuit failed to load!");
-    }
+    try{ await window.showAdsxuit(); xp++; resetGame(); }
+    catch(e){ alert("AdsXuit error: " + e); }
   } else {
-    alert("⚠️ AdsXuit SDK not loaded yet — please wait a moment.");
+    alert("⚠️ AdsXuit SDK still loading, please wait a few seconds.");
   }
 });
 
-createBoard(); updateBoard();
-setTimeout(()=>document.getElementById("intro").style.display="none",3000);
+// --- Detect SDK Loaded ---
+window.addEventListener("load", ()=>{
+  const checkSDK = setInterval(()=>{
+    if(typeof window.showAdsxuit === "function"){
+      clearInterval(checkSDK);
+      adsxuitBtn.disabled=false;
+      adsxuitBtn.style.opacity="1";
+      adsxuitBtn.style.cursor="pointer";
+      console.log("✅ AdsXuit SDK loaded successfully!");
+    }
+  }, 1000);
+});
 
-// Stars
-const canvas=document.getElementById("stars"),ctx=canvas.getContext("2d");
-canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-let stars=[];for(let i=0;i<150;i++){stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*2+1,d:Math.random()*0.5+0.2});}
-function drawStars(){ctx.clearRect(0,0,canvas.width,canvas.height);
-for(let s of stars){ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle="white";ctx.fill();s.y+=s.d;if(s.y>canvas.height){s.y=0;s.x=Math.random()*canvas.width;}}
-requestAnimationFrame(drawStars);}
-drawStars();
+createBoard();
 </script>
 </body>
 </html>
