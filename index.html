@@ -19,7 +19,7 @@
 
   <style>
     body { margin:0; font-family: Arial, sans-serif; background:#0a0a0a; overflow:hidden; color:white;}
-    #intro { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; z-index:2000; }
+    #intro { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; z-index:2000; background:#0a0a0a; transition:opacity 1s ease;}
     #intro h1 { font-size:3em; margin:0; color:#FFD700; text-shadow:2px 2px #000;}
     #intro h2 { font-size:2em; margin:5px 0; color:#00FFCC; text-shadow:2px 2px #000;}
     #intro h3 { font-size:1.5em; margin:5px 0; color:#FF4D6D; text-shadow:2px 2px #000;}
@@ -41,12 +41,14 @@
 </head>
 
 <body>
+  <!-- Intro -->
   <div id="intro">
     <h1>Welcome</h1>
     <h2>Tic Tac Toe</h2>
     <h3>If you win you are Legend</h3>
   </div>
 
+  <!-- Game -->
   <div id="game-container">
     <canvas id="stars"></canvas>
     <div id="win-glow"></div>
@@ -78,6 +80,7 @@ const game = document.getElementById("game"),
       nextBtn = document.getElementById("next"),
       rewardBtn = document.getElementById("reward-btn"),
       adsxuitBtn = document.getElementById("adsxuit-btn"),
+      intro = document.getElementById("intro"),
       resultOverlay = document.getElementById("result-overlay");
 
 let board = Array(9).fill(""), gameActive = true, xp = 0;
@@ -147,7 +150,7 @@ adsxuitBtn.addEventListener("click", async ()=>{
   }
 });
 
-// --- Detect SDK Loaded ---
+// --- Detect AdsXuit SDK ---
 window.addEventListener("load", ()=>{
   const checkSDK = setInterval(()=>{
     if(typeof window.showAdsxuit === "function"){
@@ -160,7 +163,11 @@ window.addEventListener("load", ()=>{
   }, 1000);
 });
 
-createBoard();
+// --- Intro screen hide ---
+setTimeout(()=>{
+  intro.style.opacity = "0";
+  setTimeout(()=>{ intro.style.display="none"; createBoard(); updateBoard(); },1000);
+}, 3000);
 </script>
 </body>
 </html>
