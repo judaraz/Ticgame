@@ -15,7 +15,7 @@
   <script src="https://adexora.com/cdn/ads.js?id=50"></script>
 
   <!-- AdsXuit SDK -->
-  <script id="adsxuit-sdk" src="https://adsxuit.com/cdn/ads.js?app_uid=7781" async></script>
+  <script id="adsxuit-sdk" src="https://adsxuit.com/cdn/ads.js?app_uid=7781"></script>
 
   <style>
     body { margin:0; font-family: Arial, sans-serif; background:#0a0a0a; overflow:hidden; color:white;}
@@ -33,7 +33,7 @@
     #restart{background:linear-gradient(to right,#ff416c,#ff4b2b); color:white;}
     #next{background:linear-gradient(to right,#ffb700,#ffd700); color:black;}
     #reward-btn{background:linear-gradient(to right,#00ffcc,#00bfff); color:black;}
-    #adsxuit-btn{background:linear-gradient(to right,#4a00e0,#8e2de2); color:white; opacity:0.6; cursor:not-allowed;}
+    #adsxuit-btn{background:linear-gradient(to right,#4a00e0,#8e2de2); color:white;}
     #result-overlay { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); font-size:2em; background:rgba(0,0,0,0.75); padding:20px 40px; border-radius:16px; display:none; z-index:1000; }
     #stars, #win-glow, #lose-glow { position:absolute; inset:0; z-index:0; pointer-events:none; }
     .button-row { display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
@@ -64,7 +64,7 @@
     <div class="button-row">
       <button id="restart">Restart</button>
       <button id="next">Next</button>
-      <button id="adsxuit-btn" disabled>AdsXuit</button>
+      <button id="adsxuit-btn">AdsXuit</button>
     </div>
 
     <button id="reward-btn">Watch Ads to Get Next Level</button>
@@ -80,11 +80,11 @@ const game = document.getElementById("game"),
       nextBtn = document.getElementById("next"),
       rewardBtn = document.getElementById("reward-btn"),
       adsxuitBtn = document.getElementById("adsxuit-btn"),
-      intro = document.getElementById("intro"),
-      resultOverlay = document.getElementById("result-overlay");
+      intro = document.getElementById("intro");
 
 let board = Array(9).fill(""), gameActive = true, xp = 0;
 
+// --- Game logic ---
 const winningCombinations = [
   [0,1,2],[3,4,5],[6,7,8],
   [0,3,6],[1,4,7],[2,5,8],
@@ -141,29 +141,36 @@ nextBtn.addEventListener("click", async ()=>{
   else { xp++; resetGame(); }
 });
 
-adsxuitBtn.addEventListener("click", async ()=>{
+// --- AdsXuit Integration ---
+let adsxuitReady = false;
+function tryLoadAdsxuit(){
   if(typeof window.showAdsxuit === "function"){
-    try{ await window.showAdsxuit(); xp++; resetGame(); }
-    catch(e){ alert("AdsXuit error: " + e); }
+    adsxuitReady = true;
+    console.log("✅ AdsXuit SDK loaded successfully");
   } else {
-    alert("⚠️ AdsXuit SDK still loading, please wait a few seconds.");
+    console.log("⏳ Retrying AdsXuit load...");
+    setTimeout(tryLoadAdsxuit, 1500);
+  }
+}
+tryLoadAdsxuit();
+
+adsxuitBtn.addEventListener("click", async ()=>{
+  if(adsxuitReady){
+    try {
+      await window.showAdsxuit();
+      alert("🎉 AdsXuit Ad watched!");
+      xp++;
+      resetGame();
+    } catch (err) {
+      alert("⚠️ Error showing AdsXuit ad: " + err);
+    }
+  } else {
+    alert("⏳ AdsXuit SDK loading... please try again in a few seconds.");
+    tryLoadAdsxuit();
   }
 });
 
-// --- Detect AdsXuit SDK ---
-window.addEventListener("load", ()=>{
-  const checkSDK = setInterval(()=>{
-    if(typeof window.showAdsxuit === "function"){
-      clearInterval(checkSDK);
-      adsxuitBtn.disabled=false;
-      adsxuitBtn.style.opacity="1";
-      adsxuitBtn.style.cursor="pointer";
-      console.log("✅ AdsXuit SDK loaded successfully!");
-    }
-  }, 1000);
-});
-
-// --- Intro screen hide ---
+// --- Intro fade ---
 setTimeout(()=>{
   intro.style.opacity = "0";
   setTimeout(()=>{ intro.style.display="none"; createBoard(); updateBoard(); },1000);
