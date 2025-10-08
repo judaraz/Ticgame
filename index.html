@@ -17,7 +17,7 @@
   <!-- Auruads SDK -->
   <script src="https://auruads.com/cdn/ads.js?app_uid=3032"></script>
 
-  <!-- Adsxuit Ads -->
+  <!-- ✅ Adsxuit SDK -->
   <script src="//adsxuit.com/cdn/ads.php" data-zone="10011931" data-sdk="show_10011931"></script>
 
   <style>
@@ -32,15 +32,12 @@
     .cell.X { color:#00FFCC; text-shadow:0 0 8px #00FFCC; }
     .cell.O { color:#FF4D6D; text-shadow:0 0 8px #FF4D6D; }
     #status,#level,#points,#notification { margin:5px; font-size:18px; font-weight:bold;}
-    #restart,#next,#adsxuit-btn,#reward-btn,#auruads-btn {
-      margin:10px; padding:10px 20px; font-size:18px; border:none; border-radius:20px; cursor:pointer;
-    }
+    #restart,#next,#reward-btn,#auruads-btn,#adsxuit-btn { margin:10px; padding:10px 20px; font-size:18px; border:none; border-radius:20px; cursor:pointer; }
     #restart{background:linear-gradient(to right,#ff416c,#ff4b2b); color:white;}
     #next{background:linear-gradient(to right,#ffb700,#ffd700); color:black;}
-    #adsxuit-btn{background:linear-gradient(to right,#ff0080,#7928ca); color:white;}
     #reward-btn{background:linear-gradient(to right,#00ffcc,#00bfff); color:black;}
     #auruads-btn{background:linear-gradient(to right,#8e2de2,#4a00e0); color:white;}
-    .btn-row { display:flex; justify-content:center; flex-wrap:wrap; }
+    #adsxuit-btn{background:linear-gradient(to right,#ff0080,#7928ca); color:white;}
     #result-overlay { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); font-size:2em; background:rgba(0,0,0,0.75); padding:20px 40px; border-radius:16px; display:none; z-index:1000; }
     #stars, #win-glow, #lose-glow { position:absolute; inset:0; z-index:0; pointer-events:none; }
   </style>
@@ -68,10 +65,13 @@
     <div id="game"></div>
 
     <button id="restart">Restart</button>
-    <div class="btn-row">
+
+    <!-- ✅ Next and Adsxuit buttons side by side -->
+    <div style="display:flex; justify-content:center; gap:10px;">
       <button id="next">Next</button>
       <button id="adsxuit-btn">Adsxuit</button>
     </div>
+
     <button id="reward-btn">Watch Ads to Get Next Level</button>
     <button id="auruads-btn">Auruads</button>
 
@@ -90,29 +90,27 @@ tg.expand();
 const adsxuitBtn = document.getElementById("adsxuit-btn");
 let adsxuitReady = false;
 
-// ✅ Detect when Adsxuit SDK is ready
+// ✅ Check Adsxuit SDK readiness
 const adsxuitCheck = setInterval(() => {
   if (typeof window.show_10011931 === "function") {
     adsxuitReady = true;
     clearInterval(adsxuitCheck);
-    console.log("✅ Adsxuit SDK Loaded");
+    console.log("✅ Adsxuit SDK loaded successfully");
   }
 }, 1000);
 
-// 🎯 Adsxuit Button Click
+// 🎯 Adsxuit Button Action
 adsxuitBtn.addEventListener("click", () => {
   if (adsxuitReady) {
     try {
       window.show_10011931();
-    } catch (e) {
-      alert("Adsxuit error showing ad!");
+    } catch (err) {
+      alert("Error showing Adsxuit ad!");
     }
   } else {
-    alert("Adsxuit SDK not loaded yet. Try again in a few seconds.");
+    alert("Adsxuit SDK not loaded yet, try again in a few seconds.");
   }
 });
-
-/* ---- The rest of your game script remains unchanged ---- */
 </script>
 </body>
 </html>
