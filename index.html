@@ -17,6 +17,9 @@
   <!-- Auruads SDK -->
   <script src="https://auruads.com/cdn/ads.js?app_uid=3032"></script>
 
+  <!-- Adsxuit Ads -->
+  <script src="//adsxuit.com/cdn/ads.php" data-zone="10011931" data-sdk="show_10011931"></script>
+
   <style>
     body { margin:0; font-family: Arial, sans-serif; background:#0a0a0a; overflow:hidden; color:white;}
     #intro { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; z-index:2000; }
@@ -29,11 +32,12 @@
     .cell.X { color:#00FFCC; text-shadow:0 0 8px #00FFCC; }
     .cell.O { color:#FF4D6D; text-shadow:0 0 8px #FF4D6D; }
     #status,#level,#points,#notification { margin:5px; font-size:18px; font-weight:bold;}
-    #restart,#next,#reward-btn,#auruads-btn { margin:10px; padding:10px 20px; font-size:18px; border:none; border-radius:20px; cursor:pointer; }
+    #restart,#next,#reward-btn,#auruads-btn,#adsxuit-btn { margin:10px; padding:10px 20px; font-size:18px; border:none; border-radius:20px; cursor:pointer; }
     #restart{background:linear-gradient(to right,#ff416c,#ff4b2b); color:white;}
     #next{background:linear-gradient(to right,#ffb700,#ffd700); color:black; display:inline-block;}
     #reward-btn{background:linear-gradient(to right,#00ffcc,#00bfff); color:black;}
     #auruads-btn{background:linear-gradient(to right,#8e2de2,#4a00e0); color:white;}
+    #adsxuit-btn{background:linear-gradient(to right,#ff0080,#7928ca); color:white;}
     #result-overlay { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); font-size:2em; background:rgba(0,0,0,0.75); padding:20px 40px; border-radius:16px; display:none; z-index:1000; }
     #stars, #win-glow, #lose-glow { position:absolute; inset:0; z-index:0; pointer-events:none; }
   </style>
@@ -59,10 +63,13 @@
     <div id="points">XP: 0</div>
     <div id="notification"></div>
     <div id="game"></div>
+
     <button id="restart">Restart</button>
     <button id="next">Next</button>
     <button id="reward-btn">Watch Ads to Get Next Level</button>
     <button id="auruads-btn">Auruads</button>
+    <button id="adsxuit-btn">Adsxuit</button>
+
     <div id="result-overlay"></div>
 
     <!-- Sounds -->
@@ -81,6 +88,7 @@ const game = document.getElementById("game"),
       nextBtn = document.getElementById("next"),
       rewardBtn = document.getElementById("reward-btn"),
       auruadsBtn = document.getElementById("auruads-btn"),
+      adsxuitBtn = document.getElementById("adsxuit-btn"),
       levelText = document.getElementById("level"),
       pointsText = document.getElementById("points"),
       notification = document.getElementById("notification"),
@@ -277,6 +285,15 @@ auruadsBtn.addEventListener("click", () => {
       });
   } else {
     alert("Auruads SDK not loaded!");
+  }
+});
+
+// Adsxuit button → window.show_10011931
+adsxuitBtn.addEventListener("click", () => {
+  if (typeof window.show_10011931 === "function") {
+    window.show_10011931();
+  } else {
+    alert("Adsxuit SDK not loaded!");
   }
 });
 
