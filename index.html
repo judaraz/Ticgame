@@ -137,28 +137,23 @@ rewardBtn.addEventListener("click", async ()=>{
   else alert("GigaPub not loaded");
 });
 
-nextBtn.addEventListener("click", async ()=>{
-  // Only show AdsXuit if it hasn't been shown yet
+// --- Next Button Logic (Only Show AdExora Ads) ---
+nextBtn.addEventListener("click", async () => {
   if (!adsxuitAdShown) {
-    if (typeof window.showAdsxuit === "function") {
-      try {
-        // Show the AdsXuit ad by calling the function tied to the SDK
-        await window.showAdsxuit();
-        adsxuitAdShown = true; // Mark AdsXuit ad as shown
-        xp++; resetGame();
-      } catch (err) {
-        alert("⚠️ Error showing AdsXuit ad: " + err);
-      }
+    // If AdsXuit hasn't been shown yet, only show AdExora Ads
+    if (window.showAdexora) {
+      await window.showAdexora();
+      xp++; resetGame();
     } else {
-      alert("⏳ AdsXuit SDK is not loaded yet.");
+      xp++; resetGame(); // If AdExora doesn't load, reset game directly
     }
   } else {
-    alert("No more ads to show!"); // No further ads to be shown after AdsXuit
+    alert("AdsXuit has been shown, no more ads will be displayed.");
     xp++; resetGame();
   }
 });
 
-// --- AdsXuit Integration ---
+// --- AdsXuit Integration (Separate Logic for AdsXuit) ---
 let adsxuitReady = false;
 
 function tryLoadAdsxuit(){
