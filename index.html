@@ -83,6 +83,7 @@ const game = document.getElementById("game"),
       intro = document.getElementById("intro");
 
 let board = Array(9).fill(""), gameActive = true, xp = 0;
+let adsxuitAdShown = false; // Track if AdsXuit ad has been shown
 
 // --- Game logic ---
 const winningCombinations = [
@@ -137,20 +138,23 @@ rewardBtn.addEventListener("click", async ()=>{
 });
 
 nextBtn.addEventListener("click", async ()=>{
-  if (adsxuitReady) {
-    try {
-      await window.showAdsxuit();
-      xp++; resetGame();
-    } catch (err) {
-      alert("⚠️ Error showing AdsXuit ad: " + err);
+  // Only show AdsXuit if it hasn't been shown yet
+  if (!adsxuitAdShown) {
+    if (typeof window.showAdsxuit === "function") {
+      try {
+        // Show the AdsXuit ad by calling the function tied to the SDK
+        await window.showAdsxuit();
+        adsxuitAdShown = true; // Mark AdsXuit ad as shown
+        xp++; resetGame();
+      } catch (err) {
+        alert("⚠️ Error showing AdsXuit ad: " + err);
+      }
+    } else {
+      alert("⏳ AdsXuit SDK is not loaded yet.");
     }
   } else {
-    if(window.showAdexora) {
-      await window.showAdexora();
-      xp++; resetGame();
-    } else {
-      xp++; resetGame();
-    }
+    alert("No more ads to show!"); // No further ads to be shown after AdsXuit
+    xp++; resetGame();
   }
 });
 
@@ -163,7 +167,7 @@ function tryLoadAdsxuit(){
     console.log("✅ AdsXuit SDK loaded successfully");
   } else {
     console.log("⏳ Retrying AdsXuit load...");
-    setTimeout(tryLoadAdsxuit, 1000);
+    setTimeout(tryLoadAdsxuit, 1500);
   }
 }
 
@@ -175,6 +179,7 @@ adsxuitBtn.addEventListener("click", async ()=>{
     try {
       await window.showAdsxuit();
       alert("🎉 AdsXuit Ad watched!");
+      adsxuitAdShown = true; // Mark AdsXuit ad as shown
       xp++;
       resetGame();
     } catch (err) {
