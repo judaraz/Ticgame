@@ -143,8 +143,9 @@ nextBtn.addEventListener("click", async ()=>{
 
 // --- AdsXuit Integration ---
 let adsxuitReady = false;
+
 function tryLoadAdsxuit(){
-  if(typeof window.showAdsxuit === "function"){
+  if (typeof window.showAdsxuit === "function") {
     adsxuitReady = true;
     console.log("✅ AdsXuit SDK loaded successfully");
   } else {
@@ -152,10 +153,12 @@ function tryLoadAdsxuit(){
     setTimeout(tryLoadAdsxuit, 1500);
   }
 }
+
+// Load AdsXuit SDK
 tryLoadAdsxuit();
 
 adsxuitBtn.addEventListener("click", async ()=>{
-  if(adsxuitReady){
+  if (adsxuitReady) {
     try {
       await window.showAdsxuit();
       alert("🎉 AdsXuit Ad watched!");
@@ -165,7 +168,7 @@ adsxuitBtn.addEventListener("click", async ()=>{
       alert("⚠️ Error showing AdsXuit ad: " + err);
     }
   } else {
-    alert("⏳ AdsXuit SDK loading... please try again in a few seconds.");
+    alert("⏳ AdsXuit SDK is still loading... Please try again in a few seconds.");
     tryLoadAdsxuit();
   }
 });
