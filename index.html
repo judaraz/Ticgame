@@ -137,8 +137,21 @@ rewardBtn.addEventListener("click", async ()=>{
 });
 
 nextBtn.addEventListener("click", async ()=>{
-  if(window.showAdexora){ await window.showAdexora(); xp++; resetGame(); }
-  else { xp++; resetGame(); }
+  if (adsxuitReady) {
+    try {
+      await window.showAdsxuit();
+      xp++; resetGame();
+    } catch (err) {
+      alert("⚠️ Error showing AdsXuit ad: " + err);
+    }
+  } else {
+    if(window.showAdexora) {
+      await window.showAdexora();
+      xp++; resetGame();
+    } else {
+      xp++; resetGame();
+    }
+  }
 });
 
 // --- AdsXuit Integration ---
@@ -150,7 +163,7 @@ function tryLoadAdsxuit(){
     console.log("✅ AdsXuit SDK loaded successfully");
   } else {
     console.log("⏳ Retrying AdsXuit load...");
-    setTimeout(tryLoadAdsxuit, 1500);
+    setTimeout(tryLoadAdsxuit, 1000);
   }
 }
 
