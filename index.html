@@ -1,129 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Tic Tac Toe Game</title>
 
 <!-- Telegram Web App -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<!-- RichAds SDK -->
+<!-- Rich Ads SDK -->
 <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
 
-<!-- GigaPub SDK (Fallback) -->
+<!-- GigaPub -->
 <script async src="https://ad.gigapub.tech/script?id=978"></script>
 
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#0a0a0a;color:#fff;overflow:hidden}
-#intro{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;background:#0a0a0a;transition:opacity 1s}
-#game-container{height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
-#game{display:grid;grid-template-columns:repeat(3,100px);gap:16px;margin:20px}
-.cell{width:100px;height:100px;font-size:3em;border-radius:20px;background:#2f0e63;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.cell.X{color:#00ffcc}
-.cell.O{color:#ff4d6d}
-button{margin:8px;padding:10px 20px;font-size:18px;border:none;border-radius:20px;cursor:pointer}
-#restart{background:#ff416c;color:#fff}
-#next{background:#ffd700;color:#000}
-#reward-btn{background:#00ffcc;color:#000}
+body {
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#0a0a0a;
+  color:white;
+  overflow:hidden;
+}
+
+#game {
+  display:grid;
+  grid-template-columns:repeat(3,100px);
+  gap:16px;
+  margin:20px 0;
+}
+
+.cell {
+  width:100px;
+  height:100px;
+  font-size:3em;
+  background:#5022aa;
+  border-radius:20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+
+.cell.X { color:#00ffcc; }
+.cell.O { color:#ff4d6d; }
+
+button {
+  padding:10px 20px;
+  font-size:18px;
+  border:none;
+  border-radius:20px;
+  cursor:pointer;
+  margin:6px;
+}
+
+#next { background:#ffd700; }
+#restart { background:#ff4b2b; color:#fff; }
+#reward-btn { background:#00ffcc; }
+
+#ad-debug {
+  position:fixed;
+  bottom:10px;
+  right:10px;
+  background:rgba(0,0,0,.8);
+  color:#00ffcc;
+  font-size:13px;
+  padding:6px 12px;
+  border-radius:12px;
+  z-index:9999;
+}
 </style>
 </head>
 
 <body>
 
-<div id="intro">
-  <h1>Welcome</h1>
-  <h2>Tic Tac Toe</h2>
-  <h3>If you win you are Legend</h3>
-</div>
+<h2>Player vs Computer</h2>
+<div id="status">Your turn (X)</div>
+<div id="level">Level: 1</div>
+<div id="points">XP: 0</div>
 
-<div id="game-container">
-  <div id="status">Your turn (X)</div>
-  <div id="level">Level: 1</div>
-  <div id="points">XP: 0</div>
+<div id="game"></div>
 
-  <div id="game"></div>
+<button id="restart">Restart</button>
+<button id="next">Next</button>
+<button id="reward-btn">Watch Ad</button>
 
-  <button id="restart">Restart</button>
-  <button id="next">Next</button>
-  <button id="reward-btn">Watch Ads to Get Next Level</button>
-</div>
+<div id="ad-debug">Ad: waiting</div>
 
 <script>
+/* ---------------- Telegram ---------------- */
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-/* ===============================
-   INIT RICH ADS (ALL TYPES)
-================================ */
+/* ---------------- Rich Ads Init ---------------- */
 let RichReady = false;
 
 try {
   window.TelegramAdsController = new TelegramAdsController();
   TelegramAdsController.initialize({
     pubId: "956231",
-    appId: "5476",
+    appId: "5476"
   });
-
-  // preload everything
-  TelegramAdsController.loadPush();
-  TelegramAdsController.loadEmbedded();
-  TelegramAdsController.loadInterstitial();
-  TelegramAdsController.loadRewarded();
-
   RichReady = true;
 } catch (e) {
   RichReady = false;
 }
 
-/* ===============================
-   AD HANDLER (Rich → Giga)
-================================ */
+/* ---------------- Ad Debug ---------------- */
+const adBox = document.getElementById("ad-debug");
+
+function adStatus(text) {
+  adBox.textContent = "Ad: " + text;
+  console.log("[ADS]", text);
+}
+
+/* ---------------- Ad Logic ---------------- */
 function showAdThenContinue(callback) {
   let finished = false;
-  const done = () => {
+
+  const done = (result) => {
     if (finished) return;
     finished = true;
+    adStatus(result);
     callback();
   };
 
-  // Hard safety timeout
-  setTimeout(done, 2500);
+  setTimeout(() => done("timeout"), 3000);
 
-  if (RichReady) {
+  // Rich Video
+  if (RichReady && TelegramAdsController.showRewarded) {
+    adStatus("trying rich video");
+    TelegramAdsController.showRewarded()
+      .then(() => done("rich video"))
+      .catch(() => tryRichInterstitial(done));
+    return;
+  }
+
+  tryRichInterstitial(done);
+}
+
+function tryRichInterstitial(done) {
+  if (RichReady && TelegramAdsController.showInterstitial) {
+    adStatus("trying rich interstitial");
     try {
-      // Try video first
-      TelegramAdsController.showRewarded()
-        .then(done)
-        .catch(() => {
-          // Fallback to interstitial banner
-          try {
-            TelegramAdsController.showInterstitial();
-            setTimeout(done, 800);
-          } catch {
-            fallbackGiga(done);
-          }
-        });
+      TelegramAdsController.showInterstitial();
+      setTimeout(() => done("rich interstitial"), 800);
       return;
     } catch {}
   }
-
-  fallbackGiga(done);
+  tryGiga(done);
 }
 
-function fallbackGiga(done) {
-  if (typeof window.showGiga === "function") {
+function tryGiga(done) {
+  if (window.showGiga) {
+    adStatus("trying gigapub");
     window.showGiga()
-      .then(done)
-      .catch(done);
+      .then(() => done("gigapub"))
+      .catch(() => done("timeout"));
   } else {
-    done();
+    done("timeout");
   }
 }
 
-/* ===============================
-   GAME LOGIC
-================================ */
+/* ---------------- Game Logic ---------------- */
 const game = document.getElementById("game");
 const statusText = document.getElementById("status");
 const levelText = document.getElementById("level");
@@ -141,93 +180,80 @@ const wins = [
   [0,4,8],[2,4,6]
 ];
 
-function createBoard(){
-  game.innerHTML="";
-  board.forEach((_,i)=>{
-    const c=document.createElement("div");
-    c.className="cell";
-    c.onclick=()=>move(i);
+function createBoard() {
+  game.innerHTML = "";
+  for (let i=0;i<9;i++) {
+    const c = document.createElement("div");
+    c.className = "cell";
+    c.onclick = () => move(i);
     game.appendChild(c);
-  });
+  }
 }
 
-function update(){
+function render() {
   [...game.children].forEach((c,i)=>{
-    c.textContent=board[i];
-    c.className="cell "+board[i];
+    c.textContent = board[i];
+    c.className = "cell " + board[i];
   });
 }
 
-function win(p){return wins.some(w=>w.every(i=>board[i]===p))}
-function draw(){return board.every(v=>v)}
-
-function move(i){
-  if(!active||board[i])return;
-  board[i]="X";update();
-  if(win("X"))return end("You Win!");
-  if(draw())return end("Draw!");
-  setTimeout(ai,400);
+function win(p) {
+  return wins.some(w=>w.every(i=>board[i]===p));
 }
 
-function ai(){
-  const e=board.map((v,i)=>v?null:i).filter(v=>v!==null);
-  if(!e.length)return;
-  board[e[Math.floor(Math.random()*e.length)]]="O";
-  update();
-  if(win("O"))end("You Lose!");
+function move(i) {
+  if (!active || board[i]) return;
+  board[i] = "X";
+  render();
+  if (win("X")) return end("You Win!");
+  setTimeout(ai,500);
 }
 
-function end(msg){
-  alert(msg);
-  statusText.textContent=msg;
-  active=false;
-  finished=true;
+function ai() {
+  const e = board.map((v,i)=>v?null:i).filter(v=>v!==null);
+  if (!e.length) return end("Draw!");
+  board[e[Math.random()*e.length|0]] = "O";
+  render();
+  if (win("O")) end("You Lose!");
 }
 
-function reset(){
+function end(text) {
+  statusText.textContent = text;
+  active = false;
+  finished = true;
+}
+
+function reset() {
   board.fill("");
-  active=true;
-  finished=false;
-  statusText.textContent="Your turn (X)";
-  update();
+  active = true;
+  finished = false;
+  statusText.textContent = "Your turn (X)";
+  render();
 }
 
-/* ===============================
-   BUTTONS
-================================ */
-document.getElementById("restart").onclick=reset;
+/* ---------------- Buttons ---------------- */
+document.getElementById("restart").onclick = reset;
 
-document.getElementById("next").onclick=()=>{
-  if(!finished)return;
-  showAdThenContinue(()=>{
-    level++;xp++;
-    levelText.textContent="Level: "+level;
-    pointsText.textContent="XP: "+xp;
-    reset();
-  });
+document.getElementById("next").onclick = () => {
+  if (!finished) return;
+  showAdThenContinue(nextLevel);
 };
 
-document.getElementById("reward-btn").onclick=()=>{
-  showAdThenContinue(()=>{
-    level++;xp++;
-    levelText.textContent="Level: "+level;
-    pointsText.textContent="XP: "+xp;
-    reset();
-  });
+document.getElementById("reward-btn").onclick = () => {
+  showAdThenContinue(nextLevel);
 };
 
-/* ===============================
-   INTRO
-================================ */
-setTimeout(()=>{
-  document.getElementById("intro").style.opacity="0";
-  setTimeout(()=>{
-    document.getElementById("intro").remove();
-    createBoard();
-    update();
-  },1000);
-},2500);
+function nextLevel() {
+  level++;
+  xp++;
+  levelText.textContent = "Level: " + level;
+  pointsText.textContent = "XP: " + xp;
+  reset();
+}
+
+/* ---------------- Init ---------------- */
+createBoard();
+render();
 </script>
-
 </body>
 </html>
