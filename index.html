@@ -8,7 +8,7 @@
 <!-- Telegram Web App -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<!-- Rich Ads SDK -->
+<!-- Rich Ads SDK (Push + Interstitial + Video) -->
 <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
 
 <!-- GigaPub -->
@@ -58,16 +58,18 @@ button {
 #restart { background:#ff4b2b; color:#fff; }
 #reward-btn { background:#00ffcc; }
 
-#ad-debug {
+/* Ad status (hidden by default) */
+#ad-status {
   position:fixed;
-  bottom:10px;
-  right:10px;
+  bottom:12px;
+  right:12px;
   background:rgba(0,0,0,.8);
   color:#00ffcc;
   font-size:13px;
   padding:6px 12px;
   border-radius:12px;
   z-index:9999;
+  display:none;
 }
 </style>
 </head>
@@ -85,7 +87,7 @@ button {
 <button id="next">Next</button>
 <button id="reward-btn">Watch Ad</button>
 
-<div id="ad-debug">Ad: waiting</div>
+<div id="ad-status"></div>
 
 <script>
 /* ---------------- Telegram ---------------- */
@@ -106,30 +108,32 @@ try {
   RichReady = false;
 }
 
-/* ---------------- Ad Debug ---------------- */
-const adBox = document.getElementById("ad-debug");
+/* ---------------- Ad Status (2 sec only) ---------------- */
+const adStatusBox = document.getElementById("ad-status");
 
-function adStatus(text) {
-  adBox.textContent = "Ad: " + text;
-  console.log("[ADS]", text);
+function showAdStatus(text) {
+  adStatusBox.textContent = "Ad shown: " + text;
+  adStatusBox.style.display = "block";
+  setTimeout(() => {
+    adStatusBox.style.display = "none";
+  }, 2000);
 }
 
-/* ---------------- Ad Logic ---------------- */
+/* ---------------- Ad Flow ---------------- */
 function showAdThenContinue(callback) {
   let finished = false;
 
-  const done = (result) => {
+  const done = (type) => {
     if (finished) return;
     finished = true;
-    adStatus(result);
+    if (type) showAdStatus(type);
     callback();
   };
 
   setTimeout(() => done("timeout"), 3000);
 
-  // Rich Video
+  // 1️⃣ Try RichAds Video
   if (RichReady && TelegramAdsController.showRewarded) {
-    adStatus("trying rich video");
     TelegramAdsController.showRewarded()
       .then(() => done("rich video"))
       .catch(() => tryRichInterstitial(done));
@@ -140,20 +144,21 @@ function showAdThenContinue(callback) {
 }
 
 function tryRichInterstitial(done) {
+  // 2️⃣ Try RichAds Interstitial
   if (RichReady && TelegramAdsController.showInterstitial) {
-    adStatus("trying rich interstitial");
     try {
       TelegramAdsController.showInterstitial();
       setTimeout(() => done("rich interstitial"), 800);
       return;
     } catch {}
   }
+
   tryGiga(done);
 }
 
 function tryGiga(done) {
+  // 3️⃣ Fallback GigaPub
   if (window.showGiga) {
-    adStatus("trying gigapub");
     window.showGiga()
       .then(() => done("gigapub"))
       .catch(() => done("timeout"));
