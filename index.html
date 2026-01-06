@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Rich Ads -->
+  <!-- Rich Ads SDK -->
   <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
   <script>
     window.TelegramAdsController = new TelegramAdsController();
@@ -29,12 +29,11 @@
     .cell { width:100px; height:100px; font-size:3em; border-radius:20px; background:linear-gradient(145deg,#5022aa,#2f0e63); display:flex; align-items:center; justify-content:center; cursor:pointer; }
     .cell.X { color:#00FFCC; text-shadow:0 0 8px #00FFCC; }
     .cell.O { color:#FF4D6D; text-shadow:0 0 8px #FF4D6D; }
-    #status,#level,#points,#notification { margin:5px; font-size:18px; font-weight:bold;}
+    #status,#level,#points { margin:5px; font-size:18px; font-weight:bold;}
     #restart,#next,#reward-btn { margin:10px; padding:10px 20px; font-size:18px; border:none; border-radius:20px; cursor:pointer; }
     #restart{background:linear-gradient(to right,#ff416c,#ff4b2b); color:white;}
     #next{background:linear-gradient(to right,#ffb700,#ffd700); color:black;}
     #reward-btn{background:linear-gradient(to right,#00ffcc,#00bfff); color:black;}
-    #result-overlay { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); font-size:2em; background:rgba(0,0,0,0.75); padding:20px 40px; border-radius:16px; display:none; z-index:1000; }
     .button-row { display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
   </style>
 </head>
@@ -49,8 +48,9 @@
   <div id="game-container">
     <h2>Player vs Computer</h2>
     <div id="status">Your turn (X)</div>
-    <div id="level">Level: 1 (Easy)</div>
+    <div id="level">Level: 1</div>
     <div id="points">XP: 0</div>
+
     <div id="game"></div>
 
     <div class="button-row">
@@ -69,11 +69,16 @@ const game = document.getElementById("game");
 const restartBtn = document.getElementById("restart");
 const nextBtn = document.getElementById("next");
 const rewardBtn = document.getElementById("reward-btn");
+const statusText = document.getElementById("status");
+const levelText = document.getElementById("level");
+const pointsText = document.getElementById("points");
 const intro = document.getElementById("intro");
 
 let board = Array(9).fill("");
 let gameActive = true;
 let gameFinished = false;
+let level = 1;
+let xp = 0;
 
 const wins = [
   [0,1,2],[3,4,5],[6,7,8],
@@ -81,14 +86,33 @@ const wins = [
   [0,4,8],[2,4,6]
 ];
 
-function showRichAd() {
-  try {
-    TelegramAdsController.show();
-  } catch (e) {
-    console.log("Rich ad not available");
+// ---------- Rich Ads (non-blocking) ----------
+function tryShowRichAd(onDone) {
+  let doneCalled = false;
+  const done = () => {
+    if (doneCalled) return;
+    doneCalled = true;
+    onDone();
+  };
+
+  setTimeout(done, 1200);
+
+  if (
+    window.TelegramAdsController &&
+    typeof window.TelegramAdsController.showInterstitial === "function"
+  ) {
+    try {
+      window.TelegramAdsController.showInterstitial();
+      setTimeout(done, 600);
+    } catch (e) {
+      done();
+    }
+  } else {
+    done();
   }
 }
 
+// ---------- Game ----------
 function createBoard(){
   game.innerHTML="";
   for(let i=0;i<9;i++){
@@ -113,13 +137,14 @@ function isDraw(){ return board.every(v=>v); }
 function playerMove(i){
   if(!gameActive || board[i]) return;
   board[i]="X"; updateBoard();
-  if(checkWin("X")){ endGame("You Win!"); return; }
-  if(isDraw()){ endGame("Draw!"); return; }
+  if(checkWin("X")) return endGame("You Win!");
+  if(isDraw()) return endGame("Draw!");
   setTimeout(computerMove,500);
 }
 
 function computerMove(){
   const empty = board.map((v,i)=>v?null:i).filter(v=>v!==null);
+  if(!empty.length) return;
   const m = empty[Math.floor(Math.random()*empty.length)];
   board[m]="O"; updateBoard();
   if(checkWin("O")) endGame("You Lose!");
@@ -127,6 +152,7 @@ function computerMove(){
 
 function endGame(msg){
   alert(msg);
+  statusText.textContent = msg;
   gameActive=false;
   gameFinished=true;
 }
@@ -135,21 +161,35 @@ function resetGame(){
   board.fill("");
   gameActive=true;
   gameFinished=false;
+  statusText.textContent = "Your turn (X)";
   updateBoard();
 }
 
+// ---------- Buttons ----------
 restartBtn.onclick = resetGame;
 
-nextBtn.onclick = ()=>{
-  if(gameFinished) showRichAd();
-  resetGame();
+nextBtn.onclick = () => {
+  if (!gameFinished) return;
+  tryShowRichAd(() => {
+    level++;
+    xp++;
+    levelText.textContent = "Level: " + level;
+    pointsText.textContent = "XP: " + xp;
+    resetGame();
+  });
 };
 
-rewardBtn.onclick = ()=>{
-  showRichAd();
-  resetGame();
+rewardBtn.onclick = () => {
+  tryShowRichAd(() => {
+    level++;
+    xp++;
+    levelText.textContent = "Level: " + level;
+    pointsText.textContent = "XP: " + xp;
+    resetGame();
+  });
 };
 
+// ---------- Intro ----------
 setTimeout(()=>{
   intro.style.opacity="0";
   setTimeout(()=>{
