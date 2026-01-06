@@ -1,29 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Rich Ads -->
   <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
-          <script>
-            window.TelegramAdsController = new TelegramAdsController();
-            window.TelegramAdsController.initialize({
-              pubId: "956231",
-              appId: "5476",
-            });
-          </script>
+  <script>
+    window.TelegramAdsController = new TelegramAdsController();
+    window.TelegramAdsController.initialize({
+      pubId: "956231",
+      appId: "5476",
+    });
+  </script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Tic Tac Toe Game</title>
 
   <!-- Telegram Web App -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-  <!-- GigaPub Ads -->
-  <script src="https://ad.gigapub.tech/script?id=978"></script>
-
-  <!-- AdXora Ads -->
-  <script src="https://adexora.com/cdn/ads.js?id=50"></script>
-
-  <!-- AdsXuit SDK -->
-  <script src="//adsxuit.com/cdn/ads.php" data-zone="10024010" data-sdk="show_10024010"></script>
 
   <style>
     body { margin:0; font-family: Arial, sans-serif; background:#0a0a0a; overflow:hidden; color:white;}
@@ -37,168 +30,134 @@
     .cell.X { color:#00FFCC; text-shadow:0 0 8px #00FFCC; }
     .cell.O { color:#FF4D6D; text-shadow:0 0 8px #FF4D6D; }
     #status,#level,#points,#notification { margin:5px; font-size:18px; font-weight:bold;}
-    #restart,#next,#reward-btn,#adsxuit-btn { margin:10px; padding:10px 20px; font-size:18px; border:none; border-radius:20px; cursor:pointer; }
+    #restart,#next,#reward-btn { margin:10px; padding:10px 20px; font-size:18px; border:none; border-radius:20px; cursor:pointer; }
     #restart{background:linear-gradient(to right,#ff416c,#ff4b2b); color:white;}
     #next{background:linear-gradient(to right,#ffb700,#ffd700); color:black;}
     #reward-btn{background:linear-gradient(to right,#00ffcc,#00bfff); color:black;}
-    #adsxuit-btn{background:linear-gradient(to right,#4a00e0,#8e2de2); color:white;}
     #result-overlay { position:fixed; top:40%; left:50%; transform:translate(-50%,-50%); font-size:2em; background:rgba(0,0,0,0.75); padding:20px 40px; border-radius:16px; display:none; z-index:1000; }
-    #stars, #win-glow, #lose-glow { position:absolute; inset:0; z-index:0; pointer-events:none; }
     .button-row { display:flex; gap:10px; justify-content:center; align-items:center; flex-wrap:wrap; }
   </style>
 </head>
 
 <body>
-  <!-- Intro -->
   <div id="intro">
     <h1>Welcome</h1>
     <h2>Tic Tac Toe</h2>
     <h3>If you win you are Legend</h3>
   </div>
 
-  <!-- Game -->
   <div id="game-container">
-    <canvas id="stars"></canvas>
-    <div id="win-glow"></div>
-    <div id="lose-glow"></div>
-
     <h2>Player vs Computer</h2>
     <div id="status">Your turn (X)</div>
     <div id="level">Level: 1 (Easy)</div>
     <div id="points">XP: 0</div>
-    <div id="notification"></div>
     <div id="game"></div>
 
     <div class="button-row">
       <button id="restart">Restart</button>
       <button id="next">Next</button>
-      <button id="adsxuit-btn">AdsXuit</button>
     </div>
 
     <button id="reward-btn">Watch Ads to Get Next Level</button>
-    <div id="result-overlay"></div>
   </div>
 
 <script>
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-const game = document.getElementById("game"),
-      restartBtn = document.getElementById("restart"),
-      nextBtn = document.getElementById("next"),
-      rewardBtn = document.getElementById("reward-btn"),
-      adsxuitBtn = document.getElementById("adsxuit-btn"),
-      intro = document.getElementById("intro");
+const game = document.getElementById("game");
+const restartBtn = document.getElementById("restart");
+const nextBtn = document.getElementById("next");
+const rewardBtn = document.getElementById("reward-btn");
+const intro = document.getElementById("intro");
 
-let board = Array(9).fill(""), gameActive = true, xp = 0;
-let adsxuitAdShown = false; // Track if AdsXuit ad has been shown
+let board = Array(9).fill("");
+let gameActive = true;
+let gameFinished = false;
 
-// --- Game logic ---
-const winningCombinations = [
+const wins = [
   [0,1,2],[3,4,5],[6,7,8],
   [0,3,6],[1,4,7],[2,5,8],
   [0,4,8],[2,4,6]
 ];
 
+function showRichAd() {
+  try {
+    TelegramAdsController.show();
+  } catch (e) {
+    console.log("Rich ad not available");
+  }
+}
+
 function createBoard(){
   game.innerHTML="";
   for(let i=0;i<9;i++){
     const cell=document.createElement("div");
-    cell.classList.add("cell");
-    cell.dataset.index=i;
-    cell.addEventListener("click",()=>playerMove(i));
+    cell.className="cell";
+    cell.onclick=()=>playerMove(i);
     game.appendChild(cell);
   }
 }
+
 function updateBoard(){
-  document.querySelectorAll(".cell").forEach((cell,i)=>{
-    cell.textContent=board[i];
-    cell.classList.remove("X","O");
-    if(board[i]) cell.classList.add(board[i]);
+  [...game.children].forEach((c,i)=>{
+    c.textContent = board[i];
+    c.classList.remove("X","O");
+    if(board[i]) c.classList.add(board[i]);
   });
 }
 
-function getEmptyIndices(){ return board.map((v,i)=>v===""?i:-1).filter(i=>i!==-1); }
-function checkWin(p){ return winningCombinations.find(c=>c.every(i=>board[i]===p)); }
-function isDraw(){ return board.every(c=>c!==""); }
+function checkWin(p){ return wins.some(w=>w.every(i=>board[i]===p)); }
+function isDraw(){ return board.every(v=>v); }
 
 function playerMove(i){
-  if(!gameActive || board[i]!=="") return;
+  if(!gameActive || board[i]) return;
   board[i]="X"; updateBoard();
-  const win=checkWin("X");
-  if(win){ gameActive=false; alert("You Win!"); xp++; return; }
-  if(isDraw()){ gameActive=false; alert("Draw!"); return; }
+  if(checkWin("X")){ endGame("You Win!"); return; }
+  if(isDraw()){ endGame("Draw!"); return; }
   setTimeout(computerMove,500);
 }
+
 function computerMove(){
-  const empty=getEmptyIndices(); if(empty.length===0)return;
-  const move=empty[Math.floor(Math.random()*empty.length)];
-  board[move]="O"; updateBoard();
-  const win=checkWin("O");
-  if(win){ gameActive=false; alert("You Lose!"); return; }
-}
-function resetGame(){ board=Array(9).fill(""); gameActive=true; updateBoard(); }
-
-// --- Ad Buttons ---
-rewardBtn.addEventListener("click", async ()=>{
-  if(window.showGiga){ await window.showGiga(); xp++; resetGame(); }
-  else alert("GigaPub not loaded");
-});
-
-// --- Next Button Logic (Only Show AdExora Ads) ---
-nextBtn.addEventListener("click", async () => {
-  if (!adsxuitAdShown) {
-    // If AdsXuit hasn't been shown yet, only show AdExora Ads
-    if (window.showAdexora) {
-      await window.showAdexora();
-      xp++; resetGame();
-    } else {
-      xp++; resetGame(); // If AdExora doesn't load, reset game directly
-    }
-  } else {
-    alert("AdsXuit has been shown, no more ads will be displayed.");
-    xp++; resetGame();
-  }
-});
-
-// --- AdsXuit Integration (Separate Logic for AdsXuit) ---
-let adsxuitReady = false;
-
-function tryLoadAdsxuit(){
-  if (typeof window.showAdsxuit === "function") {
-    adsxuitReady = true;
-    console.log("✅ AdsXuit SDK loaded successfully");
-  } else {
-    console.log("⏳ Retrying AdsXuit load...");
-    setTimeout(tryLoadAdsxuit, 1500);
-  }
+  const empty = board.map((v,i)=>v?null:i).filter(v=>v!==null);
+  const m = empty[Math.floor(Math.random()*empty.length)];
+  board[m]="O"; updateBoard();
+  if(checkWin("O")) endGame("You Lose!");
 }
 
-// Load AdsXuit SDK
-tryLoadAdsxuit();
+function endGame(msg){
+  alert(msg);
+  gameActive=false;
+  gameFinished=true;
+}
 
-adsxuitBtn.addEventListener("click", async ()=>{
-  if (adsxuitReady) {
-    try {
-      await window.showAdsxuit();
-      alert("🎉 AdsXuit Ad watched!");
-      adsxuitAdShown = true; // Mark AdsXuit ad as shown
-      xp++;
-      resetGame();
-    } catch (err) {
-      alert("⚠️ Error showing AdsXuit ad: " + err);
-    }
-  } else {
-    alert("⏳ AdsXuit SDK is still loading... Please try again in a few seconds.");
-    tryLoadAdsxuit();
-  }
-});
+function resetGame(){
+  board.fill("");
+  gameActive=true;
+  gameFinished=false;
+  updateBoard();
+}
 
-// --- Intro fade ---
+restartBtn.onclick = resetGame;
+
+nextBtn.onclick = ()=>{
+  if(gameFinished) showRichAd();
+  resetGame();
+};
+
+rewardBtn.onclick = ()=>{
+  showRichAd();
+  resetGame();
+};
+
 setTimeout(()=>{
-  intro.style.opacity = "0";
-  setTimeout(()=>{ intro.style.display="none"; createBoard(); updateBoard(); },1000);
-}, 3000);
+  intro.style.opacity="0";
+  setTimeout(()=>{
+    intro.style.display="none";
+    createBoard();
+    updateBoard();
+  },1000);
+},3000);
 </script>
 </body>
 </html>
