@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Watch & Earn Ads</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Tic Tac Toe</title>
 
 <!-- Telegram WebApp -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<!-- Monetag SDK -->
-<script src="//libtl.com/sdk.js" data-zone="10412754" data-sdk="show_10412754"></script>
 
 <!-- RichPartners SDK -->
 <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
@@ -17,138 +14,191 @@
 window.TelegramAdsController = new TelegramAdsController();
 window.TelegramAdsController.initialize({
   pubId: "956231",
-  appId: "5476",
+  appId: "5476"
 });
-let richLoaded = true;
+let richReady = true;
 </script>
 
+<!-- GigaPub -->
+<script src="https://ad.gigapub.tech/script?id=978"></script>
+
 <style>
-*{box-sizing:border-box;font-family:Segoe UI,Roboto,sans-serif;margin:0;padding:0;}
 body{
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:#0a0a0a;
-    overflow:hidden;
-    position:relative;
-    color:#fff;
+  margin:0;
+  background:#0a0a0a;
+  color:#fff;
+  font-family:Arial,sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
 }
+#game-wrap{text-align:center}
+#game{
+  display:grid;
+  grid-template-columns:repeat(3,90px);
+  gap:14px;
+  margin:20px auto;
+}
+.cell{
+  width:90px;height:90px;
+  background:#2b1365;
+  border-radius:18px;
+  font-size:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+.cell.X{color:#00ffcc}
+.cell.O{color:#ff4d6d}
 
-@keyframes shimmer {
-    0% { background-position: -500px 0; }
-    100% { background-position: 500px 0; }
+button{
+  padding:10px 20px;
+  margin:6px;
+  border:none;
+  border-radius:18px;
+  font-size:16px;
+  cursor:pointer;
 }
-body::before{
-    content:'';
-    position:absolute;
-    top:0; left:0; width:100%; height:100%;
-    background:linear-gradient(120deg, rgba(0,255,224,0.05), rgba(255,0,255,0.05), rgba(0,255,255,0.05));
-    background-size: 1000px 1000px;
-    animation: shimmer 15s linear infinite;
-    z-index:0;
-}
+#next{background:#ffd700;color:#000}
+#reward{background:#00ffcc;color:#000}
 
-.panel{
-    width:360px;
-    background:#0c0c0c;
-    border-radius:24px;
-    padding:24px;
-    box-shadow:0 25px 70px rgba(0,0,0,.7);
-    position:relative;
-    z-index:1;
-}
-.title{
-    text-align:center;
-    font-size:22px;
-    margin-bottom:20px;
-    font-weight:700;
-    text-shadow: 0 0 8px #00ffe0;
-}
-.card{
-    background:#111;
-    border:1px solid #2b2b2b;
-    border-radius:18px;
-    padding:18px;
-    margin-bottom:16px;
-    cursor:pointer;
-    transition:.3s;
-}
-.card:hover{
-    border-color:#00ffe0;
-    box-shadow:0 0 20px rgba(0,255,224,.4);
-}
-.card h4{
-    margin:0 0 8px;
-    font-size:17px;
-}
-.card span{
-    font-size:12px;
-    color:#aaa;
-}
-.footer{
-    text-align:center;
-    margin-top:14px;
-    font-size:12px;
-    color:#777;
+/* Ad status */
+#ad-status{
+  position:fixed;
+  bottom:10px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,.75);
+  color:#00ffcc;
+  padding:6px 12px;
+  border-radius:14px;
+  font-size:13px;
+  display:none;
+  z-index:9999;
 }
 </style>
 </head>
 
 <body>
 
-<div class="panel">
-    <div class="title">Watch & Earn</div>
+<div id="game-wrap">
+  <h2>Player vs Computer</h2>
+  <div id="status">Your turn</div>
+  <div id="game"></div>
 
-    <!-- Card 1: RichPartners -->
-    <div class="card" onclick="watchRich()">
-        <h4>RichPartners</h4>
-        <span>High CPM • Premium Ads</span>
-    </div>
-
-    <!-- Card 2: Monetag -->
-    <div class="card" onclick="watchMonetag()">
-        <h4>Monetag</h4>
-        <span>Worldwide Ads • Fast Load</span>
-    </div>
-
-    <div class="footer">Click any network to watch ad</div>
+  <button id="next">Next</button>
+  <button id="reward">Watch Ads</button>
 </div>
+
+<div id="ad-status"></div>
 
 <script>
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 
-let monetagRetry = 0;
-const monetagMaxRetry = 5;
+const gameEl = document.getElementById("game");
+const statusEl = document.getElementById("status");
+const adStatus = document.getElementById("ad-status");
 
-// Monetag Ad with retry
-function watchMonetag() {
-    if (typeof window.show_10412754 === "function") {
-        show_10412754();
-        monetagRetry = 0; // reset retry
-    } else if (monetagRetry < monetagMaxRetry) {
-        monetagRetry++;
-        console.log("Monetag not ready, retrying... attempt:", monetagRetry);
-        setTimeout(watchMonetag, 1000); // retry after 1 sec
-    } else {
-        alert("Monetag ad not ready. Please refresh or try again later.");
-    }
+let board = Array(9).fill("");
+let active = true;
+
+const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+function showAdStatus(text){
+  adStatus.textContent = "Ad: " + text;
+  adStatus.style.display = "block";
+  setTimeout(()=>adStatus.style.display="none",2000);
 }
 
-// RichPartners Ad
-function watchRich() {
-    if (richLoaded && window.TelegramAdsController) {
-        try {
-            window.TelegramAdsController.showAd();
-        } catch (err) {
-            alert("RichPartners ad could not be shown.");
-            console.error(err);
-        }
-    } else {
-        alert("RichPartners ad not ready yet. Please try again.");
-    }
+function createBoard(){
+  gameEl.innerHTML="";
+  board.forEach((_,i)=>{
+    const c=document.createElement("div");
+    c.className="cell";
+    c.onclick=()=>move(i);
+    gameEl.appendChild(c);
+  });
 }
+
+function render(){
+  [...gameEl.children].forEach((c,i)=>{
+    c.textContent=board[i];
+    c.classList.remove("X","O");
+    if(board[i]) c.classList.add(board[i]);
+  });
+}
+
+function win(p){return wins.some(w=>w.every(i=>board[i]===p))}
+function draw(){return board.every(v=>v)}
+
+function move(i){
+  if(!active||board[i])return;
+  board[i]="X";render();
+  if(win("X")) return end("You win!");
+  if(draw()) return end("Draw!");
+  setTimeout(cpu,500);
+}
+
+function cpu(){
+  const e=board.map((v,i)=>v?null:i).filter(v=>v!==null);
+  if(!e.length)return;
+  const m=e[Math.floor(Math.random()*e.length)];
+  board[m]="O";render();
+  if(win("O")) end("You lose!");
+}
+
+function end(msg){
+  active=false;
+  statusEl.textContent=msg;
+}
+
+function reset(){
+  board.fill("");
+  active=true;
+  statusEl.textContent="Your turn";
+  render();
+}
+
+/* -------- Ad logic -------- */
+function showAdThenNext(){
+  let done=false;
+  const finish=()=>{
+    if(done)return;
+    done=true;
+    reset();
+  };
+
+  setTimeout(()=>{showAdStatus("timeout");finish();},3000);
+
+  /* RichAds */
+  if(richReady && window.TelegramAdsController){
+    try{
+      showAdStatus("rich ad");
+      TelegramAdsController.showAd();
+      setTimeout(()=>finish(),800);
+      return;
+    }catch(e){}
+  }
+
+  /* GigaPub fallback */
+  if(typeof window.showGiga==="function"){
+    showAdStatus("gigapub");
+    window.showGiga().finally(finish);
+  }else{
+    finish();
+  }
+}
+
+document.getElementById("next").onclick=()=>{
+  if(!active) showAdThenNext();
+};
+document.getElementById("reward").onclick=showAdThenNext;
+
+createBoard();
+render();
 </script>
 
 </body>
