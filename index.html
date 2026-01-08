@@ -12,15 +12,7 @@
 <script src="//libtl.com/sdk.js" data-zone="10412754" data-sdk="show_10412754"></script>
 
 <!-- RichPartners SDK -->
-<script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
-<script>
-window.TelegramAdsController = new TelegramAdsController();
-window.TelegramAdsController.initialize({
-  pubId: "956231",
-  appId: "5476",
-});
-let richLoaded = true;
-</script>
+<script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js" defer></script>
 
 <style>
 *{box-sizing:border-box;font-family:Segoe UI,Roboto,sans-serif;margin:0;padding:0;}
@@ -34,7 +26,6 @@ body{
     position:relative;
     color:#fff;
 }
-
 @keyframes shimmer {
     0% { background-position: -500px 0; }
     100% { background-position: 500px 0; }
@@ -48,7 +39,6 @@ body::before{
     animation: shimmer 15s linear infinite;
     z-index:0;
 }
-
 .panel{
     width:360px;
     background:#0c0c0c;
@@ -78,6 +68,10 @@ body::before{
     border-color:#00ffe0;
     box-shadow:0 0 20px rgba(0,255,224,.4);
 }
+.card.disabled{
+    opacity:.5;
+    pointer-events:none;
+}
 .card h4{
     margin:0 0 8px;
     font-size:17px;
@@ -100,13 +94,13 @@ body::before{
 <div class="panel">
     <div class="title">Watch & Earn</div>
 
-    <!-- Card 1: RichPartners -->
-    <div class="card" onclick="watchRich()">
+    <!-- RichPartners -->
+    <div class="card" id="richCard" onclick="watchRich()">
         <h4>RichPartners</h4>
-        <span>High CPM • Premium Ads</span>
+        <span id="richStatus">Loading ad…</span>
     </div>
 
-    <!-- Card 2: Monetag -->
+    <!-- Monetag -->
     <div class="card" onclick="watchMonetag()">
         <h4>Monetag</h4>
         <span>Worldwide Ads • Fast Load</span>
@@ -119,35 +113,84 @@ body::before{
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 
+/* =========================
+   Monetag logic
+========================= */
 let monetagRetry = 0;
 const monetagMaxRetry = 5;
 
-// Monetag Ad with retry
 function watchMonetag() {
     if (typeof window.show_10412754 === "function") {
         show_10412754();
-        monetagRetry = 0; // reset retry
+        monetagRetry = 0;
     } else if (monetagRetry < monetagMaxRetry) {
         monetagRetry++;
-        console.log("Monetag not ready, retrying... attempt:", monetagRetry);
-        setTimeout(watchMonetag, 1000); // retry after 1 sec
+        setTimeout(watchMonetag, 1000);
     } else {
-        alert("Monetag ad not ready. Please refresh or try again later.");
+        alert("Monetag ad not ready. Try again later.");
     }
 }
 
-// RichPartners Ad
-function watchRich() {
-    if (richLoaded && window.TelegramAdsController) {
-        try {
-            window.TelegramAdsController.showAd();
-        } catch (err) {
-            alert("RichPartners ad could not be shown.");
-            console.error(err);
-        }
-    } else {
-        alert("RichPartners ad not ready yet. Please try again.");
+/* =========================
+   RichPartners logic
+========================= */
+let richController = null;
+let richReady = false;
+let richLoading = false;
+
+document.addEventListener("DOMContentLoaded", initRich);
+
+function initRich() {
+    if (typeof TelegramAdsController === "undefined") {
+        setTimeout(initRich, 200);
+        return;
     }
+
+    richController = new TelegramAdsController();
+    richController.initialize({
+        pubId: "956231",
+        appId: "5476",
+    });
+
+    loadRichAd();
+}
+
+function loadRichAd() {
+    if (richLoading || richReady) return;
+
+    richLoading = true;
+    updateRichUI("Loading ad…", true);
+
+    try {
+        richController.loadAd();
+        richReady = true;
+        richLoading = false;
+        updateRichUI("High CPM • Premium Ads", false);
+    } catch (e) {
+        richLoading = false;
+        setTimeout(loadRichAd, 1500);
+    }
+}
+
+function watchRich() {
+    if (!richReady) return;
+
+    try {
+        richController.showAd();
+        richReady = false;
+        updateRichUI("Loading next ad…", true);
+
+        // Start loading next ad immediately
+        setTimeout(loadRichAd, 500);
+    } catch (e) {
+        richReady = false;
+        loadRichAd();
+    }
+}
+
+function updateRichUI(text, disabled) {
+    document.getElementById("richStatus").innerText = text;
+    document.getElementById("richCard").classList.toggle("disabled", disabled);
 }
 </script>
 
