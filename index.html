@@ -1,132 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Signal Jammer</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-/* ===== BODY ===== */
-body{margin:0;background:#0b0f1a;font-family:Arial,sans-serif;overflow:hidden;color:#fff;}
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Tic Tac Toe</title>
 
-/* ===== HUD ===== */
-#topHud{position:fixed;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:28px;background:rgba(0,0,0,0.45);padding:10px 20px;border-radius:16px;backdrop-filter:blur(6px);z-index:10;transition:opacity 0.5s;}
-.hudItem{text-align:center;min-width:90px;}
-.label{font-size:10px;letter-spacing:2px;opacity:0.6;}
-.value{font-size:22px;font-weight:bold;transition:transform 0.2s ease,color 0.2s ease;}
-.value.animate{transform:scale(1.3);color:#00ffa2;}
-.combo{color:#00eaff;}
-.progress{width:90px;height:5px;background:#222;border-radius:4px;overflow:hidden;margin-top:5px;}
-.progressBar{height:100%;width:0%;background:linear-gradient(90deg,#00eaff,#00ffa2);transition:width 0.3s ease;}
+<!-- Telegram WebApp -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-/* ===== LIVES ===== */
-#lives{position:fixed;top:12px;right:12px;display:flex;align-items:center;gap:6px;z-index:10;font-weight:bold;font-size:18px;transition:opacity 0.5s;}
-.heart{width:18px;height:18px;background:url('logo.png') no-repeat center center;background-size:contain;transition:transform 0.3s ease;}
-.extraLives{color:#00eaff;font-size:16px;margin-left:4px;}
-
-/* ===== CORE ===== */
-#core{position:absolute;width:60px;height:60px;background:radial-gradient(circle,#ff6666,#990000);border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%);box-shadow:0 0 22px rgba(255,70,70,0.9);}
-
-/* ===== SIGNAL BALL ===== */
-.signal{position:absolute;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #7fffff,#00eaff 60%,#0088aa);box-shadow:0 0 6px rgba(0,234,255,0.8),0 0 14px rgba(0,234,255,0.6),0 0 26px rgba(0,234,255,0.4);cursor:pointer;transition:transform 0.15s ease;}
-.signal:hover{transform:scale(1.15);}
-
-/* ===== GAME OVER ===== */
-#gameover{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);text-align:center;padding-top:30vh;z-index:30;}
-button{padding:12px 24px;font-size:16px;cursor:pointer;}
-
-/* ===== HEART PARTICLES ===== */
-.particle{position:absolute;width:12px;height:12px;background:radial-gradient(circle,#FF4C4C,#FF0000);clip-path:polygon(50% 0%,61% 12%,75% 12%,85% 25%,85% 50%,50% 100%,15% 50%,15% 25%,25% 12%,39% 12%);pointer-events:none;z-index:20;opacity:1;transform:scale(1) rotate(0deg);transition:transform 0.8s ease,opacity 0.8s ease;}
-
-/* ===== PREMIUM ROCKET & FIREWORKS ===== */
-#premiumOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:50;opacity:0;pointer-events:none;transition:opacity 0.5s;}
-#premiumOverlay.show{opacity:1;}
-#rocket{width:60px;height:100px;background:linear-gradient(#ff0,#ff4500);clip-path:polygon(50% 0%,65% 25%,65% 70%,50% 100%,35% 70%,35% 25%);position:relative;box-shadow:0 0 20px #ff0;transform:translateY(100vh);}
-.firework{position:absolute;width:6px;height:6px;background:radial-gradient(circle,#fff,#0ff);border-radius:50%;pointer-events:none;opacity:1;}
-</style>
-
-<!-- ===== GameMonetize SDK ===== -->
-<script type="text/javascript">
-window.SDK_OPTIONS = {
-   gameId: "2h2dmpcucvmejjtpmctrr4gacd9c5wv6",
-   onEvent: function (a) {
-      switch (a.name) {
-         case "SDK_GAME_PAUSE":
-            paused = true;
-            document.querySelectorAll("audio").forEach(audio => audio.muted = true);
-            break;
-         case "SDK_GAME_START":
-            paused = false;
-            document.querySelectorAll("audio").forEach(audio => audio.muted = false);
-            break;
-         case "SDK_READY":
-            console.log("GameMonetize SDK ready");
-            // Optionally show a banner ad when SDK is ready
-            if (typeof sdk !== 'undefined' && typeof sdk.showBanner !== 'undefined') {
-                sdk.showBanner();
-            }
-            break;
-      }
-   }
-};
-(function (a, b, c) {
-   var d = a.getElementsByTagName(b)[0];
-   if (!a.getElementById(c)) {
-      a = a.createElement(b);
-      a.id = c;
-      a.src = "https://api.gamemonetize.com/sdk.js";
-      d.parentNode.insertBefore(a, d);
-   }
-})(document, "script", "gamemonetize-sdk");
+<!-- RichPartners SDK -->
+<script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+<script>
+window.TelegramAdsController = new TelegramAdsController();
+window.TelegramAdsController.initialize({
+  pubId: "956231",
+  appId: "5476"
+});
+let richReady = true;
 </script>
+
+<!-- GigaPub -->
+<script src="https://ad.gigapub.tech/script?id=978"></script>
+
+<style>
+body{
+  margin:0;
+  background:#0a0a0a;
+  color:#fff;
+  font-family:Arial,sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+#game-wrap{text-align:center}
+#game{
+  display:grid;
+  grid-template-columns:repeat(3,90px);
+  gap:14px;
+  margin:20px auto;
+}
+.cell{
+  width:90px;height:90px;
+  background:#2b1365;
+  border-radius:18px;
+  font-size:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+.cell.X{color:#00ffcc}
+.cell.O{color:#ff4d6d}
+
+button{
+  padding:10px 20px;
+  margin:6px;
+  border:none;
+  border-radius:18px;
+  font-size:16px;
+  cursor:pointer;
+}
+#next{background:#ffd700;color:#000}
+#reward{background:#00ffcc;color:#000}
+
+/* Ad status */
+#ad-status{
+  position:fixed;
+  bottom:10px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,.75);
+  color:#00ffcc;
+  padding:6px 12px;
+  border-radius:14px;
+  font-size:13px;
+  display:none;
+  z-index:9999;
+}
+</style>
 </head>
+
 <body>
 
-<div id="topHud">
-  <div class="hudItem"><div class="label">LEVEL</div><div class="value" id="level">01</div></div>
-  <div class="hudItem"><div class="label">SCORE</div><div class="value" id="score">00000</div><div class="progress"><div class="progressBar" id="bar"></div></div></div>
-  <div class="hudItem"><div class="label">COMBO</div><div class="value combo">x<span id="combo">1</span></div></div>
+<div id="game-wrap">
+  <h2>Player vs Computer</h2>
+  <div id="status">Your turn</div>
+  <div id="game"></div>
+
+  <button id="next">Next</button>
+  <button id="reward">Watch Ads</button>
 </div>
 
-<div id="lives"></div>
-<div id="core"></div>
-<div id="levelOverlay"><div id="levelText">LEVEL</div></div>
-<div id="premiumOverlay"><div id="rocket"></div></div>
-<div id="gameover">
-<h1>CORE OVERLOADED</h1>
-<p>Final Score: <span id="finalScore"></span></p>
-<p>Level Reached: <span id="finalLevel"></span></p>
-<button onclick="location.reload()">Restart</button>
-</div>
-<audio id="catchSound"><source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA="></audio>
+<div id="ad-status"></div>
 
 <script>
-let score=0,level=1,combo=0,coreHits=0,paused=false,lives=1;
-let speed=0.6,spawnDelay=1200;
-const scoreEl=document.getElementById("score"),levelEl=document.getElementById("level"),comboEl=document.getElementById("combo"),barEl=document.getElementById("bar"),livesEl=document.getElementById("lives"),overlay=document.getElementById("levelOverlay"),levelText=document.getElementById("levelText"),premiumOverlay=document.getElementById("premiumOverlay"),rocket=document.getElementById("rocket"),gameOverEl=document.getElementById("gameover"),finalScoreEl=document.getElementById("finalScore"),finalLevelEl=document.getElementById("finalLevel"),sound=document.getElementById("catchSound");
-const cx=()=>innerWidth/2,cy=()=>innerHeight/2;
+Telegram.WebApp.ready();
+Telegram.WebApp.expand();
 
-function animate(el){el.classList.add("animate");setTimeout(()=>el.classList.remove("animate"),200);}
-function formatScore(n){return n.toString().padStart(5,'0');}
-function formatLevel(n){return n.toString().padStart(2,'0');}
-function levelTarget(){return level*10;}
-function updateProgress(){barEl.style.width=Math.min(100,(score/levelTarget())*100)+"%";}
+const gameEl = document.getElementById("game");
+const statusEl = document.getElementById("status");
+const adStatus = document.getElementById("ad-status");
 
-function setupLives(){livesEl.innerHTML="";let displayCount=Math.min(lives,3);for(let i=0;i<displayCount;i++){const h=document.createElement("div");h.className="heart";livesEl.appendChild(h);}if(lives>3){const extra=document.createElement("div");extra.className="extraLives";extra.textContent="+"+(lives-3);livesEl.appendChild(extra);}}
-function spawnHeartParticles(el){const rect=el.getBoundingClientRect();for(let i=0;i<12;i++){const p=document.createElement("div");p.className="particle";document.body.appendChild(p);p.style.left=rect.left+rect.width/2+"px";p.style.top=rect.top+rect.height/2+"px";const angle=Math.random()*2*Math.PI,dist=Math.random()*60+20;p.style.transform=`translate(${Math.cos(angle)*dist}px,${Math.sin(angle)*dist}px) scale(0) rotate(${Math.random()*360}deg)`;setTimeout(()=>{p.remove();},800);}}
-function loseLife(){const heart=livesEl.querySelector(".heart:not(.broken)");if(heart){heart.classList.add("broken");spawnHeartParticles(heart);lives--;}coreHits=0;if(lives<=0){endGame();}}
-function showLevelUp(){paused=true;overlay.classList.add("show");levelText.textContent="LEVEL "+formatLevel(level);setTimeout(()=>{overlay.classList.remove("show");paused=false;},900);}
+let board = Array(9).fill("");
+let active = true;
 
-function premiumLevelAnimation(callback){paused=true;document.getElementById("topHud").style.opacity="0.4";livesEl.style.opacity="0.4";premiumOverlay.classList.add("show");rocket.style.transform="translateY(100vh)";setTimeout(()=>{rocket.style.transition="transform 2s cubic-bezier(0.5,0,0.5,1)";rocket.style.transform="translateY(-200px)";createFireworks();},50);setTimeout(()=>{premiumOverlay.classList.remove("show");rocket.style.transition="none";rocket.style.transform="translateY(100vh)";document.getElementById("topHud").style.opacity="1";livesEl.style.opacity="1";paused=false;callback();},2500);}
-function createFireworks(){for(let i=0;i<30;i++){const f=document.createElement("div");f.className="firework";premiumOverlay.appendChild(f);const angle=Math.random()*2*Math.PI,dist=Math.random()*200+50;f.style.left=cx()+"px";f.style.top=cy()+"px";f.style.transform=`translate(${Math.cos(angle)*dist}px,${Math.sin(angle)*dist}px)`;f.style.transition="transform 1s ease-out, opacity 1s ease-out";f.style.opacity="0";setTimeout(()=>{f.remove();},1000);}}
+const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 
-function spawnSignal(){if(paused) return;const s=document.createElement("div");s.className="signal";const angle=Math.random()*Math.PI*2,dist=Math.max(innerWidth,innerHeight)/2+60;let x=cx()+Math.cos(angle)*dist,y=cy()+Math.sin(angle)*dist;s.style.left=x+"px";s.style.top=y+"px";document.body.appendChild(s);s.onclick=()=>{combo++;score+=combo;sound.currentTime=0;sound.play();scoreEl.textContent=formatScore(score);comboEl.textContent=combo;animate(scoreEl);animate(comboEl);updateProgress();s.remove();if(score>=levelTarget()){level++;speed+=0.12;spawnDelay=Math.max(350,spawnDelay-35);levelEl.textContent=formatLevel(level);animate(levelEl);barEl.style.width="0%";lives=level;setupLives();if(level%5===0){premiumLevelAnimation(()=>{});}else{showLevelUp();}}};const move=setInterval(()=>{if(paused)return;x+=(cx()-x)*0.01*speed;y+=(cy()-y)*0.01*speed;s.style.left=x+"px";s.style.top=y+"px";if(Math.hypot(x-cx(),y-cy())<30){clearInterval(move);s.remove();combo=0;comboEl.textContent=combo;coreHits++;if(coreHits>=level*10){loseLife();}}},16);}
+function showAdStatus(text){
+  adStatus.textContent = "Ad: " + text;
+  adStatus.style.display = "block";
+  setTimeout(()=>adStatus.style.display="none",2000);
+}
 
-function endGame(){document.querySelectorAll(".signal").forEach(e=>e.remove());finalScoreEl.textContent=score;finalLevelEl.textContent=level;gameOverEl.style.display="block";}
+function createBoard(){
+  gameEl.innerHTML="";
+  board.forEach((_,i)=>{
+    const c=document.createElement("div");
+    c.className="cell";
+    c.onclick=()=>move(i);
+    gameEl.appendChild(c);
+  });
+}
 
-/* START GAME */
-updateProgress();lives=1;setupLives();
-setTimeout(()=>{loop();},1000);
-function loop(){spawnSignal();setTimeout(loop,spawnDelay);}
+function render(){
+  [...gameEl.children].forEach((c,i)=>{
+    c.textContent=board[i];
+    c.classList.remove("X","O");
+    if(board[i]) c.classList.add(board[i]);
+  });
+}
+
+function win(p){return wins.some(w=>w.every(i=>board[i]===p))}
+function draw(){return board.every(v=>v)}
+
+function move(i){
+  if(!active||board[i])return;
+  board[i]="X";render();
+  if(win("X")) return end("You win!");
+  if(draw()) return end("Draw!");
+  setTimeout(cpu,500);
+}
+
+function cpu(){
+  const e=board.map((v,i)=>v?null:i).filter(v=>v!==null);
+  if(!e.length)return;
+  const m=e[Math.floor(Math.random()*e.length)];
+  board[m]="O";render();
+  if(win("O")) end("You lose!");
+}
+
+function end(msg){
+  active=false;
+  statusEl.textContent=msg;
+}
+
+function reset(){
+  board.fill("");
+  active=true;
+  statusEl.textContent="Your turn";
+  render();
+}
+
+/* -------- Ad logic -------- */
+function showAdThenNext(){
+  let done=false;
+  const finish=()=>{
+    if(done)return;
+    done=true;
+    reset();
+  };
+
+  setTimeout(()=>{showAdStatus("timeout");finish();},3000);
+
+  /* RichAds */
+  if(richReady && window.TelegramAdsController){
+    try{
+      showAdStatus("rich ad");
+      TelegramAdsController.showAd();
+      setTimeout(()=>finish(),800);
+      return;
+    }catch(e){}
+  }
+
+  /* GigaPub fallback */
+  if(typeof window.showGiga==="function"){
+    showAdStatus("gigapub");
+    window.showGiga().finally(finish);
+  }else{
+    finish();
+  }
+}
+
+document.getElementById("next").onclick=()=>{
+  if(!active) showAdThenNext();
+};
+document.getElementById("reward").onclick=showAdThenNext;
+
+createBoard();
+render();
 </script>
+
 </body>
 </html>
