@@ -8,62 +8,107 @@
 <!-- Telegram WebApp -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<!-- Monetag SDK -->
-<script src="//libtl.com/sdk.js" data-zone="9858364" data-sdk="show_9858364"></script>
+<!-- Monetag SDK (backup) -->
+<script src="//libtl.com/sdk.js"
+        data-zone="9858364"
+        data-sdk="show_9858364"></script>
 
-<!-- RichPartners SDK -->
+<!-- RichAds SDK -->
 <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+
 <script>
-window.TelegramAdsController = new TelegramAdsController();
-window.TelegramAdsController.initialize({
-  pubId: "956231",
-  appId: "5556",
-});
-let richLoaded = true;
+Telegram.WebApp.ready();
+Telegram.WebApp.expand();
+
+/* ---------------- RICHADS CONTROLLER ---------------- */
+let RichController;
+let RichReady = false;
+
+function initRichAds() {
+    try {
+        RichController = new TelegramAdsController();
+
+        RichController.initialize({
+            pubId: "956231",
+            appId: "5556"
+        });
+
+        RichReady = true;
+
+        // Load ALL formats together
+        preloadRichAds();
+
+        console.log("RichAds initialized (push + interstitial + video)");
+    } catch (e) {
+        console.error("RichAds init error", e);
+    }
+}
+
+/* Preload all formats */
+function preloadRichAds() {
+    if (!RichController) return;
+
+    try {
+        // Push ads (persistent)
+        RichController.load?.();
+
+        // Interstitial
+        RichController.loadInterstitial?.();
+
+        // Rewarded / video
+        RichController.loadRewarded?.();
+
+    } catch (e) {}
+}
+
+/* Keep ads alive */
+setInterval(preloadRichAds, 20000);
+
+/* Show interstitial / video on click */
+function showRichFullscreen() {
+    if (!RichReady) return fallbackMonetag();
+
+    try {
+        RichController.showAd(); // auto-select best format
+        preloadRichAds();        // reload after show
+    } catch (e) {
+        fallbackMonetag();
+    }
+}
+
+/* ---------------- FALLBACK ---------------- */
+function fallbackMonetag() {
+    if (typeof window.show_9858364 === "function") {
+        window.show_9858364();
+    }
+}
+
+/* ---------------- INIT ---------------- */
+initRichAds();
 </script>
 
 <style>
-*{box-sizing:border-box;font-family:Segoe UI,Roboto,sans-serif;margin:0;padding:0;}
+*{box-sizing:border-box;font-family:Segoe UI,Roboto,sans-serif;margin:0;padding:0}
 body{
     height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
     background:#0a0a0a;
-    overflow:hidden;
-    position:relative;
     color:#fff;
 }
-
-@keyframes shimmer {
-    0% { background-position: -500px 0; }
-    100% { background-position: 500px 0; }
-}
-body::before{
-    content:'';
-    position:absolute;
-    top:0; left:0; width:100%; height:100%;
-    background:linear-gradient(120deg, rgba(0,255,224,0.05), rgba(255,0,255,0.05), rgba(0,255,255,0.05));
-    background-size: 1000px 1000px;
-    animation: shimmer 15s linear infinite;
-    z-index:0;
-}
-
 .panel{
     width:360px;
     background:#0c0c0c;
     border-radius:24px;
     padding:24px;
     box-shadow:0 25px 70px rgba(0,0,0,.7);
-    position:relative;
-    z-index:1;
 }
 .title{
     text-align:center;
     font-size:22px;
     margin-bottom:20px;
     font-weight:700;
-    text-shadow: 0 0 8px #00ffe0;
 }
 .card{
     background:#111;
@@ -78,14 +123,8 @@ body::before{
     border-color:#00ffe0;
     box-shadow:0 0 20px rgba(0,255,224,.4);
 }
-.card h4{
-    margin:0 0 8px;
-    font-size:17px;
-}
-.card span{
-    font-size:12px;
-    color:#aaa;
-}
+.card h4{margin:0 0 8px;font-size:17px}
+.card span{font-size:12px;color:#aaa}
 .footer{
     text-align:center;
     margin-top:14px;
@@ -100,56 +139,15 @@ body::before{
 <div class="panel">
     <div class="title">Watch & Earn</div>
 
-    <!-- Card 1: RichPartners -->
-    <div class="card" onclick="watchRich()">
-        <h4>RichPartners</h4>
-        <span>High CPM • Premium Ads</span>
+    <div class="card" onclick="showRichFullscreen()">
+        <h4>Watch Ad</h4>
+        <span>RichAds Video / Interstitial</span>
     </div>
 
-    <!-- Card 2: Monetag -->
-    <div class="card" onclick="watchMonetag()">
-        <h4>Monetag</h4>
-        <span>Worldwide Ads • Fast Load</span>
+    <div class="footer">
+        Push ads stay active in background
     </div>
-
-    <div class="footer">Click any network to watch ad</div>
 </div>
-
-<script>
-Telegram.WebApp.ready();
-Telegram.WebApp.expand();
-
-let monetagRetry = 0;
-const monetagMaxRetry = 5;
-
-// Monetag Ad with retry
-function watchMonetag() {
-    if (typeof window.show_10412754 === "function") {
-        show_10412754();
-        monetagRetry = 0; // reset retry
-    } else if (monetagRetry < monetagMaxRetry) {
-        monetagRetry++;
-        console.log("Monetag not ready, retrying... attempt:", monetagRetry);
-        setTimeout(watchMonetag, 1000); // retry after 1 sec
-    } else {
-        alert("Monetag ad not ready. Please refresh or try again later.");
-    }
-}
-
-// RichPartners Ad
-function watchRich() {
-    if (richLoaded && window.TelegramAdsController) {
-        try {
-            window.TelegramAdsController.showAd();
-        } catch (err) {
-            alert("RichPartners ad could not be shown.");
-            console.error(err);
-        }
-    } else {
-        alert("RichPartners ad not ready yet. Please try again.");
-    }
-}
-</script>
 
 </body>
 </html>
