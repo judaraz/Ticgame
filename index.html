@@ -13,13 +13,23 @@
 
 <!-- RichPartners SDK -->
 <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+
+<!-- Onclick (TMA) Reward SDK -->
+<script src="https://js.onclckvd.com/in-stream-ad-admanager/tma.js"></script>
+
 <script>
+/* ---------- RichPartners Init ---------- */
 window.TelegramAdsController = new TelegramAdsController();
 window.TelegramAdsController.initialize({
   pubId: "956231",
-  appId: "5568",
+  appId: "5571",
 });
-let richLoaded = true;
+
+/* ---------- Onclick Init ---------- */
+let showTmaAd = null;
+window.initCdTma?.({ id: "411773" })
+  .then(show => showTmaAd = show)
+  .catch(e => console.log("TMA init failed", e));
 </script>
 
 <style>
@@ -34,36 +44,18 @@ body{
     position:relative;
     color:#fff;
 }
-
-@keyframes shimmer {
-    0% { background-position: -500px 0; }
-    100% { background-position: 500px 0; }
-}
-body::before{
-    content:'';
-    position:absolute;
-    top:0; left:0; width:100%; height:100%;
-    background:linear-gradient(120deg, rgba(0,255,224,0.05), rgba(255,0,255,0.05), rgba(0,255,255,0.05));
-    background-size: 1000px 1000px;
-    animation: shimmer 15s linear infinite;
-    z-index:0;
-}
-
 .panel{
     width:360px;
     background:#0c0c0c;
     border-radius:24px;
     padding:24px;
     box-shadow:0 25px 70px rgba(0,0,0,.7);
-    position:relative;
-    z-index:1;
 }
 .title{
     text-align:center;
     font-size:22px;
     margin-bottom:20px;
     font-weight:700;
-    text-shadow: 0 0 8px #00ffe0;
 }
 .card{
     background:#111;
@@ -76,11 +68,9 @@ body::before{
 }
 .card:hover{
     border-color:#00ffe0;
-    box-shadow:0 0 20px rgba(0,255,224,.4);
 }
 .card h4{
-    margin:0 0 8px;
-    font-size:17px;
+    margin-bottom:6px;
 }
 .card span{
     font-size:12px;
@@ -100,53 +90,59 @@ body::before{
 <div class="panel">
     <div class="title">Watch & Earn</div>
 
-    <!-- Card 1: RichPartners -->
-    <div class="card" onclick="watchRich()">
+    <!-- RichPartners (Primary) -->
+    <div class="card" onclick="watchRichWithFallback()">
         <h4>RichPartners</h4>
-        <span>High CPM • Premium Ads</span>
+        <span>High CPM • Primary</span>
     </div>
 
-    <!-- Card 2: Monetag -->
+    <!-- Monetag -->
     <div class="card" onclick="watchMonetag()">
         <h4>Monetag</h4>
-        <span>Worldwide Ads • Fast Load</span>
+        <span>Fast Load • Backup</span>
     </div>
 
-    <div class="footer">Click any network to watch ad</div>
+    <div class="footer">Ad plays automatically</div>
 </div>
 
 <script>
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 
-let monetagRetry = 0;
-const monetagMaxRetry = 5;
-
-// Monetag Ad with retry
+/* ---------- Monetag ---------- */
 function watchMonetag() {
     if (typeof window.show_10412754 === "function") {
         show_10412754();
-        monetagRetry = 0; // reset retry
-    } else if (monetagRetry < monetagMaxRetry) {
-        monetagRetry++;
-        console.log("Monetag not ready, retrying... attempt:", monetagRetry);
-        setTimeout(watchMonetag, 1000); // retry after 1 sec
     } else {
-        alert("Monetag ad not ready. Please refresh or try again later.");
+        alert("Monetag not ready");
     }
 }
 
-// RichPartners Ad
-function watchRich() {
-    if (richLoaded && window.TelegramAdsController) {
-        try {
+/* ---------- RichPartners with TMA fallback ---------- */
+function watchRichWithFallback() {
+    try {
+        if (window.TelegramAdsController) {
             window.TelegramAdsController.showAd();
-        } catch (err) {
-            alert("RichPartners ad could not be shown.");
-            console.error(err);
+        } else {
+            throw new Error("Rich SDK missing");
         }
+    } catch (e) {
+        console.log("Rich failed → fallback to TMA", e);
+        showTmaFallback();
+    }
+}
+
+/* ---------- TMA Reward Fallback ---------- */
+function showTmaFallback() {
+    if (showTmaAd) {
+        showTmaAd()
+            .then(() => console.log("TMA ad played"))
+            .catch(err => {
+                console.log("TMA failed", err);
+                alert("No ads available right now");
+            });
     } else {
-        alert("RichPartners ad not ready yet. Please try again.");
+        alert("Ads not ready yet");
     }
 }
 </script>
