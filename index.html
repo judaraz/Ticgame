@@ -8,28 +8,39 @@
 <!-- Telegram WebApp -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<!-- Monetag SDK -->
-<script src="//libtl.com/sdk.js" data-zone="10412754" data-sdk="show_10412754"></script>
+<!-- Monetag -->
+<script src="//libtl.com/sdk.js"
+        data-zone="10412754"
+        data-sdk="show_10412754"></script>
 
-<!-- RichPartners SDK -->
+<!-- RichPartners -->
 <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
 
-<!-- Onclick (TMA) Reward SDK -->
+<!-- TMA Onclick Video -->
 <script src="https://js.onclckvd.com/in-stream-ad-admanager/tma.js"></script>
 
 <script>
-/* ---------- RichPartners Init ---------- */
+/* ---------- TELEGRAM ---------- */
+Telegram.WebApp.ready();
+Telegram.WebApp.expand();
+
+/* ---------- RICH INIT ---------- */
+let richReady = false;
 window.TelegramAdsController = new TelegramAdsController();
 window.TelegramAdsController.initialize({
   pubId: "956231",
-  appId: "5571",
+  appId: "5568"
 });
+richReady = true;
 
-/* ---------- Onclick Init ---------- */
+/* ---------- TMA INIT ---------- */
 let showTmaAd = null;
-window.initCdTma?.({ id: "6089929" })
-  .then(show => showTmaAd = show)
-  .catch(e => console.log("TMA init failed", e));
+window.initCdTma?.({ id: 6089929 }) // 🔴 REPLACE WITH YOUR SPOT-ID
+  .then(show => {
+    showTmaAd = show;
+    console.log("TMA ready");
+  })
+  .catch(e => console.log("TMA init error", e));
 </script>
 
 <style>
@@ -40,45 +51,31 @@ body{
     justify-content:center;
     align-items:center;
     background:#0a0a0a;
-    overflow:hidden;
-    position:relative;
     color:#fff;
 }
 .panel{
     width:360px;
     background:#0c0c0c;
-    border-radius:24px;
+    border-radius:22px;
     padding:24px;
-    box-shadow:0 25px 70px rgba(0,0,0,.7);
 }
 .title{
     text-align:center;
     font-size:22px;
     margin-bottom:20px;
-    font-weight:700;
 }
 .card{
     background:#111;
-    border:1px solid #2b2b2b;
-    border-radius:18px;
+    border:1px solid #333;
+    border-radius:16px;
     padding:18px;
-    margin-bottom:16px;
+    margin-bottom:14px;
     cursor:pointer;
-    transition:.3s;
 }
-.card:hover{
-    border-color:#00ffe0;
-}
-.card h4{
-    margin-bottom:6px;
-}
-.card span{
-    font-size:12px;
-    color:#aaa;
-}
+.card:hover{border-color:#00ffe0;}
+.card span{font-size:12px;color:#aaa;}
 .footer{
     text-align:center;
-    margin-top:14px;
     font-size:12px;
     color:#777;
 }
@@ -90,62 +87,68 @@ body{
 <div class="panel">
     <div class="title">Watch & Earn</div>
 
-    <!-- RichPartners (Primary) -->
-    <div class="card" onclick="watchRichWithFallback()">
+    <!-- RICH WITH FALLBACK -->
+    <div class="card" onclick="playRich()">
         <h4>RichPartners</h4>
-        <span>High CPM • Primary</span>
+        <span>Primary Ad</span>
     </div>
 
-    <!-- Monetag -->
-    <div class="card" onclick="watchMonetag()">
+    <!-- MONETAG -->
+    <div class="card" onclick="playMonetag()">
         <h4>Monetag</h4>
-        <span>Fast Load • Backup</span>
+        <span>Backup Network</span>
     </div>
 
-    <div class="footer">Ad plays automatically</div>
+    <div class="footer">Click to watch ad</div>
 </div>
 
 <script>
-Telegram.WebApp.ready();
-Telegram.WebApp.expand();
-
-/* ---------- Monetag ---------- */
-function watchMonetag() {
-    if (typeof window.show_10412754 === "function") {
-        show_10412754();
-    } else {
-        alert("Monetag not ready");
+/* ---------- RICH + FALLBACK ---------- */
+function playRich() {
+  try {
+    if (!richReady || !window.TelegramAdsController) {
+      throw new Error("Rich not ready");
     }
+
+    window.TelegramAdsController.showAd();
+    console.log("Rich ad requested");
+
+  } catch (err) {
+    console.log("Rich failed → TMA fallback");
+    playTma();
+  }
 }
 
-/* ---------- RichPartners with TMA fallback ---------- */
-function watchRichWithFallback() {
-    try {
-        if (window.TelegramAdsController) {
-            window.TelegramAdsController.showAd();
-        } else {
-            throw new Error("Rich SDK missing");
-        }
-    } catch (e) {
-        console.log("Rich failed → fallback to TMA", e);
-        showTmaFallback();
-    }
+/* ---------- TMA ---------- */
+function playTma() {
+  if (!showTmaAd) {
+    alert("Ads not ready, try again");
+    return;
+  }
+
+  showTmaAd()
+    .then(() => {
+      console.log("TMA ad viewed");
+      // reward user here
+    })
+    .catch(err => {
+      console.log("TMA failed", err);
+      alert("No ads available");
+    });
 }
 
-/* ---------- TMA Reward Fallback ---------- */
-function showTmaFallback() {
-    if (showTmaAd) {
-        showTmaAd()
-            .then(() => console.log("TMA ad played"))
-            .catch(err => {
-                console.log("TMA failed", err);
-                alert("No ads available right now");
-            });
-    } else {
-        alert("Ads not ready yet");
-    }
+/* ---------- MONETAG ---------- */
+function playMonetag() {
+  if (typeof window.show_10412754 === "function") {
+    show_10412754();
+  } else {
+    alert("Monetag not ready");
+  }
 }
 </script>
+
+</body>
+</html></script>
 
 </body>
 </html>
