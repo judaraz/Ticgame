@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ludo Dice - Telegram Game</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Adexium Widget Script -->
+    <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
     <style>
         :root {
             --telegram-blue: #3390ec;
@@ -249,6 +251,21 @@
             justify-content: center;
             padding: 20px;
         }
+        
+        /* Adexium Widget Container */
+        .adexium-container {
+            width: 100%;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .adexium-loading {
+            text-align: center;
+            color: #6c757d;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
@@ -300,9 +317,12 @@
     <div class="popup-overlay" id="adsPopup">
         <div class="popup">
             <h2 class="popup-title">🎁 BONUS REWARD</h2>
-            <div class="ads-content" id="adsContainer">
-                <div style="text-align: center; color: #6c757d;">
-                    <i class="fas fa-spinner fa-spin"></i> Loading reward...
+            <div class="ads-content">
+                <div class="adexium-container" id="adexiumContainer">
+                    <div class="adexium-loading">
+                        <i class="fas fa-spinner fa-spin"></i><br>
+                        Loading reward...
+                    </div>
                 </div>
             </div>
             <button class="popup-btn" id="closeAdsBtn" style="background: var(--telegram-blue); display: none;">
@@ -321,7 +341,7 @@
     <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
     <script>
         let richAdsLoaded = false;
-        let adexoraLoaded = false;
+        let adexiumWidget = null;
         
         // Check if we're in Telegram
         if (window.Telegram && window.Telegram.WebApp) {
@@ -344,29 +364,59 @@
                     console.log("✅ RichAds SDK initialized successfully");
                 } else {
                     console.log("❌ TelegramAdsController not defined");
-                    richAdsLoaded = true;
                 }
             } catch (error) {
                 console.log("❌ RichAds initialization error:", error);
-                richAdsLoaded = true;
             }
         } else {
             console.log("⚠️ Not in Telegram environment - RichAds will not work");
-            richAdsLoaded = true;
         }
-    </script>
-    
-    <!-- Adexora SDK (Fallback) -->
-    <script src="https://adexora.com/cdn/ads.js?id=50"></script>
-    <script>
-        // Check if Adexora loaded
-        if (typeof showAdexora === 'function') {
-            adexoraLoaded = true;
-            console.log("✅ Adexora SDK loaded");
-        } else {
-            console.log("❌ Adexora SDK not loaded");
-            adexoraLoaded = false;
+        
+        // Initialize Adexium Widget
+        function initAdexium() {
+            if (typeof AdexiumWidget !== 'undefined') {
+                try {
+                    adexiumWidget = new AdexiumWidget({
+                        wid: '30015b9a-df1e-4895-be7b-c5bc1b148fcf', 
+                        adFormat: 'interstitial'
+                    });
+                    
+                    // Set up event listeners for Adexium
+                    adexiumWidget.on('load', function() {
+                        console.log('✅ Adexium widget loaded');
+                    });
+                    
+                    adexiumWidget.on('complete', function() {
+                        console.log('✅ Adexium ad completed');
+                        giveBonus();
+                    });
+                    
+                    adexiumWidget.on('error', function(error) {
+                        console.log('❌ Adexium error:', error);
+                        showMockAd();
+                    });
+                    
+                    console.log("✅ Adexium Widget initialized");
+                    return true;
+                } catch (error) {
+                    console.log("❌ Adexium initialization error:", error);
+                    return false;
+                }
+            } else {
+                console.log("❌ AdexiumWidget class not defined");
+                return false;
+            }
         }
+        
+        // Initialize Adexium when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("📱 Initializing Adexium...");
+            setTimeout(() => {
+                if (!initAdexium()) {
+                    console.log("⚠️ Could not initialize Adexium, will use fallback");
+                }
+            }, 1000);
+        });
     </script>
 
     <!-- Game Script -->
@@ -387,7 +437,7 @@
         const winAmount = document.getElementById('winAmount');
         const claimBtn = document.getElementById('claimBtn');
         const adsPopup = document.getElementById('adsPopup');
-        const adsContainer = document.getElementById('adsContainer');
+        const adexiumContainer = document.getElementById('adexiumContainer');
         const closeAdsBtn = document.getElementById('closeAdsBtn');
         const audioControl = document.getElementById('audioControl');
         
@@ -468,11 +518,13 @@
             setTimeout(showAdsForBonus, 300);
         }
         
-        // Show ads for bonus - WITH PROPER RICHADS INTEGRATION
+        // Show ads for bonus - WITH ADEXIUM INTEGRATION
         function showAdsForBonus() {
             adsPopup.style.display = 'flex';
             closeAdsBtn.style.display = 'none';
-            adsContainer.innerHTML = '<div style="text-align: center; color: #6c757d;"><i class="fas fa-spinner fa-spin"></i> Loading reward...</div>';
+            
+            // Clear container and show loading
+            adexiumContainer.innerHTML = '<div class="adexium-loading"><i class="fas fa-spinner fa-spin"></i><br>Loading reward...</div>';
             
             // Try RichAds first (only works in Telegram)
             if (richAdsLoaded && window.TelegramAdsController) {
@@ -485,28 +537,42 @@
                     }, 5000);
                 } catch (error) {
                     console.log("❌ RichAds show failed:", error);
-                    tryAdexora();
+                    tryAdexium();
                 }
             } else {
-                // RichAds not available, try Adexora
-                tryAdexora();
+                // RichAds not available, try Adexium
+                tryAdexium();
             }
         }
         
-        // Try Adexora ads
-        function tryAdexora() {
-            if (adexoraLoaded && typeof showAdexora === 'function') {
-                console.log("🎯 Showing Adexora ads...");
-                showAdexora()
-                    .then(() => {
-                        console.log("✅ Adexora ad completed");
-                        giveBonus();
-                    })
-                    .catch(error => {
-                        console.log("❌ Adexora ad failed:", error);
-                        showMockAd();
-                    });
+        // Try Adexium ads
+        function tryAdexium() {
+            console.log("🎯 Attempting to show Adexium ad...");
+            
+            if (adexiumWidget && typeof adexiumWidget.show === 'function') {
+                console.log("🎯 Showing Adexium ad...");
+                
+                // Prepare container for Adexium
+                adexiumContainer.innerHTML = '';
+                
+                // Show Adexium ad
+                try {
+                    adexiumWidget.show();
+                    
+                    // Set a timeout as fallback in case ad doesn't trigger complete event
+                    setTimeout(() => {
+                        if (closeAdsBtn.style.display === 'none') {
+                            console.log("⚠️ Adexium timeout, giving bonus anyway");
+                            giveBonus();
+                        }
+                    }, 10000); // 10 second timeout
+                    
+                } catch (error) {
+                    console.log("❌ Adexium show failed:", error);
+                    showMockAd();
+                }
             } else {
+                console.log("❌ Adexium widget not available");
                 showMockAd();
             }
         }
@@ -514,11 +580,12 @@
         // Show mock ad
         function showMockAd() {
             console.log("🎯 Showing mock ad...");
-            adsContainer.innerHTML = `
+            adexiumContainer.innerHTML = `
                 <div style="text-align: center; color: #2c3e50;">
                     <i class="fas fa-gift" style="font-size: 40px; color: #ff6b6b;"></i>
                     <div style="font-size: 16px; font-weight: 600; margin-top: 10px;">BONUS REWARD!</div>
                     <div style="font-size: 12px; margin-top: 5px; color: #6c757d;">Thanks for playing!</div>
+                    <div style="font-size: 12px; margin-top: 10px; color: #6c757d; font-style: italic;">(Ad would play here in production)</div>
                 </div>
             `;
             
@@ -529,7 +596,7 @@
         
         // Give bonus points
         function giveBonus() {
-            adsContainer.innerHTML = `
+            adexiumContainer.innerHTML = `
                 <div style="text-align: center; color: #2c3e50;">
                     <i class="fas fa-trophy" style="font-size: 40px; color: #ffd700;"></i>
                     <div style="font-size: 24px; font-weight: 800; color: #34c759; margin-top: 10px;">+50 BONUS</div>
@@ -572,7 +639,7 @@
             console.log("🎮 Ludo Dice Game initialized");
             console.log("💰 Points:", points);
             console.log("📱 RichAds:", richAdsLoaded ? "✅ Loaded" : "❌ Not available");
-            console.log("📱 Adexora:", adexoraLoaded ? "✅ Loaded" : "❌ Not available");
+            console.log("📱 Adexium:", adexiumWidget ? "✅ Initialized" : "❌ Not available");
         }
         
         // Start game
