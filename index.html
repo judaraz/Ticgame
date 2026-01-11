@@ -10,7 +10,40 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <!-- RichPartners SDK (Primary) -->
-    <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+    // ===== FIXED RICHADS INTEGRATION =====
+<script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+<script>
+    let richAdsLoaded = false;
+    let TelegramWebApp = null;
+    
+    // Check if we're in Telegram
+    if (window.Telegram && window.Telegram.WebApp) {
+        TelegramWebApp = window.Telegram.WebApp;
+        
+        try {
+            // Initialize Telegram WebApp first
+            TelegramWebApp.ready();
+            TelegramWebApp.expand();
+            
+            // Then initialize RichAds
+            if (typeof TelegramAdsController !== 'undefined') {
+                window.TelegramAdsController = new TelegramAdsController();
+                window.TelegramAdsController.initialize({
+                    pubId: "956231",
+                    appId: "5572",
+                });
+                richAdsLoaded = true;
+                console.log("✅ RichAds initialized in Telegram");
+            }
+        } catch (error) {
+            console.log("❌ RichAds initialization failed:", error);
+            richAdsLoaded = false;
+        }
+    } else {
+        console.log("⚠️ Not in Telegram environment - RichAds won't work");
+        richAdsLoaded = false;
+    }
+</script>
     
     <!-- Adexora SDK (Fallback) -->
     <script src="https://adexora.com/cdn/ads.js?id=50"></script>
