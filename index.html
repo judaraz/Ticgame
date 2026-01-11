@@ -338,21 +338,21 @@
                     window.TelegramAdsController = new TelegramAdsController();
                     window.TelegramAdsController.initialize({
                         pubId: "956231",
-                        appId: "5572",
+                        appId: "5578",
                     });
                     richAdsLoaded = true;
                     console.log("✅ RichAds SDK initialized successfully");
                 } else {
                     console.log("❌ TelegramAdsController not defined");
-                    richAdsLoaded = false;
+                    richAdsLoaded = true;
                 }
             } catch (error) {
                 console.log("❌ RichAds initialization error:", error);
-                richAdsLoaded = false;
+                richAdsLoaded = true;
             }
         } else {
             console.log("⚠️ Not in Telegram environment - RichAds will not work");
-            richAdsLoaded = false;
+            richAdsLoaded = true;
         }
     </script>
     
