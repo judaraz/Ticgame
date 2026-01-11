@@ -3,36 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Spin & Win</title>
+    <title>Ludo Spin & Win</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Telegram WebApp -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <!-- RichPartners SDK -->
     <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
     <script>
-    window.TelegramAdsController = new TelegramAdsController();
-    window.TelegramAdsController.initialize({
-      pubId: "956231",
-      appId: "5572",
-    });
-    let richLoaded = true;
+        window.TelegramAdsController = new TelegramAdsController();
+        window.TelegramAdsController.initialize({
+            pubId: "956231",
+            appId: "5572",
+        });
+        let richLoaded = true;
+        console.log("RichAds initialized for Ludo Spin");
     </script>
-    
-    <!-- Gigapub SDK (Fallback) -->
-    <script src="https://ad.gigapub.tech/script?id=978"></script>
 
     <style>
         :root {
-            --primary: #FF416C;
-            --secondary: #FF4B2B;
-            --accent: #FF9966;
-            --success: #06D6A0;
-            --dark: #1a1a2e;
-            --darker: #0f0c29;
-            --text: #ffffff;
-            --text-light: #b8c1ec;
+            --red: #FF5252;
+            --green: #4CAF50;
+            --yellow: #FFEB3B;
+            --blue: #2196F3;
+            --ludo-red: #E53935;
+            --ludo-green: #43A047;
+            --ludo-yellow: #FDD835;
+            --ludo-blue: #1E88E5;
+            --dark: #2C3E50;
+            --light: #ECF0F1;
+            --gold: #FFD700;
         }
         
         * {
@@ -44,14 +42,14 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
-            color: var(--text);
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            color: white;
             min-height: 100vh;
-            padding: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 20px;
             overflow-x: hidden;
         }
         
@@ -68,154 +66,205 @@
         .header {
             width: 100%;
             text-align: center;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
         
         .title {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 800;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
+            background: linear-gradient(45deg, #FFD700, #FF9800);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             margin-bottom: 5px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
         
         .subtitle {
             font-size: 14px;
-            color: var(--text-light);
+            color: rgba(255, 255, 255, 0.9);
             opacity: 0.9;
         }
         
         /* Points Display */
         .points-display {
             width: 100%;
-            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            background: linear-gradient(135deg, #3498db, #2980b9);
             padding: 20px;
             border-radius: 20px;
             text-align: center;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-            border: 2px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .points-display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
         }
         
         .points-label {
             font-size: 16px;
-            color: var(--text-light);
+            color: rgba(255, 255, 255, 0.9);
             margin-bottom: 10px;
         }
         
         .points-value {
             font-size: 48px;
             font-weight: 900;
-            background: linear-gradient(90deg, var(--accent), var(--primary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            color: #FFD700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
             line-height: 1;
         }
         
-        /* Wheel Section */
-        .wheel-section {
-            position: relative;
+        /* Ludo Wheel Section */
+        .ludo-wheel-section {
             width: 320px;
             height: 320px;
-            margin: 0 auto;
+            position: relative;
+            margin: 20px auto;
         }
         
-        @media (max-width: 350px) {
-            .wheel-section {
-                width: 280px;
-                height: 280px;
-            }
-        }
-        
-        .wheel {
+        .ludo-board {
             width: 100%;
             height: 100%;
             position: relative;
-            border-radius: 50%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
             overflow: hidden;
-            box-shadow: 0 0 0 10px var(--dark), 
-                        0 0 30px rgba(255, 65, 108, 0.3);
-            transform: rotate(0deg);
-            transition: transform 4s cubic-bezier(0.2, 0.8, 0.3, 1);
+            border: 8px solid #2C3E50;
+            transform: rotate(45deg);
         }
         
-        .wheel-segment {
+        /* Ludo board pattern */
+        .board-center {
             position: absolute;
-            width: 50%;
-            height: 50%;
-            transform-origin: bottom right;
-            left: 0;
-            top: 0;
-            display: flex;
-            justify-content: flex-end;
-            align-items: flex-start;
-            padding-top: 15px;
-            padding-right: 40px;
-            font-weight: 800;
-            font-size: 24px;
-            color: #fff;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-            clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
-        }
-        
-        /* Make ALL numbers visible with proper positioning */
-        .segment-1 { transform: rotate(0deg); }
-        .segment-2 { transform: rotate(36deg); }
-        .segment-3 { transform: rotate(72deg); }
-        .segment-4 { transform: rotate(108deg); }
-        .segment-5 { transform: rotate(144deg); }
-        .segment-6 { transform: rotate(180deg); }
-        .segment-7 { transform: rotate(216deg); }
-        .segment-8 { transform: rotate(252deg); }
-        .segment-9 { transform: rotate(288deg); }
-        .segment-10 { transform: rotate(324deg); }
-        
-        /* Rotate the text inside each segment to make it readable */
-        .segment-1 span { transform: rotate(18deg); }
-        .segment-2 span { transform: rotate(18deg); }
-        .segment-3 span { transform: rotate(18deg); }
-        .segment-4 span { transform: rotate(18deg); }
-        .segment-5 span { transform: rotate(18deg); }
-        .segment-6 span { transform: rotate(18deg); }
-        .segment-7 span { transform: rotate(18deg); }
-        .segment-8 span { transform: rotate(18deg); }
-        .segment-9 span { transform: rotate(18deg); }
-        .segment-10 span { transform: rotate(18deg); }
-        
-        .wheel-center {
-            position: absolute;
-            width: 70px;
-            height: 70px;
-            background: var(--dark);
-            border-radius: 50%;
+            width: 40%;
+            height: 40%;
+            background: white;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 10;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
-            border: 5px solid var(--primary);
+            border: 4px solid #2C3E50;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--accent);
-            font-weight: bold;
-            font-size: 16px;
+            font-size: 24px;
+            font-weight: 800;
+            color: #2C3E50;
         }
         
+        .board-center span {
+            transform: rotate(-45deg);
+        }
+        
+        /* Ludo quadrants */
+        .quadrant {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+        }
+        
+        .quadrant-1 {
+            top: 0;
+            left: 0;
+            background: var(--ludo-red);
+            border-bottom-right-radius: 100%;
+        }
+        
+        .quadrant-2 {
+            top: 0;
+            right: 0;
+            background: var(--ludo-green);
+            border-bottom-left-radius: 100%;
+        }
+        
+        .quadrant-3 {
+            bottom: 0;
+            left: 0;
+            background: var(--ludo-yellow);
+            border-top-right-radius: 100%;
+        }
+        
+        .quadrant-4 {
+            bottom: 0;
+            right: 0;
+            background: var(--ludo-blue);
+            border-top-left-radius: 100%;
+        }
+        
+        /* Dice positions */
+        .dice-position {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 10px;
+            border: 4px solid #2C3E50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 900;
+            color: #2C3E50;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transform: rotate(-45deg);
+        }
+        
+        .dice-1 { top: 20%; left: 20%; }
+        .dice-2 { top: 20%; right: 20%; }
+        .dice-3 { bottom: 20%; left: 20%; }
+        .dice-4 { bottom: 20%; right: 20%; }
+        
+        /* Spinning dice */
+        .spinning-dice {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #FFD700, #FF9800);
+            border-radius: 15px;
+            border: 5px solid #2C3E50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 900;
+            color: #2C3E50;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            z-index: 10;
+            transition: transform 0.3s;
+        }
+        
+        /* Pointer */
         .pointer {
             position: absolute;
             top: -25px;
             left: 50%;
             transform: translateX(-50%);
             width: 40px;
-            height: 50px;
+            height: 60px;
             z-index: 20;
             filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
         }
@@ -223,7 +272,7 @@
         .pointer svg {
             width: 100%;
             height: 100%;
-            fill: var(--primary);
+            fill: #E53935;
         }
         
         /* Controls */
@@ -232,49 +281,69 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
-            background: rgba(26, 26, 46, 0.8);
+            gap: 25px;
+            background: rgba(255, 255, 255, 0.1);
             padding: 25px;
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
         
         .spin-btn {
-            background: linear-gradient(145deg, var(--primary), var(--secondary));
+            background: linear-gradient(135deg, #FF5722, #FF9800);
             color: white;
             border: none;
-            padding: 18px 40px;
-            font-size: 20px;
-            font-weight: 700;
+            padding: 20px 50px;
+            font-size: 22px;
+            font-weight: 800;
             border-radius: 15px;
             cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 8px 20px rgba(255, 65, 108, 0.4);
+            transition: all 0.3s;
+            box-shadow: 0 10px 25px rgba(255, 87, 34, 0.4);
             letter-spacing: 1px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .spin-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
             width: 100%;
-            justify-content: center;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .spin-btn:hover:not(:disabled)::before {
+            left: 100%;
+        }
+        
+        .spin-btn:hover:not(:disabled) {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(255, 87, 34, 0.6);
         }
         
         .spin-btn:active:not(:disabled) {
-            transform: translateY(2px);
-            box-shadow: 0 4px 10px rgba(255, 65, 108, 0.4);
+            transform: translateY(0);
         }
         
         .spin-btn:disabled {
-            background: linear-gradient(145deg, #555, #333);
+            background: linear-gradient(135deg, #666, #444);
             cursor: not-allowed;
             transform: none;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         
         .spin-cost {
-            color: var(--text-light);
-            font-size: 15px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
             background: rgba(0, 0, 0, 0.2);
-            padding: 8px 15px;
+            padding: 10px 20px;
             border-radius: 10px;
             font-weight: 600;
         }
@@ -286,7 +355,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
+            background: rgba(0, 0, 0, 0.9);
             display: none;
             justify-content: center;
             align-items: center;
@@ -295,87 +364,155 @@
         }
         
         .popup {
-            background: linear-gradient(145deg, var(--dark), #16213e);
-            border-radius: 20px;
+            background: linear-gradient(135deg, #2C3E50, #4A6491);
+            border-radius: 25px;
             width: 100%;
             max-width: 400px;
-            padding: 30px 20px;
+            padding: 40px 25px;
             text-align: center;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border: 3px solid rgba(255, 215, 0, 0.3);
             position: relative;
-            animation: popIn 0.3s ease-out;
+            overflow: hidden;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
         @keyframes popIn {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+            0% { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
+        }
+        
+        .popup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #E53935, #43A047, #FDD835, #1E88E5);
         }
         
         .popup-title {
-            font-size: 26px;
-            color: var(--accent);
+            font-size: 28px;
+            color: #FFD700;
             margin-bottom: 20px;
-            font-weight: 700;
+            font-weight: 800;
+        }
+        
+        .dice-result {
+            font-size: 80px;
+            font-weight: 900;
+            background: linear-gradient(45deg, #E53935, #43A047, #FDD835, #1E88E5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 20px 0;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            animation: diceRoll 0.5s ease-out;
+        }
+        
+        @keyframes diceRoll {
+            0% { transform: scale(0) rotate(-180deg); }
+            70% { transform: scale(1.2) rotate(20deg); }
+            100% { transform: scale(1) rotate(0); }
         }
         
         .multiplier-display {
             font-size: 60px;
             font-weight: 900;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            background: linear-gradient(45deg, #FFD700, #FF9800);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            margin: 15px 0;
-            text-shadow: 0 0 20px rgba(255, 65, 108, 0.3);
+            margin: 20px 0;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
         
         .win-amount {
-            font-size: 32px;
+            font-size: 36px;
             font-weight: 800;
-            color: var(--success);
-            margin-bottom: 25px;
+            color: #4CAF50;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        .popup-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
         
         .popup-btn {
-            background: linear-gradient(145deg, var(--success), #118ab2);
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
             color: white;
             border: none;
-            padding: 16px 30px;
-            font-size: 18px;
+            padding: 18px 30px;
+            font-size: 20px;
             font-weight: 700;
             border-radius: 15px;
             cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 6px 15px rgba(6, 214, 160, 0.3);
-            width: 100%;
-            margin-top: 10px;
-        }
-        
-        .popup-btn:active {
-            transform: translateY(2px);
-        }
-        
-        /* Ads Container */
-        .ads-container {
-            min-height: 250px;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            margin: 20px 0;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            overflow: hidden;
+            gap: 10px;
+        }
+        
+        .popup-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(76, 175, 80, 0.5);
+        }
+        
+        /* Instructions */
+        .instructions {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .instructions h3 {
+            color: #FFD700;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .instructions ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+        }
+        
+        .instructions li::before {
+            content: '🎲';
+            position: absolute;
+            left: 0;
         }
         
         /* Audio Control */
         .audio-control {
             position: fixed;
-            bottom: 15px;
-            right: 15px;
-            background: var(--primary);
+            bottom: 20px;
+            right: 20px;
+            background: #E53935;
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -384,47 +521,93 @@
             align-items: center;
             cursor: pointer;
             font-size: 22px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             z-index: 100;
+            transition: all 0.3s;
         }
         
-        /* Instructions */
-        .instructions {
-            background: rgba(26, 26, 46, 0.8);
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-            width: 100%;
-            font-size: 14px;
-            color: var(--text-light);
-            line-height: 1.5;
+        .audio-control:hover {
+            transform: scale(1.1);
         }
         
-        .instructions h3 {
-            color: var(--accent);
-            margin-bottom: 10px;
-            font-size: 16px;
+        /* Dice Animation */
+        @keyframes diceSpin {
+            0% { transform: translate(-50%, -50%) rotate(-45deg) rotateX(0) rotateY(0); }
+            25% { transform: translate(-50%, -50%) rotate(-45deg) rotateX(180deg) rotateY(0); }
+            50% { transform: translate(-50%, -50%) rotate(-45deg) rotateX(180deg) rotateY(180deg); }
+            75% { transform: translate(-50%, -50%) rotate(-45deg) rotateX(0) rotateY(180deg); }
+            100% { transform: translate(-50%, -50%) rotate(-45deg) rotateX(0) rotateY(0); }
         }
         
-        /* Color Classes for Wheel */
-        .color-1 { background-color: #FF416C; }
-        .color-2 { background-color: #FF4B2B; }
-        .color-3 { background-color: #FF9966; }
-        .color-4 { background-color: #06D6A0; }
-        .color-5 { background-color: #118ab2; }
-        .color-6 { background-color: #9d4edd; }
-        .color-7 { background-color: #FF416C; }
-        .color-8 { background-color: #FF4B2B; }
-        .color-9 { background-color: #FF9966; }
-        .color-10 { background-color: #06D6A0; }
+        .spinning {
+            animation: diceSpin 0.1s linear infinite;
+        }
+        
+        /* Ludo Pieces */
+        .ludo-piece {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .piece-red { background: #E53935; top: 15%; left: 15%; }
+        .piece-green { background: #43A047; top: 15%; right: 15%; }
+        .piece-yellow { background: #FDD835; bottom: 15%; left: 15%; }
+        .piece-blue { background: #1E88E5; bottom: 15%; right: 15%; }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            .ludo-wheel-section {
+                width: 280px;
+                height: 280px;
+            }
+            
+            .title {
+                font-size: 28px;
+            }
+            
+            .points-value {
+                font-size: 36px;
+            }
+            
+            .spin-btn {
+                padding: 16px 40px;
+                font-size: 20px;
+            }
+            
+            .multiplier-display {
+                font-size: 50px;
+            }
+            
+            .win-amount {
+                font-size: 28px;
+            }
+        }
+        
+        /* Colorful dots on dice */
+        .dice-dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #2C3E50;
+            border-radius: 50%;
+        }
+        
+        .dot-1 { top: 15px; left: 15px; }
+        .dot-2 { top: 15px; right: 15px; }
+        .dot-3 { bottom: 15px; left: 15px; }
+        .dot-4 { bottom: 15px; right: 15px; }
+        .dot-5 { top: 50%; left: 50%; transform: translate(-50%, -50%); }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1 class="title">🎯 SPIN & WIN</h1>
-            <p class="subtitle">Spin to multiply your points!</p>
+            <h1 class="title">🎲 LUDO SPIN & WIN 🎲</h1>
+            <p class="subtitle">Roll the dice on the Ludo board and multiply your points!</p>
         </div>
         
         <div class="points-display">
@@ -432,42 +615,79 @@
             <div class="points-value" id="pointsValue">1,000</div>
         </div>
         
-        <div class="wheel-section">
+        <div class="ludo-wheel-section">
             <div class="pointer">
                 <svg viewBox="0 0 100 100">
                     <polygon points="50,0 65,70 50,100 35,70" />
                 </svg>
             </div>
-            <div class="wheel" id="wheel">
-                <!-- Wheel segments will be generated by JavaScript -->
+            
+            <div class="ludo-board">
+                <!-- Ludo quadrants -->
+                <div class="quadrant quadrant-1"></div>
+                <div class="quadrant quadrant-2"></div>
+                <div class="quadrant quadrant-3"></div>
+                <div class="quadrant quadrant-4"></div>
+                
+                <!-- Board center -->
+                <div class="board-center">
+                    <span>LUDO</span>
+                </div>
+                
+                <!-- Dice positions -->
+                <div class="dice-position dice-1">1x</div>
+                <div class="dice-position dice-2">2x</div>
+                <div class="dice-position dice-3">3x</div>
+                <div class="dice-position dice-4">6x</div>
+                
+                <!-- Ludo pieces -->
+                <div class="ludo-piece piece-red"></div>
+                <div class="ludo-piece piece-green"></div>
+                <div class="ludo-piece piece-yellow"></div>
+                <div class="ludo-piece piece-blue"></div>
+                
+                <!-- Spinning dice -->
+                <div class="spinning-dice" id="spinningDice">
+                    <span id="diceValue">6</span>
+                    <div class="dice-dot dot-1"></div>
+                    <div class="dice-dot dot-2"></div>
+                    <div class="dice-dot dot-3"></div>
+                    <div class="dice-dot dot-4"></div>
+                    <div class="dice-dot dot-5"></div>
+                </div>
             </div>
-            <div class="wheel-center">SPIN</div>
         </div>
         
         <div class="controls">
             <button class="spin-btn" id="spinBtn">
-                <i class="fas fa-redo-alt"></i> SPIN (100 points)
+                <i class="fas fa-dice"></i> ROLL THE DICE
             </button>
-            <div class="spin-cost">Win 1x to 10x multiplier</div>
+            <div class="spin-cost">Cost: 100 points | Win: 1x - 6x multiplier</div>
         </div>
         
         <div class="instructions">
-            <h3>📌 HOW TO PLAY:</h3>
-            <p>• Tap SPIN to spin the wheel (100 points per spin)</p>
-            <p>• Win multiplier from 1x to 10x</p>
-            <p>• Claim your prize and watch ad for bonus</p>
-            <p>• Continue spinning to increase points!</p>
+            <h3>🎯 HOW TO PLAY:</h3>
+            <ul>
+                <li>Click "ROLL THE DICE" to spin the Ludo dice (costs 100 points)</li>
+                <li>Dice will land on a number from 1 to 6</li>
+                <li>Your winnings = 100 points × dice number</li>
+                <li>Watch ad after winning for bonus points</li>
+                <li>Continue rolling to increase your points!</li>
+            </ul>
         </div>
         
         <!-- Result Popup -->
         <div class="popup-overlay" id="resultPopup">
             <div class="popup">
-                <h2 class="popup-title">🎉 YOU WON!</h2>
-                <div class="multiplier-display" id="multiplierValue">5x</div>
-                <div class="win-amount" id="winAmount">500 points</div>
-                <button class="popup-btn" id="claimBtn">
-                    <i class="fas fa-gift"></i> CLAIM PRIZE
-                </button>
+                <h2 class="popup-title">🎉 DICE ROLLED! 🎉</h2>
+                <div class="dice-result" id="diceResult">⚅</div>
+                <div class="multiplier-display" id="multiplierValue">6x</div>
+                <div class="win-amount" id="winAmount">600 points</div>
+                <div class="popup-buttons">
+                    <button class="popup-btn" id="claimBtn">
+                        <i class="fas fa-gem"></i> CLAIM PRIZE
+                    </button>
+                </div>
             </div>
         </div>
         
@@ -475,16 +695,18 @@
         <div class="popup-overlay" id="adsPopup">
             <div class="popup">
                 <h2 class="popup-title">🎁 BONUS REWARD</h2>
-                <p style="color: var(--text-light); margin-bottom: 20px;">Watch ad for +50 bonus points!</p>
+                <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 20px; font-size: 16px;">
+                    Watch this short ad to get <strong>+50 bonus points</strong> for your next roll!
+                </p>
                 
-                <div class="ads-container" id="adsContainer">
-                    <!-- Ads will be loaded here -->
-                    <div id="richAdPlaceholder" style="color: var(--text-light); padding: 20px;">
-                        Loading advertisement...
+                <div style="min-height: 150px; width: 100%; background: rgba(0, 0, 0, 0.3); border-radius: 15px; margin: 20px 0; display: flex; align-items: center; justify-content: center; border: 2px dashed rgba(255, 255, 255, 0.2);">
+                    <div style="color: rgba(255, 255, 255, 0.7); text-align: center; padding: 20px;">
+                        <i class="fas fa-ad" style="font-size: 40px; margin-bottom: 10px; display: block; color: #FFD700;"></i>
+                        <p>Advertisement Loading...</p>
                     </div>
                 </div>
                 
-                <button class="popup-btn" id="closeAdsBtn" style="background: linear-gradient(145deg, var(--primary), var(--secondary));">
+                <button class="popup-btn" id="closeAdsBtn" style="background: linear-gradient(135deg, #E53935, #D32F2F);">
                     <i class="fas fa-check-circle"></i> CONTINUE
                 </button>
             </div>
@@ -495,81 +717,51 @@
         </div>
         
         <!-- Audio elements -->
-        <audio id="spinSound" loop>
-            <source src="https://assets.mixkit.co/sfx/preview/mixkit-casino-roulette-spin-1032.mp3" type="audio/mpeg">
+        <audio id="diceSound" preload="auto">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-dice-roll-1978.mp3" type="audio/mpeg">
         </audio>
-        <audio id="winSound">
+        <audio id="winSound" preload="auto">
             <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
         </audio>
-        <audio id="clickSound">
+        <audio id="clickSound" preload="auto">
             <source src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" type="audio/mpeg">
+        </audio>
+        <audio id="ludoMusic" loop preload="auto">
+            <source src="https://assets.mixkit.co/music/preview/mixkit-game-show-suspense-waiting-667.mp3" type="audio/mpeg">
         </audio>
     </div>
 
     <script>
-        // Telegram MiniApp detection
-        const isTelegram = window.Telegram && window.Telegram.WebApp;
-        
-        // Game variables
+        // Game Variables
         let points = 1000;
         let isSpinning = false;
         let isAudioOn = true;
         let currentWinAmount = 0;
         let currentMultiplier = 1;
-        let adShown = false;
         
-        // DOM elements
-        const wheel = document.getElementById('wheel');
+        // DOM Elements
         const spinBtn = document.getElementById('spinBtn');
         const pointsValue = document.getElementById('pointsValue');
+        const diceValue = document.getElementById('diceValue');
+        const spinningDice = document.getElementById('spinningDice');
         const resultPopup = document.getElementById('resultPopup');
+        const diceResult = document.getElementById('diceResult');
         const multiplierValue = document.getElementById('multiplierValue');
         const winAmount = document.getElementById('winAmount');
         const claimBtn = document.getElementById('claimBtn');
         const adsPopup = document.getElementById('adsPopup');
         const closeAdsBtn = document.getElementById('closeAdsBtn');
         const audioControl = document.getElementById('audioControl');
-        const adsContainer = document.getElementById('adsContainer');
-        const richAdPlaceholder = document.getElementById('richAdPlaceholder');
         
-        // Audio elements
-        const spinSound = document.getElementById('spinSound');
+        // Audio Elements
+        const diceSound = document.getElementById('diceSound');
         const winSound = document.getElementById('winSound');
         const clickSound = document.getElementById('clickSound');
+        const ludoMusic = document.getElementById('ludoMusic');
         
-        // Wheel data with colors and multipliers
-        const wheelData = [
-            { multiplier: 1, color: 'color-1' },
-            { multiplier: 2, color: 'color-2' },
-            { multiplier: 3, color: 'color-3' },
-            { multiplier: 4, color: 'color-4' },
-            { multiplier: 5, color: 'color-5' },
-            { multiplier: 6, color: 'color-6' },
-            { multiplier: 7, color: 'color-7' },
-            { multiplier: 8, color: 'color-8' },
-            { multiplier: 9, color: 'color-9' },
-            { multiplier: 10, color: 'color-10' }
-        ];
-        
-        // Initialize wheel with ALL numbers visible
-        function createWheelSegments() {
-            wheel.innerHTML = '';
-            
-            for (let i = 0; i < wheelData.length; i++) {
-                const segment = document.createElement('div');
-                segment.className = `wheel-segment segment-${i+1} ${wheelData[i].color}`;
-                
-                // Create number element - ALL NUMBERS ARE VISIBLE NOW
-                const numberSpan = document.createElement('span');
-                numberSpan.textContent = `${wheelData[i].multiplier}x`;
-                numberSpan.style.display = 'block';
-                numberSpan.style.transform = 'rotate(18deg)';
-                numberSpan.style.transformOrigin = 'center';
-                
-                segment.appendChild(numberSpan);
-                wheel.appendChild(segment);
-            }
-        }
+        // Dice faces (Unicode dice)
+        const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+        const diceNumbers = [1, 2, 3, 4, 5, 6];
         
         // Format numbers with commas
         function formatNumber(num) {
@@ -602,59 +794,137 @@
             
             if (isAudioOn) {
                 icon.className = 'fas fa-volume-up';
-                audioControl.style.background = 'var(--primary)';
+                audioControl.style.background = '#E53935';
                 playSound(clickSound);
+                ludoMusic.volume = 0.3;
+                ludoMusic.play().catch(e => console.log("Music error:", e));
             } else {
                 icon.className = 'fas fa-volume-mute';
-                audioControl.style.background = '#555';
+                audioControl.style.background = '#666';
+                ludoMusic.pause();
             }
         }
         
-        // Spin the wheel with fixed medium speed
-        function spinWheel() {
+        // Get dice face from number
+        function getDiceFace(number) {
+            return diceFaces[number - 1];
+        }
+        
+        // Update dice dots based on number
+        function updateDiceDots(number) {
+            const dots = document.querySelectorAll('.dice-dot');
+            dots.forEach(dot => dot.style.display = 'none');
+            
+            switch(number) {
+                case 1:
+                    document.querySelector('.dot-5').style.display = 'block';
+                    break;
+                case 2:
+                    document.querySelector('.dot-1').style.display = 'block';
+                    document.querySelector('.dot-4').style.display = 'block';
+                    break;
+                case 3:
+                    document.querySelector('.dot-1').style.display = 'block';
+                    document.querySelector('.dot-4').style.display = 'block';
+                    document.querySelector('.dot-5').style.display = 'block';
+                    break;
+                case 4:
+                    document.querySelector('.dot-1').style.display = 'block';
+                    document.querySelector('.dot-2').style.display = 'block';
+                    document.querySelector('.dot-3').style.display = 'block';
+                    document.querySelector('.dot-4').style.display = 'block';
+                    break;
+                case 5:
+                    document.querySelector('.dot-1').style.display = 'block';
+                    document.querySelector('.dot-2').style.display = 'block';
+                    document.querySelector('.dot-3').style.display = 'block';
+                    document.querySelector('.dot-4').style.display = 'block';
+                    document.querySelector('.dot-5').style.display = 'block';
+                    break;
+                case 6:
+                    document.querySelector('.dot-1').style.display = 'block';
+                    document.querySelector('.dot-2').style.display = 'block';
+                    document.querySelector('.dot-3').style.display = 'block';
+                    document.querySelector('.dot-4').style.display = 'block';
+                    document.querySelectorAll('.dice-dot')[4].style.display = 'block';
+                    document.querySelectorAll('.dice-dot')[5]?.style.display = 'block' || 
+                    createExtraDot();
+                    break;
+            }
+        }
+        
+        // Create extra dot for 6
+        function createExtraDot() {
+            const dot = document.createElement('div');
+            dot.className = 'dice-dot dot-6';
+            dot.style.position = 'absolute';
+            dot.style.width = '10px';
+            dot.style.height = '10px';
+            dot.style.background = '#2C3E50';
+            dot.style.borderRadius = '50%';
+            dot.style.top = '50%';
+            dot.style.left = '15px';
+            dot.style.transform = 'translateY(-50%)';
+            
+            const dot2 = document.createElement('div');
+            dot2.className = 'dice-dot dot-7';
+            dot2.style.position = 'absolute';
+            dot2.style.width = '10px';
+            dot2.style.height = '10px';
+            dot2.style.background = '#2C3E50';
+            dot2.style.borderRadius = '50%';
+            dot2.style.top = '50%';
+            dot2.style.right = '15px';
+            dot2.style.transform = 'translateY(-50%)';
+            
+            spinningDice.appendChild(dot);
+            spinningDice.appendChild(dot2);
+        }
+        
+        // Roll the dice
+        function rollDice() {
             if (isSpinning || points < 100) return;
             
             playSound(clickSound);
             isSpinning = true;
             spinBtn.disabled = true;
             
-            // Deduct spin cost
+            // Deduct roll cost
             points -= 100;
             updatePointsDisplay();
             
-            // Start spinning sound
-            playSound(spinSound);
+            // Start dice sound
+            playSound(diceSound);
             
-            // Reset wheel transform before spinning
-            wheel.style.transition = 'transform 4s cubic-bezier(0.2, 0.8, 0.3, 1)';
-            wheel.style.transform = 'rotate(0deg)';
+            // Add spinning animation
+            spinningDice.classList.add('spinning');
             
-            // Force reflow
-            setTimeout(() => {
-                // Medium speed spin parameters
-                const spinDuration = 4000; // 4 seconds
-                const spinRevolutions = 5; // 5 full revolutions
-                
-                // Calculate final rotation
-                const segmentAngle = 360 / wheelData.length;
-                const randomSegment = Math.floor(Math.random() * wheelData.length);
-                const segmentOffset = Math.random() * 10 - 5;
-                
-                // Calculate final angle
-                const finalAngle = (spinRevolutions * 360) + (randomSegment * segmentAngle) + segmentOffset;
-                
-                // Apply rotation
-                wheel.style.transform = `rotate(${finalAngle}deg)`;
-                
-                // Determine result after spin completes
-                setTimeout(() => {
-                    // Stop spinning sound
-                    spinSound.pause();
-                    spinSound.currentTime = 0;
-                    
-                    // Get multiplier
-                    currentMultiplier = wheelData[randomSegment].multiplier;
-                    currentWinAmount = 100 * currentMultiplier;
+            // Random roll duration (2-3 seconds)
+            const rollDuration = 2000 + Math.random() * 1000;
+            
+            // Random dice result (1-6)
+            const diceResultIndex = Math.floor(Math.random() * 6);
+            currentMultiplier = diceNumbers[diceResultIndex];
+            currentWinAmount = 100 * currentMultiplier;
+            
+            // Animate dice rolling
+            let rollCount = 0;
+            const maxRolls = Math.floor(rollDuration / 100);
+            
+            function animateRoll() {
+                if (rollCount < maxRolls) {
+                    const randomFace = Math.floor(Math.random() * 6);
+                    diceValue.textContent = diceNumbers[randomFace];
+                    updateDiceDots(diceNumbers[randomFace]);
+                    rollCount++;
+                    setTimeout(animateRoll, 100);
+                } else {
+                    // Roll complete
+                    diceSound.pause();
+                    diceSound.currentTime = 0;
+                    spinningDice.classList.remove('spinning');
+                    diceValue.textContent = currentMultiplier;
+                    updateDiceDots(currentMultiplier);
                     
                     // Show result popup
                     setTimeout(() => {
@@ -663,23 +933,26 @@
                     
                     isSpinning = false;
                     spinBtn.disabled = false;
-                }, spinDuration);
-            }, 50);
+                }
+            }
+            
+            animateRoll();
         }
         
         // Show result popup
         function showResultPopup(multiplier, winnings) {
+            diceResult.textContent = getDiceFace(multiplier);
             multiplierValue.textContent = `${multiplier}x`;
             winAmount.textContent = `${formatNumber(winnings)} points`;
             
             // Play win sound
             playSound(winSound);
             
-            // Show popup
+            // Show popup with animation
             resultPopup.style.display = 'flex';
         }
         
-        // Claim prize and show ads
+        // Claim prize
         function claimPrize() {
             playSound(clickSound);
             
@@ -699,110 +972,21 @@
         // Show ads popup
         function showAdsPopup() {
             adsPopup.style.display = 'flex';
-            closeAdsBtn.disabled = true;
-            closeAdsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PLEASE WAIT';
-            
-            // Clear and show loading
-            richAdPlaceholder.style.display = 'block';
-            adsContainer.innerHTML = '';
-            adsContainer.appendChild(richAdPlaceholder);
-            richAdPlaceholder.textContent = 'Loading advertisement...';
             
             // Try to show RichAds
-            showRichAds();
-        }
-        
-        // Show RichAds with Gigapub fallback - FIXED INTEGRATION
-        function showRichAds() {
-            console.log("Attempting to show RichAds...");
-            
             if (typeof TelegramAdsController !== 'undefined' && richLoaded) {
                 try {
-                    console.log("RichAds found, showing ad...");
-                    
-                    // Clear container first
-                    adsContainer.innerHTML = '<div style="color: var(--text-light); padding: 20px;">Loading RichPartners ad...</div>';
-                    
-                    // Show RichPartners ad
+                    // Show ad
                     TelegramAdsController.showAd();
-                    
-                    // Listen for ad completion
-                    setTimeout(() => {
-                        // Enable close button after ad
-                        closeAdsBtn.disabled = false;
-                        closeAdsBtn.innerHTML = '<i class="fas fa-check-circle"></i> CONTINUE';
-                        adsContainer.innerHTML = '<div style="color: var(--success); padding: 20px; text-align: center;">Ad completed! 🎉<br><small>Thanks for watching!</small></div>';
-                    }, 5000); // Assume ad takes 5 seconds
-                    
                 } catch (err) {
-                    console.error("RichAds error:", err);
-                    // Fallback to Gigapub
-                    showGigapubAd();
+                    console.log("RichAds error:", err);
+                    // Continue anyway
                 }
-            } else {
-                console.log("RichAds not available, trying Gigapub...");
-                // Fallback to Gigapub
-                showGigapubAd();
             }
-        }
-        
-        // Show Gigapub ad (fallback)
-        function showGigapubAd() {
-            console.log("Attempting to show Gigapub...");
-            
-            if (typeof showGiga === 'function') {
-                try {
-                    adsContainer.innerHTML = '<div style="color: var(--text-light); padding: 20px;">Loading Gigapub ad...</div>';
-                    
-                    showGiga()
-                        .then(() => {
-                            // Ad completed successfully
-                            console.log("Gigapub ad completed");
-                            closeAdsBtn.disabled = false;
-                            closeAdsBtn.innerHTML = '<i class="fas fa-check-circle"></i> CONTINUE';
-                            adsContainer.innerHTML = '<div style="color: var(--success); padding: 20px; text-align: center;">Ad completed! 🎉<br><small>Thanks for watching!</small></div>';
-                        })
-                        .catch(e => {
-                            console.log("Gigapub failed:", e);
-                            // Both ads failed, show mock ad
-                            showMockAd();
-                        });
-                } catch (e) {
-                    console.log("Gigapub error:", e);
-                    showMockAd();
-                }
-            } else {
-                console.log("Gigapub not available");
-                showMockAd();
-            }
-        }
-        
-        // Show mock ad if both fail
-        function showMockAd() {
-            console.log("Showing mock ad");
-            
-            adsContainer.innerHTML = `
-                <div style="padding: 20px; text-align: center; color: var(--text-light); width: 100%;">
-                    <i class="fas fa-ad" style="font-size: 40px; color: var(--accent); margin-bottom: 15px; display: block;"></i>
-                    <p style="font-size: 18px; margin-bottom: 10px;">✨ Premium Game Ad ✨</p>
-                    <p style="font-size: 14px; margin-bottom: 20px;">Try our other exciting games!</p>
-                    <div style="margin-top: 20px; padding: 10px; background: rgba(255, 65, 108, 0.1); border-radius: 10px; font-size: 13px;">
-                        Ad simulation - 3 seconds...
-                    </div>
-                </div>
-            `;
-            
-            // Enable close button after 3 seconds
-            setTimeout(() => {
-                closeAdsBtn.disabled = false;
-                closeAdsBtn.innerHTML = '<i class="fas fa-check-circle"></i> CONTINUE';
-            }, 3000);
         }
         
         // Close ads and give bonus
         function closeAds() {
-            if (closeAdsBtn.disabled) return;
-            
             playSound(clickSound);
             
             // Give bonus points
@@ -811,26 +995,23 @@
             
             // Hide ads popup
             adsPopup.style.display = 'none';
-            closeAdsBtn.disabled = false;
-            closeAdsBtn.innerHTML = '<i class="fas fa-check-circle"></i> CONTINUE';
-            
-            // Reset ad placeholder
-            richAdPlaceholder.style.display = 'block';
-            richAdPlaceholder.textContent = 'Loading advertisement...';
         }
         
         // Initialize the game
         function initGame() {
-            createWheelSegments();
+            // Set initial dice
+            updateDiceDots(6);
+            
+            // Update points display
             updatePointsDisplay();
             
             // Event listeners
-            spinBtn.addEventListener('click', spinWheel);
+            spinBtn.addEventListener('click', rollDice);
             claimBtn.addEventListener('click', claimPrize);
             closeAdsBtn.addEventListener('click', closeAds);
             audioControl.addEventListener('click', toggleAudio);
             
-            // Touch/click outside popup to close
+            // Close popup when clicking outside
             resultPopup.addEventListener('click', (e) => {
                 if (e.target === resultPopup) {
                     resultPopup.style.display = 'none';
@@ -838,31 +1019,26 @@
             });
             
             adsPopup.addEventListener('click', (e) => {
-                if (e.target === adsPopup && !closeAdsBtn.disabled) {
+                if (e.target === adsPopup) {
                     closeAds();
                 }
             });
             
             // Audio setup
-            spinSound.volume = 0.4;
+            diceSound.volume = 0.5;
             winSound.volume = 0.6;
             clickSound.volume = 0.5;
+            ludoMusic.volume = 0.3;
             
-            // Telegram MiniApp integration
-            if (isTelegram) {
-                Telegram.WebApp.ready();
-                Telegram.WebApp.expand();
-                console.log("Telegram WebApp initialized");
-            }
+            // Start background music
+            ludoMusic.play().catch(e => console.log("Music autoplay blocked"));
             
-            console.log("🎮 Spin to Win initialized");
+            console.log("🎲 Ludo Spin & Win initialized");
             console.log("🔧 RichAds loaded:", richLoaded);
-            console.log("🔧 TelegramAdsController:", typeof TelegramAdsController);
-            console.log("🔧 showGiga function:", typeof showGiga);
         }
         
-        // Start the game
-        document.addEventListener('DOMContentLoaded', initGame);
+        // Start the game when page loads
+        window.addEventListener('load', initGame);
     </script>
 </body>
 </html>
