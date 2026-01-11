@@ -1,155 +1,738 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Watch & Earn Ads</title>
-
-<!-- Telegram WebApp -->
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<!-- Monetag SDK -->
-<script src="//libtl.com/sdk.js" data-zone data-sdk="show_9858364"></script>
-
-<!-- RichPartners SDK -->
-<script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
-<script>
-window.TelegramAdsController = new TelegramAdsController();
-window.TelegramAdsController.initialize({
-  pubId: "956231",
-  appId: "5571",
-});
-let richLoaded = true;
-</script>
-
-<style>
-*{box-sizing:border-box;font-family:Segoe UI,Roboto,sans-serif;margin:0;padding:0;}
-body{
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:#0a0a0a;
-    overflow:hidden;
-    position:relative;
-    color:#fff;
-}
-
-@keyframes shimmer {
-    0% { background-position: -500px 0; }
-    100% { background-position: 500px 0; }
-}
-body::before{
-    content:'';
-    position:absolute;
-    top:0; left:0; width:100%; height:100%;
-    background:linear-gradient(120deg, rgba(0,255,224,0.05), rgba(255,0,255,0.05), rgba(0,255,255,0.05));
-    background-size: 1000px 1000px;
-    animation: shimmer 15s linear infinite;
-    z-index:0;
-}
-
-.panel{
-    width:360px;
-    background:#0c0c0c;
-    border-radius:24px;
-    padding:24px;
-    box-shadow:0 25px 70px rgba(0,0,0,.7);
-    position:relative;
-    z-index:1;
-}
-.title{
-    text-align:center;
-    font-size:22px;
-    margin-bottom:20px;
-    font-weight:700;
-    text-shadow: 0 0 8px #00ffe0;
-}
-.card{
-    background:#111;
-    border:1px solid #2b2b2b;
-    border-radius:18px;
-    padding:18px;
-    margin-bottom:16px;
-    cursor:pointer;
-    transition:.3s;
-}
-.card:hover{
-    border-color:#00ffe0;
-    box-shadow:0 0 20px rgba(0,255,224,.4);
-}
-.card h4{
-    margin:0 0 8px;
-    font-size:17px;
-}
-.card span{
-    font-size:12px;
-    color:#aaa;
-}
-.footer{
-    text-align:center;
-    margin-top:14px;
-    font-size:12px;
-    color:#777;
-}
-</style>
-</head>
-
-<body>
-
-<div class="panel">
-    <div class="title">Watch & Earn</div>
-
-    <!-- Card 1: RichPartners -->
-    <div class="card" onclick="watchRich()">
-        <h4>RichPartners</h4>
-        <span>High CPM • Premium Ads</span>
-    </div>
-
-    <!-- Card 2: Monetag -->
-    <div class="card" onclick="watchMonetag()">
-        <h4>Monetag</h4>
-        <span>Worldwide Ads • Fast Load</span>
-    </div>
-
-    <div class="footer">Click any network to watch ad</div>
-</div>
-
-<script>
-Telegram.WebApp.ready();
-Telegram.WebApp.expand();
-
-let monetagRetry = 0;
-const monetagMaxRetry = 5;
-
-// Monetag Ad with retry
-function watchMonetag() {
-    if (typeof window.show_9858364 === "function") {
-        show_10412754();
-        monetagRetry = 0; // reset retry
-    } else if (monetagRetry < monetagMaxRetry) {
-        monetagRetry++;
-        console.log("Monetag not ready, retrying... attempt:", monetagRetry);
-        setTimeout(watchMonetag, 1000); // retry after 1 sec
-    } else {
-        alert("Monetag ad not ready. Please refresh or try again later.");
-    }
-}
-
-// RichPartners Ad
-function watchRich() {
-    if (richLoaded && window.TelegramAdsController) {
-        try {
-            window.TelegramAdsController.showAd();
-        } catch (err) {
-            alert("RichPartners ad could not be shown.");
-            console.error(err);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spin & Win | Prize Wheel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-    } else {
-        alert("RichPartners ad not ready yet. Please try again.");
-    }
-}
-</script>
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        header {
+            text-align: center;
+            width: 100%;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            background: linear-gradient(90deg, #ffd166, #ef476f);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            color: #a9b7d0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            width: 100%;
+        }
+        
+        .points-display {
+            background: linear-gradient(145deg, #0f3460, #1a1a2e);
+            padding: 25px 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            border: 2px solid #394867;
+            min-width: 280px;
+        }
+        
+        .points-display h2 {
+            font-size: 1.5rem;
+            color: #8ac6d1;
+            margin-bottom: 15px;
+        }
+        
+        .points-value {
+            font-size: 4rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #4cc9f0, #4361ee);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 15px rgba(76, 201, 240, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .points-label {
+            color: #b8c1ec;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+        
+        .wheel-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .wheel {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 0 0 8px #0f3460, 0 0 30px rgba(239, 71, 111, 0.5);
+            transition: transform 0.1s;
+        }
+        
+        .wheel-segment {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: bottom right;
+            left: 0;
+            top: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 30px;
+            font-weight: bold;
+            font-size: 1.4rem;
+            color: #fff;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+        }
+        
+        .wheel-center {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: #16213e;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+            border: 4px solid #ef476f;
+        }
+        
+        .pointer {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 60px;
+            z-index: 20;
+        }
+        
+        .pointer:before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 30px solid #ef476f;
+            top: 0;
+            left: 0;
+            filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.5));
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: rgba(15, 52, 96, 0.7);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid #394867;
+            min-width: 280px;
+        }
+        
+        .spin-btn {
+            background: linear-gradient(145deg, #ef476f, #ff9a00);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(239, 71, 111, 0.4);
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .spin-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(239, 71, 111, 0.6);
+        }
+        
+        .spin-btn:active {
+            transform: translateY(0);
+        }
+        
+        .spin-btn:disabled {
+            background: linear-gradient(145deg, #6c757d, #495057);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: rgba(25, 25, 35, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid #ef476f;
+            max-width: 400px;
+            width: 100%;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result-title {
+            font-size: 2rem;
+            color: #4cc9f0;
+            text-align: center;
+        }
+        
+        .multiplier {
+            font-size: 5rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #ffd166, #ef476f);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(255, 209, 102, 0.7);
+            animation: pulse 1.5s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+        
+        .win-amount {
+            font-size: 2.5rem;
+            color: #8ac6d1;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .claim-btn {
+            background: linear-gradient(145deg, #06d6a0, #118ab2);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(6, 214, 160, 0.4);
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+        
+        .claim-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(6, 214, 160, 0.6);
+        }
+        
+        .ads-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: rgba(15, 52, 96, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid #ffd166;
+            max-width: 500px;
+            width: 100%;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .ads-title {
+            font-size: 1.8rem;
+            color: #ffd166;
+            text-align: center;
+        }
+        
+        .ads-message {
+            text-align: center;
+            color: #b8c1ec;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+        
+        .close-ads-btn {
+            background: linear-gradient(145deg, #ef476f, #ff9a00);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(239, 71, 111, 0.4);
+        }
+        
+        .close-ads-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(239, 71, 111, 0.6);
+        }
+        
+        .audio-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(15, 52, 96, 0.8);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid #394867;
+            z-index: 100;
+        }
+        
+        .instructions {
+            background: rgba(25, 25, 35, 0.7);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .instructions h3 {
+            color: #8ac6d1;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+            color: #b8c1ec;
+            line-height: 1.6;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        @media (max-width: 900px) {
+            .game-area {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .wheel-container {
+                width: 350px;
+                height: 350px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+        
+        @media (max-width: 500px) {
+            .wheel-container {
+                width: 300px;
+                height: 300px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .points-value {
+                font-size: 3rem;
+            }
+            
+            .multiplier {
+                font-size: 4rem;
+            }
+        }
+        
+        .spinning {
+            animation: spin 0.1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .segment-1 { background-color: #ef476f; transform: rotate(0deg); }
+        .segment-2 { background-color: #ffd166; transform: rotate(36deg); }
+        .segment-3 { background-color: #06d6a0; transform: rotate(72deg); }
+        .segment-4 { background-color: #118ab2; transform: rotate(108deg); }
+        .segment-5 { background-color: #073b4c; transform: rotate(144deg); }
+        .segment-6 { background-color: #ef476f; transform: rotate(180deg); }
+        .segment-7 { background-color: #ffd166; transform: rotate(216deg); }
+        .segment-8 { background-color: #06d6a0; transform: rotate(252deg); }
+        .segment-9 { background-color: #118ab2; transform: rotate(288deg); }
+        .segment-10 { background-color: #073b4c; transform: rotate(324deg); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-gem"></i> SPIN TO WIN <i class="fas fa-gem"></i></h1>
+            <p class="subtitle">Spin the wheel and multiply your points! Win up to 10x multiplier. Claim your prize after each spin.</p>
+        </header>
+        
+        <div class="points-display">
+            <h2>YOUR POINTS</h2>
+            <div class="points-value" id="pointsValue">1,000</div>
+            <p class="points-label">Spin to increase your points!</p>
+        </div>
+        
+        <div class="game-area">
+            <div class="wheel-container">
+                <div class="pointer"></div>
+                <div class="wheel" id="wheel">
+                    <!-- Wheel segments will be generated by JavaScript -->
+                </div>
+                <div class="wheel-center"></div>
+            </div>
+            
+            <div class="controls">
+                <h2>SPIN THE WHEEL</h2>
+                <p>Click spin to try your luck!</p>
+                <button class="spin-btn" id="spinBtn">
+                    <i class="fas fa-redo-alt"></i> SPIN NOW
+                </button>
+                <p>Cost: 100 points per spin</p>
+            </div>
+        </div>
+        
+        <div class="result-container" id="resultContainer">
+            <h2 class="result-title">CONGRATULATIONS!</h2>
+            <div class="multiplier" id="multiplierValue">5x</div>
+            <p>You won:</p>
+            <div class="win-amount" id="winAmount">5,000 points</div>
+            <button class="claim-btn" id="claimBtn">CLAIM PRIZE</button>
+        </div>
+        
+        <div class="ads-container" id="adsContainer">
+            <h2 class="ads-title">🎉 PRIZE UNLOCKED! 🎉</h2>
+            <div class="ads-message">
+                <p>Your prize has been successfully added to your account!</p>
+                <p>Watch a short ad to get an extra <strong>50 bonus points</strong> on your next spin!</p>
+                <p>Thank you for playing Spin & Win!</p>
+            </div>
+            <button class="close-ads-btn" id="closeAdsBtn">CONTINUE PLAYING</button>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to Play:</h3>
+            <ul>
+                <li>Each spin costs <strong>100 points</strong></li>
+                <li>Spin the wheel to get a random multiplier from 1x to 10x</li>
+                <li>Your points will be multiplied by the result</li>
+                <li>Click "Claim Prize" to add your winnings to your total points</li>
+                <li>Watch an ad after claiming to get bonus points for your next spin</li>
+            </ul>
+        </div>
+        
+        <div class="audio-control" id="audioControl">
+            <i class="fas fa-volume-up"></i>
+        </div>
+        
+        <!-- Audio elements -->
+        <audio id="spinSound" loop>
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-casino-roulette-spin-1032.mp3" type="audio/mpeg">
+        </audio>
+        <audio id="winSound">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
+        </audio>
+        <audio id="clickSound">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" type="audio/mpeg">
+        </audio>
+    </div>
 
+    <!-- RichPartners SDK -->
+    <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+    <script>
+        window.TelegramAdsController = new TelegramAdsController();
+        window.TelegramAdsController.initialize({
+          pubId: "956231",
+          appId: "5571",
+        });
+        let richLoaded = true;
+    </script>
+
+    <script>
+        // Game variables
+        let points = 1000;
+        let currentPoints = 1000;
+        let isSpinning = false;
+        let isAudioOn = true;
+        let spinSound, winSound, clickSound;
+        
+        // DOM elements
+        const wheel = document.getElementById('wheel');
+        const spinBtn = document.getElementById('spinBtn');
+        const pointsValue = document.getElementById('pointsValue');
+        const resultContainer = document.getElementById('resultContainer');
+        const multiplierValue = document.getElementById('multiplierValue');
+        const winAmount = document.getElementById('winAmount');
+        const claimBtn = document.getElementById('claimBtn');
+        const adsContainer = document.getElementById('adsContainer');
+        const closeAdsBtn = document.getElementById('closeAdsBtn');
+        const audioControl = document.getElementById('audioControl');
+        
+        // Audio elements
+        spinSound = document.getElementById('spinSound');
+        winSound = document.getElementById('winSound');
+        clickSound = document.getElementById('clickSound');
+        
+        // Initialize wheel segments (1x to 10x)
+        const multipliers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        
+        function createWheelSegments() {
+            wheel.innerHTML = '';
+            
+            for (let i = 0; i < 10; i++) {
+                const segment = document.createElement('div');
+                segment.className = `wheel-segment segment-${i+1}`;
+                segment.innerHTML = `<span>${multipliers[i]}x</span>`;
+                wheel.appendChild(segment);
+            }
+        }
+        
+        // Format numbers with commas
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        
+        // Update points display
+        function updatePointsDisplay() {
+            pointsValue.textContent = formatNumber(points);
+        }
+        
+        // Play sound effect
+        function playSound(sound) {
+            if (!isAudioOn) return;
+            
+            sound.currentTime = 0;
+            sound.play().catch(e => console.log("Audio play failed:", e));
+        }
+        
+        // Toggle audio
+        function toggleAudio() {
+            isAudioOn = !isAudioOn;
+            const icon = audioControl.querySelector('i');
+            
+            if (isAudioOn) {
+                icon.className = 'fas fa-volume-up';
+                audioControl.style.background = 'rgba(15, 52, 96, 0.8)';
+            } else {
+                icon.className = 'fas fa-volume-mute';
+                audioControl.style.background = 'rgba(239, 71, 111, 0.8)';
+            }
+        }
+        
+        // Spin the wheel
+        function spinWheel() {
+            if (isSpinning || points < 100) return;
+            
+            playSound(clickSound);
+            isSpinning = true;
+            spinBtn.disabled = true;
+            
+            // Deduct spin cost
+            points -= 100;
+            updatePointsDisplay();
+            
+            // Start spinning animation
+            wheel.classList.add('spinning');
+            playSound(spinSound);
+            
+            // Random spin duration and result
+            const spinDuration = 3000 + Math.random() * 2000; // 3-5 seconds
+            const finalAngle = 3600 + Math.floor(Math.random() * 360); // 10 full rotations + random
+            
+            // Apply rotation
+            wheel.style.transition = `transform ${spinDuration}ms cubic-bezier(0.2, 0.8, 0.3, 1)`;
+            wheel.style.transform = `rotate(${finalAngle}deg)`;
+            
+            // Determine result after spin completes
+            setTimeout(() => {
+                // Stop spinning
+                wheel.classList.remove('spinning');
+                spinSound.pause();
+                
+                // Calculate which segment the pointer landed on
+                const normalizedAngle = finalAngle % 360;
+                const segmentSize = 36; // 360 / 10 segments
+                let segmentIndex = Math.floor((360 - normalizedAngle) / segmentSize) % 10;
+                
+                // Ensure index is within bounds
+                segmentIndex = (segmentIndex + 10) % 10;
+                
+                // Get multiplier
+                const multiplier = multipliers[segmentIndex];
+                const winnings = 100 * multiplier; // Base cost * multiplier
+                currentPoints = winnings;
+                
+                // Show result
+                showResult(multiplier, winnings);
+                
+                isSpinning = false;
+                spinBtn.disabled = false;
+            }, spinDuration);
+        }
+        
+        // Show result
+        function showResult(multiplier, winnings) {
+            multiplierValue.textContent = `${multiplier}x`;
+            winAmount.textContent = `${formatNumber(winnings)} points`;
+            
+            // Play win sound
+            playSound(winSound);
+            
+            // Show result container with animation
+            resultContainer.style.display = 'flex';
+            
+            // Hide after a few seconds if not claimed
+            setTimeout(() => {
+                if (resultContainer.style.display === 'flex') {
+                    claimPrize(); // Auto-claim after 10 seconds
+                }
+            }, 10000);
+        }
+        
+        // Claim prize
+        function claimPrize() {
+            playSound(clickSound);
+            
+            // Add winnings to points
+            points += currentPoints;
+            updatePointsDisplay();
+            
+            // Hide result container
+            resultContainer.style.display = 'none';
+            
+            // Show ads container
+            showAds();
+        }
+        
+        // Show ads
+        function showAds() {
+            adsContainer.style.display = 'flex';
+            
+            // Try to show RichPartners ad
+            if (richLoaded && window.TelegramAdsController) {
+                try {
+                    window.TelegramAdsController.showAd();
+                } catch (e) {
+                    console.log("RichPartners ad error:", e);
+                }
+            }
+        }
+        
+        // Close ads and give bonus
+        function closeAds() {
+            playSound(clickSound);
+            
+            // Give bonus points
+            points += 50;
+            updatePointsDisplay();
+            
+            // Hide ads container
+            adsContainer.style.display = 'none';
+        }
+        
+        // Initialize the game
+        function initGame() {
+            createWheelSegments();
+            updatePointsDisplay();
+            
+            // Event listeners
+            spinBtn.addEventListener('click', spinWheel);
+            claimBtn.addEventListener('click', claimPrize);
+            closeAdsBtn.addEventListener('click', closeAds);
+            audioControl.addEventListener('click', toggleAudio);
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' && !isSpinning && points >= 100) {
+                    spinWheel();
+                }
+            });
+            
+            // Initialize audio
+            spinSound.volume = 0.3;
+            winSound.volume = 0.5;
+            clickSound.volume = 0.4;
+        }
+        
+        // Start the game when page loads
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
 </body>
 </html>
