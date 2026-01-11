@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spin & Win | Prize Wheel</title>
+    <title>Spin to Win | Prize Wheel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -14,12 +14,13 @@
         }
         
         body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             color: #fff;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             padding: 20px;
             overflow-x: hidden;
         }
@@ -33,80 +34,93 @@
             gap: 30px;
         }
         
-        header {
+        .header {
             text-align: center;
             width: 100%;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            margin-bottom: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #FF416C, #FF4B2B, #FF9966, #FF5E62);
         }
         
         h1 {
-            font-size: 2.8rem;
-            background: linear-gradient(90deg, #ffd166, #ef476f);
+            font-size: 3.2rem;
+            background: linear-gradient(90deg, #FF416C, #FF4B2B, #FF9966);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             margin-bottom: 10px;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            font-weight: 800;
+            letter-spacing: 1px;
         }
         
         .subtitle {
-            font-size: 1.1rem;
-            color: #a9b7d0;
-            max-width: 600px;
+            font-size: 1.2rem;
+            color: #b8c1ec;
+            max-width: 700px;
             margin: 0 auto;
+            opacity: 0.9;
+        }
+        
+        .points-container {
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            padding: 20px 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 10;
+            min-width: 300px;
+        }
+        
+        .points-container h2 {
+            font-size: 1.4rem;
+            color: #8ac6d1;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .points-value {
+            font-size: 4.5rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #FF9966, #FF5E62);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(255, 94, 98, 0.4);
+            line-height: 1;
         }
         
         .game-area {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 40px;
+            align-items: center;
+            gap: 50px;
             width: 100%;
+            margin-top: 20px;
         }
         
-        .points-display {
-            background: linear-gradient(145deg, #0f3460, #1a1a2e);
-            padding: 25px 40px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-            border: 2px solid #394867;
-            min-width: 280px;
-        }
-        
-        .points-display h2 {
-            font-size: 1.5rem;
-            color: #8ac6d1;
-            margin-bottom: 15px;
-        }
-        
-        .points-value {
-            font-size: 4rem;
-            font-weight: bold;
-            background: linear-gradient(90deg, #4cc9f0, #4361ee);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 0 15px rgba(76, 201, 240, 0.5);
-            margin-bottom: 10px;
-        }
-        
-        .points-label {
-            color: #b8c1ec;
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-        }
-        
-        .wheel-container {
+        .wheel-section {
             position: relative;
-            width: 400px;
-            height: 400px;
+            width: 500px;
+            height: 500px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -117,9 +131,12 @@
             height: 100%;
             position: relative;
             border-radius: 50%;
-            overflow: hidden;
-            box-shadow: 0 0 0 8px #0f3460, 0 0 30px rgba(239, 71, 111, 0.5);
+            overflow: visible;
+            box-shadow: 0 0 0 12px #1a1a2e, 
+                        0 0 50px rgba(255, 65, 108, 0.4),
+                        inset 0 0 30px rgba(0, 0, 0, 0.7);
             transition: transform 0.1s;
+            transform: rotate(0deg);
         }
         
         .wheel-segment {
@@ -130,372 +147,550 @@
             left: 0;
             top: 0;
             display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            padding-bottom: 30px;
-            font-weight: bold;
-            font-size: 1.4rem;
+            justify-content: flex-end;
+            align-items: flex-start;
+            padding-top: 20px;
+            padding-right: 60px;
+            font-weight: 800;
+            font-size: 2rem;
             color: #fff;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
         }
+        
+        /* Adjust number positions for visibility */
+        .segment-1 { transform: rotate(0deg); }
+        .segment-2 { transform: rotate(36deg); }
+        .segment-3 { transform: rotate(72deg); }
+        .segment-4 { transform: rotate(108deg); }
+        .segment-5 { transform: rotate(144deg); }
+        .segment-6 { transform: rotate(180deg); }
+        .segment-7 { transform: rotate(216deg); }
+        .segment-8 { transform: rotate(252deg); }
+        .segment-9 { transform: rotate(288deg); }
+        .segment-10 { transform: rotate(324deg); }
         
         .wheel-center {
             position: absolute;
-            width: 60px;
-            height: 60px;
-            background: #16213e;
+            width: 80px;
+            height: 80px;
+            background: #1a1a2e;
             border-radius: 50%;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 10;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
-            border: 4px solid #ef476f;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.9);
+            border: 6px solid #FF416C;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FF9966;
+            font-weight: bold;
+            font-size: 1.4rem;
         }
         
         .pointer {
             position: absolute;
-            top: -30px;
+            top: -50px;
             left: 50%;
             transform: translateX(-50%);
-            width: 40px;
-            height: 60px;
+            width: 60px;
+            height: 80px;
             z-index: 20;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.7));
         }
         
-        .pointer:before {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-top: 30px solid #ef476f;
-            top: 0;
-            left: 0;
-            filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.5));
+        .pointer svg {
+            width: 100%;
+            height: 100%;
+            fill: #FF416C;
         }
         
         .controls {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
-            background: rgba(15, 52, 96, 0.7);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            border: 1px solid #394867;
-            min-width: 280px;
+            gap: 25px;
+            background: rgba(26, 26, 46, 0.8);
+            padding: 35px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 300px;
         }
         
         .spin-btn {
-            background: linear-gradient(145deg, #ef476f, #ff9a00);
+            background: linear-gradient(145deg, #FF416C, #FF4B2B);
             color: white;
             border: none;
-            padding: 18px 40px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border-radius: 50px;
+            padding: 22px 50px;
+            font-size: 1.7rem;
+            font-weight: 800;
+            border-radius: 15px;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 8px 20px rgba(239, 71, 111, 0.4);
-            letter-spacing: 1px;
+            box-shadow: 0 10px 25px rgba(255, 65, 108, 0.5);
+            letter-spacing: 1.5px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
+            text-transform: uppercase;
         }
         
-        .spin-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(239, 71, 111, 0.6);
+        .spin-btn:hover:not(:disabled) {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(255, 65, 108, 0.7);
         }
         
-        .spin-btn:active {
-            transform: translateY(0);
+        .spin-btn:active:not(:disabled) {
+            transform: translateY(-2px);
         }
         
         .spin-btn:disabled {
-            background: linear-gradient(145deg, #6c757d, #495057);
+            background: linear-gradient(145deg, #555, #333);
             cursor: not-allowed;
             transform: none;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
         
-        .result-container {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            background: rgba(25, 25, 35, 0.9);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            border: 2px solid #ef476f;
-            max-width: 400px;
+        .spin-cost {
+            color: #b8c1ec;
+            font-size: 1.1rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        /* Popup Modal Styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            margin-top: 20px;
-            animation: fadeIn 0.5s ease-out;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
-        .result-title {
-            font-size: 2rem;
-            color: #4cc9f0;
+        .result-popup {
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border-radius: 25px;
+            width: 90%;
+            max-width: 500px;
+            padding: 40px 30px;
             text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
-        .multiplier {
-            font-size: 5rem;
-            font-weight: bold;
-            background: linear-gradient(90deg, #ffd166, #ef476f);
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .result-popup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #FF416C, #FF4B2B, #FF9966);
+        }
+        
+        .popup-title {
+            font-size: 2.5rem;
+            color: #FF9966;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .multiplier-display {
+            font-size: 5.5rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, #FF416C, #FF4B2B);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-shadow: 0 0 20px rgba(255, 209, 102, 0.7);
+            margin: 20px 0;
+            text-shadow: 0 0 30px rgba(255, 65, 108, 0.5);
             animation: pulse 1.5s infinite alternate;
         }
         
         @keyframes pulse {
-            from { transform: scale(1); }
-            to { transform: scale(1.1); }
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+        
+        .win-text {
+            font-size: 1.3rem;
+            color: #b8c1ec;
+            margin-bottom: 10px;
         }
         
         .win-amount {
-            font-size: 2.5rem;
-            color: #8ac6d1;
-            font-weight: bold;
-            text-align: center;
+            font-size: 3rem;
+            font-weight: 800;
+            color: #06d6a0;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(6, 214, 160, 0.4);
+        }
+        
+        .popup-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
         }
         
         .claim-btn {
             background: linear-gradient(145deg, #06d6a0, #118ab2);
             color: white;
             border: none;
-            padding: 15px 50px;
-            font-size: 1.3rem;
-            font-weight: bold;
-            border-radius: 50px;
+            padding: 18px 30px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            border-radius: 15px;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 8px 20px rgba(6, 214, 160, 0.4);
-            letter-spacing: 1px;
-            margin-top: 10px;
+            box-shadow: 0 10px 25px rgba(6, 214, 160, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         
         .claim-btn:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(6, 214, 160, 0.6);
+            box-shadow: 0 15px 30px rgba(6, 214, 160, 0.6);
         }
         
-        .ads-container {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            background: rgba(15, 52, 96, 0.9);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            border: 2px solid #ffd166;
+        /* Ads Popup Styles */
+        .ads-popup {
+            background: linear-gradient(145deg, #1a1a2e, #16213e);
+            border-radius: 25px;
+            width: 90%;
             max-width: 500px;
-            width: 100%;
-            margin-top: 20px;
-            animation: fadeIn 0.5s ease-out;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
         }
         
         .ads-title {
-            font-size: 1.8rem;
-            color: #ffd166;
-            text-align: center;
+            font-size: 2.2rem;
+            color: #FF9966;
+            margin-bottom: 20px;
+            font-weight: 700;
         }
         
         .ads-message {
-            text-align: center;
+            font-size: 1.2rem;
             color: #b8c1ec;
             line-height: 1.6;
+            margin-bottom: 30px;
+            padding: 0 10px;
+        }
+        
+        .bonus-points {
+            font-size: 2.5rem;
+            color: #FF9966;
+            font-weight: 800;
+            margin: 20px 0;
+            text-shadow: 0 0 20px rgba(255, 153, 102, 0.4);
+        }
+        
+        .ads-container {
+            min-height: 300px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 25px 0;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+        
+        .ad-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(145deg, #2d2d4d, #24243e);
+            color: #8ac6d1;
             font-size: 1.1rem;
         }
         
         .close-ads-btn {
-            background: linear-gradient(145deg, #ef476f, #ff9a00);
+            background: linear-gradient(145deg, #FF416C, #FF4B2B);
             color: white;
             border: none;
-            padding: 12px 30px;
-            font-size: 1.1rem;
-            border-radius: 50px;
+            padding: 16px 40px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            border-radius: 15px;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(239, 71, 111, 0.4);
+            box-shadow: 0 10px 25px rgba(255, 65, 108, 0.4);
+            margin-top: 20px;
         }
         
         .close-ads-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(239, 71, 111, 0.6);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(255, 65, 108, 0.6);
         }
         
         .audio-control {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(15, 52, 96, 0.8);
-            width: 50px;
-            height: 50px;
+            bottom: 25px;
+            right: 25px;
+            background: rgba(255, 65, 108, 0.9);
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            font-size: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            border: 1px solid #394867;
+            font-size: 1.7rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.2);
             z-index: 100;
+            transition: all 0.3s;
+        }
+        
+        .audio-control:hover {
+            transform: scale(1.1);
         }
         
         .instructions {
-            background: rgba(25, 25, 35, 0.7);
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
+            background: rgba(26, 26, 46, 0.8);
+            padding: 25px;
+            border-radius: 20px;
+            margin-top: 30px;
             max-width: 800px;
             width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .instructions h3 {
             color: #8ac6d1;
-            margin-bottom: 10px;
-            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            font-weight: 700;
         }
         
         .instructions ul {
-            padding-left: 20px;
+            padding-left: 25px;
             color: #b8c1ec;
-            line-height: 1.6;
+            line-height: 1.7;
         }
         
         .instructions li {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            font-size: 1.05rem;
         }
         
-        @media (max-width: 900px) {
+        /* Confetti animation */
+        .confetti {
+            position: fixed;
+            width: 15px;
+            height: 15px;
+            background-color: #FF416C;
+            top: 0;
+            opacity: 0;
+            z-index: 999;
+        }
+        
+        .confetti:nth-child(2n) {
+            background-color: #FF4B2B;
+        }
+        
+        .confetti:nth-child(3n) {
+            background-color: #FF9966;
+        }
+        
+        .confetti:nth-child(4n) {
+            background-color: #06d6a0;
+        }
+        
+        .confetti:nth-child(5n) {
+            background-color: #118ab2;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1100px) {
             .game-area {
                 flex-direction: column;
-                align-items: center;
+                gap: 40px;
             }
             
-            .wheel-container {
+            .wheel-section {
+                width: 450px;
+                height: 450px;
+            }
+            
+            .wheel-segment {
+                font-size: 1.8rem;
+                padding-right: 50px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .wheel-section {
                 width: 350px;
                 height: 350px;
             }
             
+            .wheel-segment {
+                font-size: 1.5rem;
+                padding-right: 40px;
+            }
+            
             h1 {
-                font-size: 2.2rem;
+                font-size: 2.5rem;
+            }
+            
+            .points-value {
+                font-size: 3.5rem;
+            }
+            
+            .multiplier-display {
+                font-size: 4.5rem;
+            }
+            
+            .win-amount {
+                font-size: 2.5rem;
+            }
+            
+            .spin-btn {
+                padding: 18px 35px;
+                font-size: 1.5rem;
             }
         }
         
-        @media (max-width: 500px) {
-            .wheel-container {
+        @media (max-width: 400px) {
+            .wheel-section {
                 width: 300px;
                 height: 300px;
             }
             
+            .wheel-segment {
+                font-size: 1.3rem;
+                padding-right: 35px;
+            }
+            
             h1 {
-                font-size: 1.8rem;
-            }
-            
-            .points-value {
-                font-size: 3rem;
-            }
-            
-            .multiplier {
-                font-size: 4rem;
+                font-size: 2rem;
             }
         }
-        
-        .spinning {
-            animation: spin 0.1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .segment-1 { background-color: #ef476f; transform: rotate(0deg); }
-        .segment-2 { background-color: #ffd166; transform: rotate(36deg); }
-        .segment-3 { background-color: #06d6a0; transform: rotate(72deg); }
-        .segment-4 { background-color: #118ab2; transform: rotate(108deg); }
-        .segment-5 { background-color: #073b4c; transform: rotate(144deg); }
-        .segment-6 { background-color: #ef476f; transform: rotate(180deg); }
-        .segment-7 { background-color: #ffd166; transform: rotate(216deg); }
-        .segment-8 { background-color: #06d6a0; transform: rotate(252deg); }
-        .segment-9 { background-color: #118ab2; transform: rotate(288deg); }
-        .segment-10 { background-color: #073b4c; transform: rotate(324deg); }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
+        <div class="header">
             <h1><i class="fas fa-gem"></i> SPIN TO WIN <i class="fas fa-gem"></i></h1>
-            <p class="subtitle">Spin the wheel and multiply your points! Win up to 10x multiplier. Claim your prize after each spin.</p>
-        </header>
+            <p class="subtitle">Spin the wheel for a chance to multiply your points! Win up to 10x your bet. Claim your prize after each spin.</p>
+        </div>
         
-        <div class="points-display">
+        <div class="points-container">
             <h2>YOUR POINTS</h2>
             <div class="points-value" id="pointsValue">1,000</div>
-            <p class="points-label">Spin to increase your points!</p>
         </div>
         
         <div class="game-area">
-            <div class="wheel-container">
-                <div class="pointer"></div>
+            <div class="wheel-section">
+                <div class="pointer">
+                    <svg viewBox="0 0 100 100">
+                        <polygon points="50,0 65,70 50,100 35,70" />
+                    </svg>
+                </div>
                 <div class="wheel" id="wheel">
                     <!-- Wheel segments will be generated by JavaScript -->
                 </div>
-                <div class="wheel-center"></div>
+                <div class="wheel-center">SPIN</div>
             </div>
             
             <div class="controls">
-                <h2>SPIN THE WHEEL</h2>
-                <p>Click spin to try your luck!</p>
+                <h2 style="color: #FF9966; font-size: 1.8rem;">TRY YOUR LUCK!</h2>
+                <p style="color: #b8c1ec; font-size: 1.1rem; text-align: center;">Spin the wheel to win multipliers from 1x to 10x</p>
                 <button class="spin-btn" id="spinBtn">
-                    <i class="fas fa-redo-alt"></i> SPIN NOW
+                    <i class="fas fa-redo-alt"></i> SPIN WHEEL
                 </button>
-                <p>Cost: 100 points per spin</p>
+                <div class="spin-cost">Cost: 100 points per spin</div>
+                <div style="color: #8ac6d1; font-size: 1rem; text-align: center; margin-top: 10px;">
+                    <i class="fas fa-lightbulb"></i> Press SPACE BAR for quick spin
+                </div>
             </div>
-        </div>
-        
-        <div class="result-container" id="resultContainer">
-            <h2 class="result-title">CONGRATULATIONS!</h2>
-            <div class="multiplier" id="multiplierValue">5x</div>
-            <p>You won:</p>
-            <div class="win-amount" id="winAmount">5,000 points</div>
-            <button class="claim-btn" id="claimBtn">CLAIM PRIZE</button>
-        </div>
-        
-        <div class="ads-container" id="adsContainer">
-            <h2 class="ads-title">🎉 PRIZE UNLOCKED! 🎉</h2>
-            <div class="ads-message">
-                <p>Your prize has been successfully added to your account!</p>
-                <p>Watch a short ad to get an extra <strong>50 bonus points</strong> on your next spin!</p>
-                <p>Thank you for playing Spin & Win!</p>
-            </div>
-            <button class="close-ads-btn" id="closeAdsBtn">CONTINUE PLAYING</button>
         </div>
         
         <div class="instructions">
-            <h3>How to Play:</h3>
+            <h3>🎮 HOW TO PLAY:</h3>
             <ul>
-                <li>Each spin costs <strong>100 points</strong></li>
-                <li>Spin the wheel to get a random multiplier from 1x to 10x</li>
-                <li>Your points will be multiplied by the result</li>
-                <li>Click "Claim Prize" to add your winnings to your total points</li>
-                <li>Watch an ad after claiming to get bonus points for your next spin</li>
+                <li>Click <strong>SPIN WHEEL</strong> button or press <strong>SPACE BAR</strong> to spin (costs 100 points)</li>
+                <li>Wheel will land on a random multiplier from <strong>1x to 10x</strong></li>
+                <li>Your winnings = <strong>100 points × multiplier</strong></li>
+                <li>Click <strong>CLAIM PRIZE</strong> in the popup to add winnings to your balance</li>
+                <li>Watch the ad to get <strong>+50 bonus points</strong> for your next spin</li>
+                <li>Continue spinning to increase your points!</li>
             </ul>
+        </div>
+        
+        <!-- Result Popup -->
+        <div class="popup-overlay" id="resultPopup">
+            <div class="result-popup">
+                <h2 class="popup-title">🎉 CONGRATULATIONS! 🎉</h2>
+                <div class="multiplier-display" id="multiplierValue">5x</div>
+                <p class="win-text">You Won:</p>
+                <div class="win-amount" id="winAmount">500 points</div>
+                <div class="popup-buttons">
+                    <button class="claim-btn" id="claimBtn">
+                        <i class="fas fa-gift"></i> CLAIM PRIZE
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ads Popup -->
+        <div class="popup-overlay" id="adsPopup">
+            <div class="ads-popup">
+                <h2 class="ads-title">🎁 BONUS REWARD! 🎁</h2>
+                <p class="ads-message">Watch this short ad to get <strong>extra bonus points</strong> for your next spin!</p>
+                
+                <div class="bonus-points">+50 BONUS POINTS</div>
+                
+                <div class="ads-container" id="adsContainer">
+                    <!-- RichAds will be displayed here -->
+                    <div class="ad-placeholder" id="adPlaceholder">
+                        <i class="fas fa-ad" style="font-size: 3rem; margin-bottom: 15px; color: #FF9966;"></i>
+                        <p>Loading advertisement...</p>
+                    </div>
+                </div>
+                
+                <button class="close-ads-btn" id="closeAdsBtn">
+                    <i class="fas fa-check-circle"></i> CONTINUE PLAYING
+                </button>
+            </div>
         </div>
         
         <div class="audio-control" id="audioControl">
@@ -511,6 +706,9 @@
         </audio>
         <audio id="clickSound">
             <source src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" type="audio/mpeg">
+        </audio>
+        <audio id="coinSound">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-coins-handling-1999.mp3" type="audio/mpeg">
         </audio>
     </div>
 
@@ -528,38 +726,63 @@
     <script>
         // Game variables
         let points = 1000;
-        let currentPoints = 1000;
         let isSpinning = false;
         let isAudioOn = true;
-        let spinSound, winSound, clickSound;
+        let currentWinAmount = 0;
+        let currentMultiplier = 1;
+        let adShown = false;
         
         // DOM elements
         const wheel = document.getElementById('wheel');
         const spinBtn = document.getElementById('spinBtn');
         const pointsValue = document.getElementById('pointsValue');
-        const resultContainer = document.getElementById('resultContainer');
+        const resultPopup = document.getElementById('resultPopup');
         const multiplierValue = document.getElementById('multiplierValue');
         const winAmount = document.getElementById('winAmount');
         const claimBtn = document.getElementById('claimBtn');
-        const adsContainer = document.getElementById('adsContainer');
+        const adsPopup = document.getElementById('adsPopup');
         const closeAdsBtn = document.getElementById('closeAdsBtn');
         const audioControl = document.getElementById('audioControl');
+        const adsContainer = document.getElementById('adsContainer');
+        const adPlaceholder = document.getElementById('adPlaceholder');
         
         // Audio elements
-        spinSound = document.getElementById('spinSound');
-        winSound = document.getElementById('winSound');
-        clickSound = document.getElementById('clickSound');
+        const spinSound = document.getElementById('spinSound');
+        const winSound = document.getElementById('winSound');
+        const clickSound = document.getElementById('clickSound');
+        const coinSound = document.getElementById('coinSound');
         
-        // Initialize wheel segments (1x to 10x)
-        const multipliers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        // Wheel multipliers with colors
+        const wheelData = [
+            { multiplier: 1, color: '#FF416C' },
+            { multiplier: 2, color: '#FF4B2B' },
+            { multiplier: 3, color: '#FF9966' },
+            { multiplier: 4, color: '#06d6a0' },
+            { multiplier: 5, color: '#118ab2' },
+            { multiplier: 6, color: '#9d4edd' },
+            { multiplier: 7, color: '#FF416C' },
+            { multiplier: 8, color: '#FF4B2B' },
+            { multiplier: 9, color: '#FF9966' },
+            { multiplier: 10, color: '#06d6a0' }
+        ];
         
+        // Initialize wheel with visible numbers
         function createWheelSegments() {
             wheel.innerHTML = '';
             
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < wheelData.length; i++) {
                 const segment = document.createElement('div');
                 segment.className = `wheel-segment segment-${i+1}`;
-                segment.innerHTML = `<span>${multipliers[i]}x</span>`;
+                segment.style.backgroundColor = wheelData[i].color;
+                
+                // Create number element with proper rotation
+                const numberSpan = document.createElement('span');
+                numberSpan.textContent = `${wheelData[i].multiplier}x`;
+                numberSpan.style.display = 'block';
+                numberSpan.style.transform = `rotate(${36}deg)`;
+                numberSpan.style.transformOrigin = 'center';
+                
+                segment.appendChild(numberSpan);
                 wheel.appendChild(segment);
             }
         }
@@ -572,6 +795,12 @@
         // Update points display
         function updatePointsDisplay() {
             pointsValue.textContent = formatNumber(points);
+            
+            // Add animation effect
+            pointsValue.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                pointsValue.style.transform = 'scale(1)';
+            }, 200);
         }
         
         // Play sound effect
@@ -589,14 +818,42 @@
             
             if (isAudioOn) {
                 icon.className = 'fas fa-volume-up';
-                audioControl.style.background = 'rgba(15, 52, 96, 0.8)';
+                audioControl.style.background = 'rgba(255, 65, 108, 0.9)';
+                playSound(clickSound);
             } else {
                 icon.className = 'fas fa-volume-mute';
-                audioControl.style.background = 'rgba(239, 71, 111, 0.8)';
+                audioControl.style.background = 'rgba(100, 100, 100, 0.9)';
             }
         }
         
-        // Spin the wheel
+        // Create confetti effect
+        function createConfetti() {
+            const colors = ['#FF416C', '#FF4B2B', '#FF9966', '#06d6a0', '#118ab2'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.width = Math.random() * 15 + 5 + 'px';
+                confetti.style.height = Math.random() * 15 + 5 + 'px';
+                document.body.appendChild(confetti);
+                
+                // Animate confetti
+                const animation = confetti.animate([
+                    { top: '-10px', opacity: 1, transform: 'rotate(0deg)' },
+                    { top: '100vh', opacity: 0.7, transform: `rotate(${Math.random() * 360}deg)` }
+                ], {
+                    duration: Math.random() * 2000 + 1000,
+                    easing: 'cubic-bezier(0.215, 0.61, 0.355, 1)'
+                });
+                
+                // Remove after animation
+                animation.onfinish = () => confetti.remove();
+            }
+        }
+        
+        // Spin the wheel with medium speed
         function spinWheel() {
             if (isSpinning || points < 100) return;
             
@@ -608,103 +865,168 @@
             points -= 100;
             updatePointsDisplay();
             
-            // Start spinning animation
-            wheel.classList.add('spinning');
+            // Start spinning sound
             playSound(spinSound);
             
-            // Random spin duration and result
-            const spinDuration = 3000 + Math.random() * 2000; // 3-5 seconds
-            const finalAngle = 3600 + Math.floor(Math.random() * 360); // 10 full rotations + random
+            // Medium speed spin parameters
+            const spinDuration = 3500; // 3.5 seconds for medium speed
+            const spinRevolutions = 5; // 5 full revolutions
             
-            // Apply rotation
-            wheel.style.transition = `transform ${spinDuration}ms cubic-bezier(0.2, 0.8, 0.3, 1)`;
+            // Calculate final rotation (ensure it lands on a segment)
+            const segmentAngle = 360 / wheelData.length; // 36 degrees per segment
+            const randomSegment = Math.floor(Math.random() * wheelData.length);
+            const segmentOffset = Math.random() * 10 - 5; // Small random offset within segment
+            
+            // Calculate final angle
+            const finalAngle = (spinRevolutions * 360) + (randomSegment * segmentAngle) + segmentOffset;
+            
+            // Apply rotation with easing for natural slowdown
+            wheel.style.transition = `transform ${spinDuration}ms cubic-bezier(0.2, 0.7, 0.3, 1)`;
             wheel.style.transform = `rotate(${finalAngle}deg)`;
             
             // Determine result after spin completes
             setTimeout(() => {
-                // Stop spinning
-                wheel.classList.remove('spinning');
+                // Stop spinning sound
                 spinSound.pause();
                 
-                // Calculate which segment the pointer landed on
-                const normalizedAngle = finalAngle % 360;
-                const segmentSize = 36; // 360 / 10 segments
-                let segmentIndex = Math.floor((360 - normalizedAngle) / segmentSize) % 10;
-                
-                // Ensure index is within bounds
-                segmentIndex = (segmentIndex + 10) % 10;
-                
                 // Get multiplier
-                const multiplier = multipliers[segmentIndex];
-                const winnings = 100 * multiplier; // Base cost * multiplier
-                currentPoints = winnings;
+                currentMultiplier = wheelData[randomSegment].multiplier;
+                currentWinAmount = 100 * currentMultiplier;
                 
-                // Show result
-                showResult(multiplier, winnings);
+                // Show result popup after a short delay
+                setTimeout(() => {
+                    showResultPopup(currentMultiplier, currentWinAmount);
+                }, 500);
                 
                 isSpinning = false;
                 spinBtn.disabled = false;
             }, spinDuration);
         }
         
-        // Show result
-        function showResult(multiplier, winnings) {
+        // Show result popup
+        function showResultPopup(multiplier, winnings) {
             multiplierValue.textContent = `${multiplier}x`;
             winAmount.textContent = `${formatNumber(winnings)} points`;
             
             // Play win sound
             playSound(winSound);
             
-            // Show result container with animation
-            resultContainer.style.display = 'flex';
+            // Create confetti
+            createConfetti();
             
-            // Hide after a few seconds if not claimed
-            setTimeout(() => {
-                if (resultContainer.style.display === 'flex') {
-                    claimPrize(); // Auto-claim after 10 seconds
-                }
-            }, 10000);
+            // Show popup
+            resultPopup.style.display = 'flex';
         }
         
-        // Claim prize
+        // Claim prize and show ads
         function claimPrize() {
-            playSound(clickSound);
+            playSound(coinSound);
             
             // Add winnings to points
-            points += currentPoints;
+            points += currentWinAmount;
             updatePointsDisplay();
             
-            // Hide result container
-            resultContainer.style.display = 'none';
+            // Close result popup
+            resultPopup.style.display = 'none';
             
-            // Show ads container
-            showAds();
+            // Show ads popup after a short delay
+            setTimeout(() => {
+                showAdsPopup();
+            }, 300);
         }
         
-        // Show ads
-        function showAds() {
-            adsContainer.style.display = 'flex';
+        // Show ads popup with RichAds
+        function showAdsPopup() {
+            // Show ads popup
+            adsPopup.style.display = 'flex';
             
-            // Try to show RichPartners ad
+            // Show RichAds
+            showRichAds();
+        }
+        
+        // Show RichAds
+        function showRichAds() {
+            // Hide placeholder
+            adPlaceholder.style.display = 'none';
+            
+            // Try to show RichPartners ads
             if (richLoaded && window.TelegramAdsController) {
                 try {
+                    // Show interstitial ad
                     window.TelegramAdsController.showAd();
+                    
+                    // Set a timeout to enable close button
+                    setTimeout(() => {
+                        closeAdsBtn.disabled = false;
+                    }, 5000); // Allow closing after 5 seconds
+                    
                 } catch (e) {
                     console.log("RichPartners ad error:", e);
+                    // If ad fails, show mock ad
+                    showMockAd();
                 }
+            } else {
+                // If SDK not loaded, show mock ad
+                showMockAd();
             }
+        }
+        
+        // Show mock ad for demo purposes
+        function showMockAd() {
+            const mockAd = document.createElement('div');
+            mockAd.style.width = '100%';
+            mockAd.style.height = '100%';
+            mockAd.style.background = 'linear-gradient(145deg, #2d2d4d, #24243e)';
+            mockAd.style.display = 'flex';
+            mockAd.style.flexDirection = 'column';
+            mockAd.style.alignItems = 'center';
+            mockAd.style.justifyContent = 'center';
+            mockAd.style.color = '#FF9966';
+            mockAd.style.fontSize = '1.5rem';
+            mockAd.innerHTML = `
+                <i class="fas fa-ad" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                <div style="text-align: center;">
+                    <p>🎮 Game Advertisement 🎮</p>
+                    <p style="font-size: 1rem; color: #8ac6d1; margin-top: 10px;">Try our other exciting games!</p>
+                </div>
+                <div style="margin-top: 20px; padding: 10px 20px; background: rgba(255, 65, 108, 0.3); border-radius: 10px; font-size: 1rem;">
+                    Ad will close automatically in 5 seconds...
+                </div>
+            `;
+            
+            // Clear container and add mock ad
+            adsContainer.innerHTML = '';
+            adsContainer.appendChild(mockAd);
+            
+            // Enable close button after 5 seconds
+            setTimeout(() => {
+                closeAdsBtn.disabled = false;
+            }, 5000);
         }
         
         // Close ads and give bonus
         function closeAds() {
-            playSound(clickSound);
+            if (closeAdsBtn.disabled) return;
+            
+            playSound(coinSound);
             
             // Give bonus points
             points += 50;
             updatePointsDisplay();
             
-            // Hide ads container
-            adsContainer.style.display = 'none';
+            // Hide ads popup
+            adsPopup.style.display = 'none';
+            
+            // Reset ad placeholder
+            adPlaceholder.style.display = 'flex';
+            adsContainer.innerHTML = '';
+            adsContainer.appendChild(adPlaceholder);
+            
+            // Play bonus sound
+            playSound(coinSound);
+            
+            // Mark ad as shown
+            adShown = true;
         }
         
         // Initialize the game
@@ -712,23 +1034,59 @@
             createWheelSegments();
             updatePointsDisplay();
             
+            // Disable close ads button initially
+            closeAdsBtn.disabled = true;
+            
             // Event listeners
             spinBtn.addEventListener('click', spinWheel);
             claimBtn.addEventListener('click', claimPrize);
             closeAdsBtn.addEventListener('click', closeAds);
             audioControl.addEventListener('click', toggleAudio);
             
-            // Keyboard shortcuts
+            // Keyboard shortcut for spinning
             document.addEventListener('keydown', (e) => {
                 if (e.code === 'Space' && !isSpinning && points >= 100) {
+                    e.preventDefault();
                     spinWheel();
+                }
+                
+                // Escape key closes popups
+                if (e.code === 'Escape') {
+                    if (resultPopup.style.display === 'flex') {
+                        resultPopup.style.display = 'none';
+                    }
+                    if (adsPopup.style.display === 'flex' && !closeAdsBtn.disabled) {
+                        closeAds();
+                    }
                 }
             });
             
-            // Initialize audio
-            spinSound.volume = 0.3;
-            winSound.volume = 0.5;
-            clickSound.volume = 0.4;
+            // Click outside popup to close
+            resultPopup.addEventListener('click', (e) => {
+                if (e.target === resultPopup) {
+                    resultPopup.style.display = 'none';
+                }
+            });
+            
+            adsPopup.addEventListener('click', (e) => {
+                if (e.target === adsPopup && !closeAdsBtn.disabled) {
+                    closeAds();
+                }
+            });
+            
+            // Initialize audio volumes
+            spinSound.volume = 0.4;
+            winSound.volume = 0.6;
+            clickSound.volume = 0.5;
+            coinSound.volume = 0.6;
+            
+            // Show welcome message
+            setTimeout(() => {
+                console.log("🎮 Spin to Win game loaded successfully!");
+                console.log("💰 Current points:", points);
+                console.log("🔊 Audio is:", isAudioOn ? "ON" : "OFF");
+                console.log("📱 RichAds integration:", richLoaded ? "READY" : "NOT LOADED");
+            }, 500);
         }
         
         // Start the game when page loads
