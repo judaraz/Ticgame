@@ -3,58 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ludo Dice Roll - Telegram MiniApp</title>
+    <title>Ludo Dice - Telegram Game</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Telegram WebApp SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    
-<script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
-<script>
-    let richAdsLoaded = false;
-    let TelegramWebApp = null;
-    
-    // Check if we're in Telegram
-    if (window.Telegram && window.Telegram.WebApp) {
-        TelegramWebApp = window.Telegram.WebApp;
-        
-        try {
-            // Initialize Telegram WebApp first
-            TelegramWebApp.ready();
-            TelegramWebApp.expand();
-            
-            // Then initialize RichAds
-            if (typeof TelegramAdsController !== 'undefined') {
-                window.TelegramAdsController = new TelegramAdsController();
-                window.TelegramAdsController.initialize({
-                    pubId: "956231",
-                    appId: "5572",
-                });
-                richAdsLoaded = true;
-                console.log("✅ RichAds initialized in Telegram");
-            }
-        } catch (error) {
-            console.log("❌ RichAds initialization failed:", error);
-            richAdsLoaded = false;
-        }
-    } else {
-        console.log("⚠️ Not in Telegram environment - RichAds won't work");
-        richAdsLoaded = false;
-    }
-</script>
-    
-    <!-- Adexora SDK (Fallback) -->
-    <script src="https://adexora.com/cdn/ads.js?id=50"></script>
-
     <style>
         :root {
             --telegram-blue: #3390ec;
             --telegram-dark: #18222d;
-            --telegram-light: #f0f2f5;
             --gold: #ffd700;
             --success: #34c759;
-            --danger: #ff3b30;
         }
         
         * {
@@ -66,7 +22,7 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--telegram-dark);
             color: white;
             min-height: 100vh;
@@ -102,12 +58,7 @@
             margin-bottom: 4px;
         }
         
-        .game-subtitle {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-        
-        /* Points Display */
+        /* Points */
         .points-container {
             width: 100%;
             background: linear-gradient(135deg, #2c3e50, #3498db);
@@ -115,7 +66,6 @@
             border-radius: 16px;
             text-align: center;
             border: 2px solid var(--gold);
-            position: relative;
         }
         
         .points-label {
@@ -196,18 +146,6 @@
         }
         
         /* Controls */
-        .controls {
-            width: 100%;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-        }
-        
         .roll-btn {
             width: 100%;
             background: var(--telegram-blue);
@@ -222,7 +160,6 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            transition: transform 0.2s;
         }
         
         .roll-btn:active {
@@ -232,11 +169,6 @@
         .roll-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-        }
-        
-        .cost-info {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
         }
         
         /* Popups */
@@ -317,61 +249,13 @@
             justify-content: center;
             padding: 20px;
         }
-        
-        .ads-loading {
-            color: #6c757d;
-            font-size: 14px;
-        }
-        
-        /* Audio Control */
-        .audio-control {
-            position: fixed;
-            bottom: 16px;
-            right: 16px;
-            width: 48px;
-            height: 48px;
-            background: var(--telegram-blue);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 100;
-            border: 2px solid white;
-        }
-        
-        /* Instructions */
-        .instructions {
-            width: 100%;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            margin-top: 8px;
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.7);
-            line-height: 1.5;
-        }
-        
-        /* Responsive */
-        @media (max-width: 480px) {
-            .ludo-board {
-                width: 250px;
-                height: 250px;
-            }
-            
-            .dice {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="game-header">
             <h1 class="game-title">🎲 LUDO DICE ROLL</h1>
-            <p class="game-subtitle">Roll dice, win points, get rewards!</p>
+            <p style="color: rgba(255,255,255,0.7); font-size: 13px;">Roll dice, win points, get rewards!</p>
         </div>
         
         <div class="points-container">
@@ -390,15 +274,13 @@
             <div class="dice" id="dice">6</div>
         </div>
         
-        <div class="controls">
+        <div class="controls" style="width: 100%; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 16px;">
             <button class="roll-btn" id="rollBtn">
                 <i class="fas fa-dice"></i> ROLL DICE - 100 POINTS
             </button>
-            <div class="cost-info">Win multiplier: 1x to 6x</div>
-        </div>
-        
-        <div class="instructions">
-            <p><strong>How to play:</strong> Tap ROLL DICE (costs 100 points). Dice shows 1-6. Win = dice number × 100 points. Watch ad for bonus!</p>
+            <div style="text-align: center; color: rgba(255,255,255,0.7); margin-top: 10px; font-size: 14px;">
+                Win multiplier: 1x to 6x
+            </div>
         </div>
     </div>
     
@@ -419,7 +301,7 @@
         <div class="popup">
             <h2 class="popup-title">🎁 BONUS REWARD</h2>
             <div class="ads-content" id="adsContainer">
-                <div class="ads-loading">
+                <div style="text-align: center; color: #6c757d;">
                     <i class="fas fa-spinner fa-spin"></i> Loading reward...
                 </div>
             </div>
@@ -430,33 +312,71 @@
     </div>
     
     <!-- Audio Control -->
-    <div class="audio-control" id="audioControl">
+    <div style="position: fixed; bottom: 16px; right: 16px; width: 48px; height: 48px; background: var(--telegram-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 100; border: 2px solid white;" id="audioControl">
         <i class="fas fa-volume-up"></i>
     </div>
-    
-    <!-- Audio Elements -->
-    <audio id="diceSound" src="https://assets.mixkit.co/sfx/preview/mixkit-dice-roll-1978.mp3" preload="auto"></audio>
-    <audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" preload="auto"></audio>
-    <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" preload="auto"></audio>
-    <audio id="bgMusic" src="https://assets.mixkit.co/music/preview/mixkit-game-show-suspense-waiting-667.mp3" preload="auto" loop></audio>
 
+    <!-- ===== FIXED ADS INTEGRATION ===== -->
+    <!-- RichPartners SDK -->
+    <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
     <script>
-        // Telegram WebApp Setup
-        const tg = window.Telegram?.WebApp;
-        if (tg) {
+        let richAdsLoaded = false;
+        let adexoraLoaded = false;
+        
+        // Check if we're in Telegram
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+            
+            // Initialize Telegram WebApp
             tg.ready();
             tg.expand();
-            console.log("Telegram WebApp initialized");
+            console.log("✅ Telegram WebApp initialized");
+            
+            // Try to initialize RichAds
+            try {
+                if (typeof TelegramAdsController !== 'undefined') {
+                    window.TelegramAdsController = new TelegramAdsController();
+                    window.TelegramAdsController.initialize({
+                        pubId: "956231",
+                        appId: "5572",
+                    });
+                    richAdsLoaded = true;
+                    console.log("✅ RichAds SDK initialized successfully");
+                } else {
+                    console.log("❌ TelegramAdsController not defined");
+                    richAdsLoaded = false;
+                }
+            } catch (error) {
+                console.log("❌ RichAds initialization error:", error);
+                richAdsLoaded = false;
+            }
+        } else {
+            console.log("⚠️ Not in Telegram environment - RichAds will not work");
+            richAdsLoaded = false;
         }
-        
+    </script>
+    
+    <!-- Adexora SDK (Fallback) -->
+    <script src="https://adexora.com/cdn/ads.js?id=50"></script>
+    <script>
+        // Check if Adexora loaded
+        if (typeof showAdexora === 'function') {
+            adexoraLoaded = true;
+            console.log("✅ Adexora SDK loaded");
+        } else {
+            console.log("❌ Adexora SDK not loaded");
+            adexoraLoaded = false;
+        }
+    </script>
+
+    <!-- Game Script -->
+    <script>
         // Game Variables
         let points = 1000;
         let isRolling = false;
         let isAudioOn = true;
         let currentWin = 0;
         let currentDice = 6;
-        let richAdsLoaded = false;
-        let adexoraLoaded = false;
         
         // DOM Elements
         const rollBtn = document.getElementById('rollBtn');
@@ -471,68 +391,27 @@
         const closeAdsBtn = document.getElementById('closeAdsBtn');
         const audioControl = document.getElementById('audioControl');
         
-        // Audio Elements
-        const diceSound = document.getElementById('diceSound');
-        const winSound = document.getElementById('winSound');
-        const clickSound = document.getElementById('clickSound');
-        const bgMusic = document.getElementById('bgMusic');
-        
         // Dice faces
         const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-        
-        // Initialize Ads SDKs
-        function initializeAds() {
-            // Check RichAds
-            if (window.TelegramAdsController) {
-                richAdsLoaded = true;
-                console.log("✅ RichAds SDK is ready");
-            } else {
-                console.log("❌ RichAds SDK not loaded");
-            }
-            
-            // Check Adexora
-            if (typeof showAdexora === 'function') {
-                adexoraLoaded = true;
-                console.log("✅ Adexora SDK is ready");
-            } else {
-                console.log("❌ Adexora SDK not loaded");
-            }
-        }
         
         // Format numbers
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
         
-        // Update points display
+        // Update points
         function updatePoints() {
             pointsValue.textContent = formatNumber(points);
-        }
-        
-        // Play sound
-        function playSound(sound) {
-            if (!isAudioOn) return;
-            sound.currentTime = 0;
-            sound.play().catch(e => console.log("Audio:", e));
         }
         
         // Toggle audio
         function toggleAudio() {
             isAudioOn = !isAudioOn;
             const icon = audioControl.querySelector('i');
-            
-            if (isAudioOn) {
-                icon.className = 'fas fa-volume-up';
-                playSound(clickSound);
-                bgMusic.volume = 0.2;
-                bgMusic.play().catch(e => console.log("Music:", e));
-            } else {
-                icon.className = 'fas fa-volume-mute';
-                bgMusic.pause();
-            }
+            icon.className = isAudioOn ? 'fas fa-volume-up' : 'fas fa-volume-mute';
         }
         
-        // Roll dice function
+        // Roll dice
         function rollDice() {
             if (isRolling || points < 100) return;
             
@@ -542,9 +421,8 @@
             // Deduct points
             points -= 100;
             updatePoints();
-            playSound(diceSound);
             
-            // Dice rolling animation
+            // Animation
             let rolls = 0;
             const totalRolls = 15;
             
@@ -552,23 +430,16 @@
                 if (rolls < totalRolls) {
                     currentDice = Math.floor(Math.random() * 6) + 1;
                     dice.textContent = currentDice;
-                    
-                    // Add visual effect
                     dice.style.transform = `translate(-50%, -50%) rotate(-45deg) rotate(${Math.random() * 360}deg)`;
-                    
                     rolls++;
                     setTimeout(animateRoll, 80);
                 } else {
-                    // Final result
                     currentDice = Math.floor(Math.random() * 6) + 1;
                     currentWin = currentDice * 100;
-                    
                     dice.textContent = currentDice;
                     dice.style.transform = 'translate(-50%, -50%) rotate(-45deg)';
                     
-                    // Show result
                     setTimeout(showResult, 500);
-                    
                     isRolling = false;
                     rollBtn.disabled = false;
                 }
@@ -581,69 +452,55 @@
         function showResult() {
             resultDice.textContent = diceFaces[currentDice - 1];
             winAmount.textContent = formatNumber(currentWin) + ' POINTS';
-            
-            playSound(winSound);
             resultPopup.style.display = 'flex';
         }
         
         // Claim prize
         function claimPrize() {
-            playSound(clickSound);
-            
             // Add winnings
             points += currentWin;
             updatePoints();
             
-            // Close result popup
+            // Close popup
             resultPopup.style.display = 'none';
             
-            // Show ads to get bonus
+            // Show ads for bonus
             setTimeout(showAdsForBonus, 300);
         }
         
-        // Show ads for bonus
+        // Show ads for bonus - WITH PROPER RICHADS INTEGRATION
         function showAdsForBonus() {
             adsPopup.style.display = 'flex';
             closeAdsBtn.style.display = 'none';
-            adsContainer.innerHTML = '<div class="ads-loading"><i class="fas fa-spinner fa-spin"></i> Loading reward...</div>';
+            adsContainer.innerHTML = '<div style="text-align: center; color: #6c757d;"><i class="fas fa-spinner fa-spin"></i> Loading reward...</div>';
             
-            // Try to show ads in sequence
-            showRichAds();
-        }
-        
-        // Show RichAds (Primary)
-        function showRichAds() {
+            // Try RichAds first (only works in Telegram)
             if (richAdsLoaded && window.TelegramAdsController) {
-                console.log("Showing RichAds...");
-                adsContainer.innerHTML = '<div class="ads-loading"><i class="fas fa-ad"></i> Loading RichAds...</div>';
-                
+                console.log("🎯 Showing RichAds...");
                 try {
                     window.TelegramAdsController.showAd();
-                    
-                    // Wait for ad completion
+                    // After 5 seconds, assume ad completed
                     setTimeout(() => {
-                        showBonusReward();
-                    }, 5000); // Assume ad takes 5 seconds
-                    
+                        giveBonus();
+                    }, 5000);
                 } catch (error) {
-                    console.log("RichAds error:", error);
-                    showAdexoraAds();
+                    console.log("❌ RichAds show failed:", error);
+                    tryAdexora();
                 }
             } else {
-                showAdexoraAds();
+                // RichAds not available, try Adexora
+                tryAdexora();
             }
         }
         
-        // Show Adexora Ads (Fallback)
-        function showAdexoraAds() {
+        // Try Adexora ads
+        function tryAdexora() {
             if (adexoraLoaded && typeof showAdexora === 'function') {
-                console.log("Showing Adexora ads...");
-                adsContainer.innerHTML = '<div class="ads-loading"><i class="fas fa-ad"></i> Loading Adexora Ads...</div>';
-                
+                console.log("🎯 Showing Adexora ads...");
                 showAdexora()
                     .then(() => {
                         console.log("✅ Adexora ad completed");
-                        showBonusReward();
+                        giveBonus();
                     })
                     .catch(error => {
                         console.log("❌ Adexora ad failed:", error);
@@ -654,32 +511,29 @@
             }
         }
         
-        // Show mock ad if both fail
+        // Show mock ad
         function showMockAd() {
-            console.log("Showing mock ad...");
+            console.log("🎯 Showing mock ad...");
             adsContainer.innerHTML = `
                 <div style="text-align: center; color: #2c3e50;">
-                    <i class="fas fa-gift" style="font-size: 40px; color: #ff6b6b; margin-bottom: 10px;"></i>
-                    <div style="font-size: 16px; font-weight: 600;">🎮 GAME REWARD 🎮</div>
-                    <div style="font-size: 12px; margin-top: 8px; color: #6c757d;">Thank you for playing!</div>
-                    <div style="margin-top: 15px; padding: 10px; background: #e9ecef; border-radius: 8px; font-size: 11px;">
-                        Ad simulation - 3 seconds
-                    </div>
+                    <i class="fas fa-gift" style="font-size: 40px; color: #ff6b6b;"></i>
+                    <div style="font-size: 16px; font-weight: 600; margin-top: 10px;">BONUS REWARD!</div>
+                    <div style="font-size: 12px; margin-top: 5px; color: #6c757d;">Thanks for playing!</div>
                 </div>
             `;
             
             setTimeout(() => {
-                showBonusReward();
-            }, 3000);
+                giveBonus();
+            }, 2000);
         }
         
-        // Show bonus reward
-        function showBonusReward() {
+        // Give bonus points
+        function giveBonus() {
             adsContainer.innerHTML = `
                 <div style="text-align: center; color: #2c3e50;">
-                    <i class="fas fa-trophy" style="font-size: 40px; color: var(--gold); margin-bottom: 10px;"></i>
-                    <div style="font-size: 24px; font-weight: 800; color: var(--success);">+50 BONUS</div>
-                    <div style="font-size: 14px; margin-top: 8px; color: #6c757d;">Points added to your balance!</div>
+                    <i class="fas fa-trophy" style="font-size: 40px; color: #ffd700;"></i>
+                    <div style="font-size: 24px; font-weight: 800; color: #34c759; margin-top: 10px;">+50 BONUS</div>
+                    <div style="font-size: 14px; margin-top: 5px; color: #6c757d;">Points added!</div>
                 </div>
             `;
             
@@ -688,22 +542,16 @@
         
         // Close ads and give bonus
         function closeAds() {
-            playSound(clickSound);
-            
             // Add bonus points
             points += 50;
             updatePoints();
             
-            // Close ads popup
+            // Close popup
             adsPopup.style.display = 'none';
         }
         
         // Initialize game
         function initGame() {
-            // Initialize ads
-            initializeAds();
-            
-            // Update points
             updatePoints();
             
             // Event listeners
@@ -721,24 +569,10 @@
                 if (e.target === this) closeAds();
             });
             
-            // Keyboard support
-            document.addEventListener('keydown', (e) => {
-                if (e.code === 'Space' && !isRolling && points >= 100) {
-                    rollDice();
-                }
-            });
-            
-            // Audio setup
-            diceSound.volume = 0.6;
-            winSound.volume = 0.7;
-            clickSound.volume = 0.5;
-            bgMusic.volume = 0.2;
-            
-            // Start background music
-            bgMusic.play().catch(e => console.log("Music autoplay:", e));
-            
-            console.log("🎲 Ludo Dice Game initialized");
-            console.log("📱 Telegram WebApp:", tg ? "Available" : "Not available");
+            console.log("🎮 Ludo Dice Game initialized");
+            console.log("💰 Points:", points);
+            console.log("📱 RichAds:", richAdsLoaded ? "✅ Loaded" : "❌ Not available");
+            console.log("📱 Adexora:", adexoraLoaded ? "✅ Loaded" : "❌ Not available");
         }
         
         // Start game
