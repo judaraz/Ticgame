@@ -6,6 +6,41 @@
     <title>Spin & Win</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3palpYZDFdNpBDIF564YsiOAN2dtbxzA",
+            authDomain: "tic-tac-toe-87d49.firebaseapp.com",
+            databaseURL: "https://tic-tac-toe-87d49-default-rtdb.firebaseio.com",
+            projectId: "tic-tac-toe-87d49",
+            storageBucket: "tic-tac-toe-87d49.firebasestorage.app",
+            messagingSenderId: "1051665363188",
+            appId: "1:1051665363188:web:c6389dddb74491a14ceea1",
+            measurementId: "G-V7Y7B4VVVP"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const database = getDatabase(app);
+        
+        // Make Firebase available globally
+        window.firebaseApp = app;
+        window.firebaseDB = database;
+        window.firebaseRef = ref;
+        window.firebaseSet = set;
+        window.firebaseGet = get;
+        window.firebaseOnValue = onValue;
+        
+        console.log("Firebase initialized successfully");
+    </script>
+    
     <!-- Telegram WebApp -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
@@ -20,8 +55,8 @@
     let richLoaded = true;
     </script>
     
-    <!-- Gigapub SDK (Fallback) -->
-    <script src="https://ad.gigapub.tech/script?id=978"></script>
+    <!-- Gigapub SDK (Fallback - loaded silently) -->
+    <script src="https://ad.gigapub.tech/script?id=978" async></script>
 
     <style>
         :root {
@@ -101,6 +136,7 @@
             text-align: center;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
             border: 2px solid rgba(255, 255, 255, 0.08);
+            position: relative;
         }
         
         .points-label {
@@ -119,7 +155,21 @@
             line-height: 1;
         }
         
-        /* Wheel Section */
+        .save-indicator {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 12px;
+            color: var(--success);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .save-indicator.show {
+            opacity: 1;
+        }
+        
+        /* Wheel Section - IMPROVED FOR VISIBILITY */
         .wheel-section {
             position: relative;
             width: 320px;
@@ -129,8 +179,8 @@
         
         @media (max-width: 350px) {
             .wheel-section {
-                width: 280px;
-                height: 280px;
+                width: 300px;
+                height: 300px;
             }
         }
         
@@ -143,9 +193,10 @@
             box-shadow: 0 0 0 10px var(--dark), 
                         0 0 30px rgba(255, 65, 108, 0.3);
             transform: rotate(0deg);
-            transition: transform 4s cubic-bezier(0.2, 0.8, 0.3, 1);
+            transition: transform 4s cubic-bezier(0.1, 0.7, 0.2, 1);
         }
         
+        /* IMPROVED: Wheel segments with clear visible text */
         .wheel-segment {
             position: absolute;
             width: 50%;
@@ -156,16 +207,16 @@
             display: flex;
             justify-content: flex-end;
             align-items: flex-start;
-            padding-top: 15px;
-            padding-right: 40px;
-            font-weight: 800;
-            font-size: 24px;
+            padding-top: 10px;
+            padding-right: 55px;
+            font-weight: 900;
+            font-size: 22px;
             color: #fff;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
             clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
         }
         
-        /* Make ALL numbers visible with proper positioning */
+        /* Position each segment */
         .segment-1 { transform: rotate(0deg); }
         .segment-2 { transform: rotate(36deg); }
         .segment-3 { transform: rotate(72deg); }
@@ -177,17 +228,14 @@
         .segment-9 { transform: rotate(288deg); }
         .segment-10 { transform: rotate(324deg); }
         
-        /* Rotate the text inside each segment to make it readable */
-        .segment-1 span { transform: rotate(18deg); }
-        .segment-2 span { transform: rotate(18deg); }
-        .segment-3 span { transform: rotate(18deg); }
-        .segment-4 span { transform: rotate(18deg); }
-        .segment-5 span { transform: rotate(18deg); }
-        .segment-6 span { transform: rotate(18deg); }
-        .segment-7 span { transform: rotate(18deg); }
-        .segment-8 span { transform: rotate(18deg); }
-        .segment-9 span { transform: rotate(18deg); }
-        .segment-10 span { transform: rotate(18deg); }
+        /* Make text inside visible and properly oriented */
+        .segment-text {
+            display: block;
+            transform: rotate(18deg);
+            transform-origin: center;
+            text-align: center;
+            width: 40px;
+        }
         
         .wheel-center {
             position: absolute;
@@ -364,10 +412,31 @@
             border-radius: 15px;
             margin: 20px 0;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             border: 2px solid rgba(255, 255, 255, 0.1);
             overflow: hidden;
+            position: relative;
+        }
+        
+        .loading-ads {
+            color: var(--text-light);
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading-ads i {
+            font-size: 40px;
+            color: var(--accent);
+            margin-bottom: 15px;
+            display: block;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         /* Audio Control */
@@ -407,6 +476,25 @@
             font-size: 16px;
         }
         
+        /* Network Status */
+        .network-status {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: none;
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .network-status.slow {
+            background: rgba(255, 65, 108, 0.7);
+            display: block;
+        }
+        
         /* Color Classes for Wheel */
         .color-1 { background-color: #FF416C; }
         .color-2 { background-color: #FF4B2B; }
@@ -421,6 +509,8 @@
     </style>
 </head>
 <body>
+    <div class="network-status" id="networkStatus"></div>
+    
     <div class="container">
         <div class="header">
             <h1 class="title">🎯 SPIN & WIN</h1>
@@ -430,6 +520,7 @@
         <div class="points-display">
             <div class="points-label">YOUR POINTS</div>
             <div class="points-value" id="pointsValue">1,000</div>
+            <div class="save-indicator" id="saveIndicator">✓ Saved</div>
         </div>
         
         <div class="wheel-section">
@@ -478,14 +569,14 @@
                 <p style="color: var(--text-light); margin-bottom: 20px;">Watch ad for +50 bonus points!</p>
                 
                 <div class="ads-container" id="adsContainer">
-                    <!-- Ads will be loaded here -->
-                    <div id="richAdPlaceholder" style="color: var(--text-light); padding: 20px;">
-                        Loading advertisement...
+                    <div class="loading-ads">
+                        <i class="fas fa-spinner"></i>
+                        <p>Loading advertisement...</p>
                     </div>
                 </div>
                 
-                <button class="popup-btn" id="closeAdsBtn" style="background: linear-gradient(145deg, var(--primary), var(--secondary));">
-                    <i class="fas fa-check-circle"></i> CONTINUE
+                <button class="popup-btn" id="closeAdsBtn" style="background: linear-gradient(145deg, var(--primary), var(--secondary));" disabled>
+                    <i class="fas fa-spinner fa-spin"></i> PLEASE WAIT
                 </button>
             </div>
         </div>
@@ -495,18 +586,23 @@
         </div>
         
         <!-- Audio elements -->
-        <audio id="spinSound" loop>
+        <audio id="spinSound" loop preload="auto">
             <source src="https://assets.mixkit.co/sfx/preview/mixkit-casino-roulette-spin-1032.mp3" type="audio/mpeg">
         </audio>
-        <audio id="winSound">
+        <audio id="winSound" preload="auto">
             <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
         </audio>
-        <audio id="clickSound">
+        <audio id="clickSound" preload="auto">
             <source src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" type="audio/mpeg">
         </audio>
     </div>
 
     <script>
+        // Wait for Firebase to initialize
+        setTimeout(() => {
+            initGame();
+        }, 1000);
+        
         // Telegram MiniApp detection
         const isTelegram = window.Telegram && window.Telegram.WebApp;
         
@@ -516,7 +612,8 @@
         let isAudioOn = true;
         let currentWinAmount = 0;
         let currentMultiplier = 1;
-        let adShown = false;
+        let userId = null;
+        let isFirebaseReady = false;
         
         // DOM elements
         const wheel = document.getElementById('wheel');
@@ -530,14 +627,15 @@
         const closeAdsBtn = document.getElementById('closeAdsBtn');
         const audioControl = document.getElementById('audioControl');
         const adsContainer = document.getElementById('adsContainer');
-        const richAdPlaceholder = document.getElementById('richAdPlaceholder');
+        const saveIndicator = document.getElementById('saveIndicator');
+        const networkStatus = document.getElementById('networkStatus');
         
         // Audio elements
         const spinSound = document.getElementById('spinSound');
         const winSound = document.getElementById('winSound');
         const clickSound = document.getElementById('clickSound');
         
-        // Wheel data with colors and multipliers
+        // Wheel data with colors and multipliers - ALL NUMBERS VISIBLE
         const wheelData = [
             { multiplier: 1, color: 'color-1' },
             { multiplier: 2, color: 'color-2' },
@@ -551,6 +649,83 @@
             { multiplier: 10, color: 'color-10' }
         ];
         
+        // Generate user ID
+        function generateUserId() {
+            if (isTelegram && Telegram.WebApp.initDataUnsafe.user) {
+                return 'tg_' + Telegram.WebApp.initDataUnsafe.user.id;
+            }
+            // Check if user ID exists in localStorage
+            let storedId = localStorage.getItem('spinWinUserId');
+            if (!storedId) {
+                storedId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('spinWinUserId', storedId);
+            }
+            return storedId;
+        }
+        
+        // Save points to Firebase
+        async function savePointsToFirebase() {
+            if (!isFirebaseReady || !userId) return;
+            
+            try {
+                const db = window.firebaseDB;
+                const ref = window.firebaseRef;
+                const set = window.firebaseSet;
+                
+                await set(ref(db, 'users/' + userId), {
+                    points: points,
+                    lastUpdated: new Date().toISOString()
+                });
+                
+                // Show save indicator
+                saveIndicator.classList.add('show');
+                setTimeout(() => {
+                    saveIndicator.classList.remove('show');
+                }, 2000);
+                
+                console.log("Points saved to Firebase");
+            } catch (error) {
+                console.error("Error saving to Firebase:", error);
+                // Save to localStorage as fallback
+                localStorage.setItem('spinWinPoints', points.toString());
+            }
+        }
+        
+        // Load points from Firebase
+        async function loadPointsFromFirebase() {
+            if (!isFirebaseReady || !userId) {
+                // Load from localStorage
+                const savedPoints = localStorage.getItem('spinWinPoints');
+                if (savedPoints) {
+                    points = parseInt(savedPoints) || 1000;
+                    updatePointsDisplay();
+                }
+                return;
+            }
+            
+            try {
+                const db = window.firebaseDB;
+                const ref = window.firebaseRef;
+                const get = window.firebaseGet;
+                
+                const snapshot = await get(ref(db, 'users/' + userId));
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    points = userData.points || 1000;
+                    updatePointsDisplay();
+                    console.log("Points loaded from Firebase:", points);
+                }
+            } catch (error) {
+                console.error("Error loading from Firebase:", error);
+                // Load from localStorage as fallback
+                const savedPoints = localStorage.getItem('spinWinPoints');
+                if (savedPoints) {
+                    points = parseInt(savedPoints) || 1000;
+                    updatePointsDisplay();
+                }
+            }
+        }
+        
         // Initialize wheel with ALL numbers visible
         function createWheelSegments() {
             wheel.innerHTML = '';
@@ -559,12 +734,13 @@
                 const segment = document.createElement('div');
                 segment.className = `wheel-segment segment-${i+1} ${wheelData[i].color}`;
                 
-                // Create number element - ALL NUMBERS ARE VISIBLE NOW
+                // Create number element - ALL NUMBERS VISIBLE
                 const numberSpan = document.createElement('span');
+                numberSpan.className = 'segment-text';
                 numberSpan.textContent = `${wheelData[i].multiplier}x`;
-                numberSpan.style.display = 'block';
-                numberSpan.style.transform = 'rotate(18deg)';
-                numberSpan.style.transformOrigin = 'center';
+                numberSpan.style.fontWeight = '900';
+                numberSpan.style.fontSize = '22px';
+                numberSpan.style.textShadow = '2px 2px 4px rgba(0,0,0,0.9)';
                 
                 segment.appendChild(numberSpan);
                 wheel.appendChild(segment);
@@ -579,6 +755,9 @@
         // Update points display
         function updatePointsDisplay() {
             pointsValue.textContent = formatNumber(points);
+            
+            // Save to Firebase
+            savePointsToFirebase();
             
             // Add animation
             pointsValue.style.transform = 'scale(1.1)';
@@ -610,7 +789,26 @@
             }
         }
         
-        // Spin the wheel with fixed medium speed
+        // Check network speed
+        function checkNetworkSpeed() {
+            const startTime = Date.now();
+            fetch('https://www.google.com/favicon.ico?d=' + Date.now())
+                .then(() => {
+                    const speed = Date.now() - startTime;
+                    if (speed > 2000) { // Slow network if > 2 seconds
+                        networkStatus.textContent = '⚠ Slow Connection';
+                        networkStatus.classList.add('slow');
+                    } else {
+                        networkStatus.classList.remove('slow');
+                    }
+                })
+                .catch(() => {
+                    networkStatus.textContent = '⚠ No Internet';
+                    networkStatus.classList.add('slow');
+                });
+        }
+        
+        // Spin the wheel with network-aware timing
         function spinWheel() {
             if (isSpinning || points < 100) return;
             
@@ -625,15 +823,16 @@
             // Start spinning sound
             playSound(spinSound);
             
-            // Reset wheel transform before spinning
-            wheel.style.transition = 'transform 4s cubic-bezier(0.2, 0.8, 0.3, 1)';
+            // Reset wheel transform
+            wheel.style.transition = 'none';
             wheel.style.transform = 'rotate(0deg)';
             
             // Force reflow
             setTimeout(() => {
-                // Medium speed spin parameters
-                const spinDuration = 4000; // 4 seconds
-                const spinRevolutions = 5; // 5 full revolutions
+                // Network-aware spin duration
+                const isSlow = networkStatus.classList.contains('slow');
+                const spinDuration = isSlow ? 3000 : 4000; // Shorter for slow networks
+                const spinRevolutions = isSlow ? 3 : 5; // Fewer revolutions for slow networks
                 
                 // Calculate final rotation
                 const segmentAngle = 360 / wheelData.length;
@@ -643,17 +842,28 @@
                 // Calculate final angle
                 const finalAngle = (spinRevolutions * 360) + (randomSegment * segmentAngle) + segmentOffset;
                 
-                // Apply rotation
+                // Apply rotation with fallback for stuck wheel
+                wheel.style.transition = `transform ${spinDuration}ms cubic-bezier(0.1, 0.7, 0.2, 1)`;
                 wheel.style.transform = `rotate(${finalAngle}deg)`;
                 
-                // Determine result after spin completes
-                setTimeout(() => {
+                // Set timeout to ensure wheel stops even if transition fails
+                const wheelTimeout = setTimeout(() => {
+                    if (isSpinning) {
+                        console.log("Wheel timeout triggered - forcing stop");
+                        handleWheelResult(randomSegment);
+                    }
+                }, spinDuration + 1000);
+                
+                // Handle wheel result
+                function handleWheelResult(segmentIndex) {
+                    clearTimeout(wheelTimeout);
+                    
                     // Stop spinning sound
                     spinSound.pause();
                     spinSound.currentTime = 0;
                     
                     // Get multiplier
-                    currentMultiplier = wheelData[randomSegment].multiplier;
+                    currentMultiplier = wheelData[segmentIndex].multiplier;
                     currentWinAmount = 100 * currentMultiplier;
                     
                     // Show result popup
@@ -663,7 +873,14 @@
                     
                     isSpinning = false;
                     spinBtn.disabled = false;
-                }, spinDuration);
+                }
+                
+                // Listen for transition end
+                wheel.addEventListener('transitionend', function onTransitionEnd() {
+                    wheel.removeEventListener('transitionend', onTransitionEnd);
+                    clearTimeout(wheelTimeout);
+                    handleWheelResult(randomSegment);
+                }, { once: true });
             }, 50);
         }
         
@@ -690,10 +907,8 @@
             // Close result popup
             resultPopup.style.display = 'none';
             
-            // Show ads popup
-            setTimeout(() => {
-                showAdsPopup();
-            }, 300);
+            // Show ads popup immediately
+            showAdsPopup();
         }
         
         // Show ads popup
@@ -702,37 +917,43 @@
             closeAdsBtn.disabled = true;
             closeAdsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PLEASE WAIT';
             
-            // Clear and show loading
-            richAdPlaceholder.style.display = 'block';
-            adsContainer.innerHTML = '';
-            adsContainer.appendChild(richAdPlaceholder);
-            richAdPlaceholder.textContent = 'Loading advertisement...';
+            // Show loading message
+            adsContainer.innerHTML = `
+                <div class="loading-ads">
+                    <i class="fas fa-spinner"></i>
+                    <p>Loading advertisement...</p>
+                </div>
+            `;
             
-            // Try to show RichAds
+            // Try to show RichAds immediately (it should already be loaded)
             showRichAds();
         }
         
-        // Show RichAds with Gigapub fallback - FIXED INTEGRATION
+        // Show RichAds with fallback
         function showRichAds() {
             console.log("Attempting to show RichAds...");
             
             if (typeof TelegramAdsController !== 'undefined' && richLoaded) {
                 try {
-                    console.log("RichAds found, showing ad...");
+                    console.log("Showing RichPartners ad");
                     
-                    // Clear container first
-                    adsContainer.innerHTML = '<div style="color: var(--text-light); padding: 20px;">Loading RichPartners ad...</div>';
-                    
-                    // Show RichPartners ad
-                    TelegramAdsController.showAd();
-                    
-                    // Listen for ad completion
+                    // Show loading for 1 second then show ad
                     setTimeout(() => {
-                        // Enable close button after ad
-                        closeAdsBtn.disabled = false;
-                        closeAdsBtn.innerHTML = '<i class="fas fa-check-circle"></i> CONTINUE';
-                        adsContainer.innerHTML = '<div style="color: var(--success); padding: 20px; text-align: center;">Ad completed! 🎉<br><small>Thanks for watching!</small></div>';
-                    }, 5000); // Assume ad takes 5 seconds
+                        TelegramAdsController.showAd();
+                        
+                        // Enable close button after reasonable time
+                        setTimeout(() => {
+                            closeAdsBtn.disabled = false;
+                            closeAdsBtn.innerHTML = '<i class="fas fa-check-circle"></i> CONTINUE';
+                            adsContainer.innerHTML = `
+                                <div style="color: var(--success); padding: 20px; text-align: center;">
+                                    <i class="fas fa-check-circle" style="font-size: 40px; margin-bottom: 15px;"></i>
+                                    <p>Ad completed! 🎉</p>
+                                    <p style="font-size: 14px; color: var(--text-light); margin-top: 10px;">Thanks for watching!</p>
+                                </div>
+                            `;
+                        }, 8000); // Assume ad takes 8 seconds max
+                    }, 1000);
                     
                 } catch (err) {
                     console.error("RichAds error:", err);
@@ -740,7 +961,7 @@
                     showGigapubAd();
                 }
             } else {
-                console.log("RichAds not available, trying Gigapub...");
+                console.log("RichAds not available");
                 // Fallback to Gigapub
                 showGigapubAd();
             }
@@ -748,25 +969,39 @@
         
         // Show Gigapub ad (fallback)
         function showGigapubAd() {
-            console.log("Attempting to show Gigapub...");
+            console.log("Attempting Gigapub fallback...");
             
             if (typeof showGiga === 'function') {
                 try {
-                    adsContainer.innerHTML = '<div style="color: var(--text-light); padding: 20px;">Loading Gigapub ad...</div>';
+                    // Update loading message
+                    adsContainer.innerHTML = `
+                        <div class="loading-ads">
+                            <i class="fas fa-spinner"></i>
+                            <p>Preparing advertisement...</p>
+                        </div>
+                    `;
                     
-                    showGiga()
-                        .then(() => {
-                            // Ad completed successfully
-                            console.log("Gigapub ad completed");
-                            closeAdsBtn.disabled = false;
-                            closeAdsBtn.innerHTML = '<i class="fas fa-check-circle"></i> CONTINUE';
-                            adsContainer.innerHTML = '<div style="color: var(--success); padding: 20px; text-align: center;">Ad completed! 🎉<br><small>Thanks for watching!</small></div>';
-                        })
-                        .catch(e => {
-                            console.log("Gigapub failed:", e);
-                            // Both ads failed, show mock ad
-                            showMockAd();
-                        });
+                    // Try to show Gigapub ad
+                    setTimeout(() => {
+                        showGiga()
+                            .then(() => {
+                                // Ad completed successfully
+                                closeAdsBtn.disabled = false;
+                                closeAdsBtn.innerHTML = '<i class="fas fa-check-circle"></i> CONTINUE';
+                                adsContainer.innerHTML = `
+                                    <div style="color: var(--success); padding: 20px; text-align: center;">
+                                        <i class="fas fa-check-circle" style="font-size: 40px; margin-bottom: 15px;"></i>
+                                        <p>Ad completed! 🎉</p>
+                                        <p style="font-size: 14px; color: var(--text-light); margin-top: 10px;">Thanks for watching!</p>
+                                    </div>
+                                `;
+                            })
+                            .catch(e => {
+                                console.log("Gigapub failed:", e);
+                                // Both ads failed, show mock ad
+                                showMockAd();
+                            });
+                    }, 1000);
                 } catch (e) {
                     console.log("Gigapub error:", e);
                     showMockAd();
@@ -785,7 +1020,7 @@
                 <div style="padding: 20px; text-align: center; color: var(--text-light); width: 100%;">
                     <i class="fas fa-ad" style="font-size: 40px; color: var(--accent); margin-bottom: 15px; display: block;"></i>
                     <p style="font-size: 18px; margin-bottom: 10px;">✨ Premium Game Ad ✨</p>
-                    <p style="font-size: 14px; margin-bottom: 20px;">Try our other exciting games!</p>
+                    <p style="font-size: 14px; margin-bottom: 20px;">Thank you for playing Spin & Win!</p>
                     <div style="margin-top: 20px; padding: 10px; background: rgba(255, 65, 108, 0.1); border-radius: 10px; font-size: 13px;">
                         Ad simulation - 3 seconds...
                     </div>
@@ -813,16 +1048,37 @@
             adsPopup.style.display = 'none';
             closeAdsBtn.disabled = false;
             closeAdsBtn.innerHTML = '<i class="fas fa-check-circle"></i> CONTINUE';
-            
-            // Reset ad placeholder
-            richAdPlaceholder.style.display = 'block';
-            richAdPlaceholder.textContent = 'Loading advertisement...';
         }
         
         // Initialize the game
         function initGame() {
+            // Generate user ID
+            userId = generateUserId();
+            console.log("User ID:", userId);
+            
+            // Check Firebase readiness
+            if (window.firebaseDB && window.firebaseRef && window.firebaseSet) {
+                isFirebaseReady = true;
+                console.log("Firebase is ready");
+                
+                // Load points from Firebase
+                loadPointsFromFirebase();
+            } else {
+                console.log("Firebase not ready, using localStorage");
+                // Load from localStorage
+                const savedPoints = localStorage.getItem('spinWinPoints');
+                if (savedPoints) {
+                    points = parseInt(savedPoints) || 1000;
+                }
+            }
+            
+            // Create wheel with visible text
             createWheelSegments();
             updatePointsDisplay();
+            
+            // Check network speed
+            checkNetworkSpeed();
+            setInterval(checkNetworkSpeed, 30000); // Check every 30 seconds
             
             // Event listeners
             spinBtn.addEventListener('click', spinWheel);
@@ -848,6 +1104,11 @@
             winSound.volume = 0.6;
             clickSound.volume = 0.5;
             
+            // Preload audio
+            spinSound.load();
+            winSound.load();
+            clickSound.load();
+            
             // Telegram MiniApp integration
             if (isTelegram) {
                 Telegram.WebApp.ready();
@@ -857,12 +1118,8 @@
             
             console.log("🎮 Spin to Win initialized");
             console.log("🔧 RichAds loaded:", richLoaded);
-            console.log("🔧 TelegramAdsController:", typeof TelegramAdsController);
-            console.log("🔧 showGiga function:", typeof showGiga);
+            console.log("🔧 Firebase ready:", isFirebaseReady);
         }
-        
-        // Start the game
-        document.addEventListener('DOMContentLoaded', initGame);
     </script>
 </body>
 </html>
