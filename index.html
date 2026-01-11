@@ -6,7 +6,25 @@
     <title>CashReward App</title>
     
     <!-- Your Ad Code -->
-    <script src='//libtl.com/sdk.js' data-zone='9391539' data-sdk='show_9391539'></script>
+    <!-- RichPartners Telegram SDK -->
+<script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+<script>
+window.TelegramAdsController = new TelegramAdsController();
+
+window.TelegramAdsController.initialize({
+  pubId: "956231",
+  appId: "5572",
+  push: true,
+  interstitial: true
+});
+
+let richReady = false;
+
+// force preload
+window.TelegramAdsController.onReady(function () {
+  richReady = true;
+});
+</script>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -319,23 +337,28 @@
         }
 
         async function showMonetixAd() {
-            return new Promise(async (resolve, reject) => {
-                let retries = 3;
-                while (retries > 0) {
-                    if (typeof window.show_9391539 === 'function') {
-                        try {
-                            await window.show_9391539();
-                            return resolve(true);
-                        } catch (e) {
-                            console.error("Ad display error:", e);
-                            return reject("Failed to show ad.");
-                        }
-                    }
-                    await new Promise(res => setTimeout(res, 500));
-                    retries--;
-                }
-                return reject("Ad service not available. Please refresh and try again.");
-            });
+        async function showMonetixAd() {
+    return new Promise((resolve, reject) => {
+        if (!window.TelegramAdsController || !richReady) {
+            return reject("Ad not ready. Please try again.");
+        }
+
+        try {
+            // interstitial first
+            window.TelegramAdsController.show();
+
+            // push after (non-blocking)
+            setTimeout(() => {
+                try {
+                    window.TelegramAdsController.push();
+                } catch (e) {}
+            }, 400);
+
+            resolve(true);
+        } catch (e) {
+            reject("Failed to show ad.");
+        }
+    });
         }
         
         window.claimReward = async function() {
