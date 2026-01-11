@@ -241,7 +241,7 @@
         
         /* Ads Popup */
         .ads-content {
-            min-height: 180px;
+            min-height: 200px;
             background: #f8f9fa;
             border-radius: 12px;
             margin: 20px 0;
@@ -265,6 +265,23 @@
             text-align: center;
             color: #6c757d;
             padding: 20px;
+        }
+        
+        .adexium-test-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        
+        .ad-status {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -321,7 +338,8 @@
                 <div class="adexium-container" id="adexiumContainer">
                     <div class="adexium-loading">
                         <i class="fas fa-spinner fa-spin"></i><br>
-                        Loading reward...
+                        Loading interstitial ad...
+                        <div class="ad-status" id="adStatus"></div>
                     </div>
                 </div>
             </div>
@@ -336,87 +354,173 @@
         <i class="fas fa-volume-up"></i>
     </div>
 
-    <!-- ===== FIXED ADS INTEGRATION ===== -->
-    <!-- RichPartners SDK -->
-    <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+    <!-- ===== ADEXIUM ADS INTEGRATION ===== -->
     <script>
-        let richAdsLoaded = false;
-        let adexiumWidget = null;
+        // ADEXIUM ADS MANAGER
+        let adexiumPushAds = null;
+        let adexiumInterstitial = null;
+        let isInTelegram = false;
         
         // Check if we're in Telegram
         if (window.Telegram && window.Telegram.WebApp) {
+            isInTelegram = true;
             const tg = window.Telegram.WebApp;
-            
-            // Initialize Telegram WebApp
             tg.ready();
             tg.expand();
             console.log("✅ Telegram WebApp initialized");
-            
-            // Try to initialize RichAds
-            try {
-                if (typeof TelegramAdsController !== 'undefined') {
-                    window.TelegramAdsController = new TelegramAdsController();
-                    window.TelegramAdsController.initialize({
-                        pubId: "956231",
-                        appId: "5578",
-                    });
-                    richAdsLoaded = true;
-                    console.log("✅ RichAds SDK initialized successfully");
-                } else {
-                    console.log("❌ TelegramAdsController not defined");
-                }
-            } catch (error) {
-                console.log("❌ RichAds initialization error:", error);
-            }
-        } else {
-            console.log("⚠️ Not in Telegram environment - RichAds will not work");
         }
         
-        // Initialize Adexium Widget
-        function initAdexium() {
-            if (typeof AdexiumWidget !== 'undefined') {
-                try {
-                    adexiumWidget = new AdexiumWidget({
-                        wid: '30015b9a-df1e-4895-be7b-c5bc1b148fcf', 
-                        adFormat: 'interstitial'
-                    });
-                    
-                    // Set up event listeners for Adexium
-                    adexiumWidget.on('load', function() {
-                        console.log('✅ Adexium widget loaded');
-                    });
-                    
-                    adexiumWidget.on('complete', function() {
-                        console.log('✅ Adexium ad completed');
-                        giveBonus();
-                    });
-                    
-                    adexiumWidget.on('error', function(error) {
-                        console.log('❌ Adexium error:', error);
-                        showMockAd();
-                    });
-                    
-                    console.log("✅ Adexium Widget initialized");
-                    return true;
-                } catch (error) {
-                    console.log("❌ Adexium initialization error:", error);
-                    return false;
-                }
-            } else {
-                console.log("❌ AdexiumWidget class not defined");
+        // Initialize Adexium Push Ads (auto-show on load)
+        function initPushAds() {
+            if (typeof AdexiumWidget === 'undefined') {
+                console.log("❌ AdexiumWidget not loaded yet");
+                setTimeout(initPushAds, 1000);
+                return;
+            }
+            
+            try {
+                // Create push-like ads widget
+                adexiumPushAds = new AdexiumWidget({
+                    wid: '30015b9a-df1e-4895-be7b-c5bc1b148fcf', 
+                    adFormat: 'push-like'
+                });
+                
+                // Set up event listeners
+                adexiumPushAds.on('load', function() {
+                    console.log('✅ Push-like ads loaded');
+                });
+                
+                adexiumPushAds.on('complete', function() {
+                    console.log('✅ Push-like ad completed');
+                });
+                
+                adexiumPushAds.on('error', function(error) {
+                    console.log('❌ Push-like ad error:', error);
+                });
+                
+                // Auto-show push ads
+                adexiumPushAds.autoMode();
+                console.log("✅ Push-like ads initialized and auto-show enabled");
+                
+            } catch (error) {
+                console.log("❌ Push ads initialization error:", error);
+            }
+        }
+        
+        // Initialize Adexium Interstitial Ads
+        function initInterstitialAds() {
+            if (typeof AdexiumWidget === 'undefined') {
+                console.log("❌ AdexiumWidget not loaded for interstitial");
+                return false;
+            }
+            
+            try {
+                // Create interstitial ads widget
+                adexiumInterstitial = new AdexiumWidget({
+                    wid: '30015b9a-df1e-4895-be7b-c5bc1b148fcf', 
+                    adFormat: 'interstitial'
+                });
+                
+                // Set up event listeners for interstitial
+                adexiumInterstitial.on('load', function() {
+                    console.log('✅ Interstitial ad loaded');
+                    updateAdStatus('Interstitial ad loaded');
+                });
+                
+                adexiumInterstitial.on('complete', function() {
+                    console.log('✅ Interstitial ad completed - giving bonus');
+                    updateAdStatus('Ad completed! Giving bonus...');
+                    giveBonus();
+                });
+                
+                adexiumInterstitial.on('error', function(error) {
+                    console.log('❌ Interstitial ad error:', error);
+                    updateAdStatus('Ad failed: ' + error);
+                    setTimeout(() => showMockAd(), 2000);
+                });
+                
+                console.log("✅ Interstitial ads initialized");
+                return true;
+                
+            } catch (error) {
+                console.log("❌ Interstitial ads initialization error:", error);
                 return false;
             }
         }
         
-        // Initialize Adexium when DOM is ready
+        // Show interstitial ad
+        function showInterstitialAd() {
+            if (!adexiumInterstitial || typeof adexiumInterstitial.show !== 'function') {
+                console.log("❌ Interstitial not available, showing mock ad");
+                showMockAd();
+                return;
+            }
+            
+            console.log("🎯 Showing interstitial ad...");
+            updateAdStatus('Loading interstitial ad...');
+            
+            try {
+                adexiumInterstitial.show();
+                
+                // Fallback timeout if ad doesn't complete
+                setTimeout(() => {
+                    if (document.getElementById('closeAdsBtn').style.display === 'none') {
+                        console.log("⚠️ Interstitial timeout, giving bonus anyway");
+                        updateAdStatus('Timeout - giving bonus...');
+                        giveBonus();
+                    }
+                }, 30000); // 30 second timeout
+                
+            } catch (error) {
+                console.log("❌ Failed to show interstitial:", error);
+                updateAdStatus('Error showing ad');
+                showMockAd();
+            }
+        }
+        
+        // Update ad status text
+        function updateAdStatus(message) {
+            const statusElement = document.getElementById('adStatus');
+            if (statusElement) {
+                statusElement.textContent = message;
+            }
+        }
+        
+        // Initialize both ad types when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
-            console.log("📱 Initializing Adexium...");
+            console.log("📱 Initializing Adexium ads...");
+            
+            // Initialize push ads (auto-show)
             setTimeout(() => {
-                if (!initAdexium()) {
-                    console.log("⚠️ Could not initialize Adexium, will use fallback");
-                }
+                initPushAds();
             }, 1000);
+            
+            // Initialize interstitial ads (for manual showing)
+            setTimeout(() => {
+                initInterstitialAds();
+            }, 1500);
         });
+    </script>
+
+    <!-- RichPartners SDK -->
+    <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+    <script>
+        let richAdsLoaded = false;
+        
+        // Try to initialize RichAds
+        if (isInTelegram && typeof TelegramAdsController !== 'undefined') {
+            try {
+                window.TelegramAdsController = new TelegramAdsController();
+                window.TelegramAdsController.initialize({
+                    pubId: "956231",
+                    appId: "5578",
+                });
+                richAdsLoaded = true;
+                console.log("✅ RichAds SDK initialized");
+            } catch (error) {
+                console.log("❌ RichAds initialization error:", error);
+            }
+        }
     </script>
 
     <!-- Game Script -->
@@ -514,21 +618,22 @@
             // Close popup
             resultPopup.style.display = 'none';
             
-            // Show ads for bonus
-            setTimeout(showAdsForBonus, 300);
+            // Show ads for bonus after a short delay
+            setTimeout(showAdsForBonus, 500);
         }
         
-        // Show ads for bonus - WITH ADEXIUM INTEGRATION
+        // Show ads for bonus
         function showAdsForBonus() {
             adsPopup.style.display = 'flex';
             closeAdsBtn.style.display = 'none';
             
             // Clear container and show loading
-            adexiumContainer.innerHTML = '<div class="adexium-loading"><i class="fas fa-spinner fa-spin"></i><br>Loading reward...</div>';
+            adexiumContainer.innerHTML = '<div class="adexium-loading"><i class="fas fa-spinner fa-spin"></i><br>Loading interstitial ad...<div class="ad-status" id="adStatus"></div></div>';
             
             // Try RichAds first (only works in Telegram)
             if (richAdsLoaded && window.TelegramAdsController) {
                 console.log("🎯 Showing RichAds...");
+                updateAdStatus('Loading RichAds...');
                 try {
                     window.TelegramAdsController.showAd();
                     // After 5 seconds, assume ad completed
@@ -537,55 +642,26 @@
                     }, 5000);
                 } catch (error) {
                     console.log("❌ RichAds show failed:", error);
-                    tryAdexium();
+                    updateAdStatus('RichAds failed, trying Adexium...');
+                    // Fall back to Adexium interstitial
+                    setTimeout(showInterstitialAd, 1000);
                 }
             } else {
-                // RichAds not available, try Adexium
-                tryAdexium();
+                // Use Adexium interstitial
+                setTimeout(showInterstitialAd, 1000);
             }
         }
         
-        // Try Adexium ads
-        function tryAdexium() {
-            console.log("🎯 Attempting to show Adexium ad...");
-            
-            if (adexiumWidget && typeof adexiumWidget.show === 'function') {
-                console.log("🎯 Showing Adexium ad...");
-                
-                // Prepare container for Adexium
-                adexiumContainer.innerHTML = '';
-                
-                // Show Adexium ad
-                try {
-                    adexiumWidget.show();
-                    
-                    // Set a timeout as fallback in case ad doesn't trigger complete event
-                    setTimeout(() => {
-                        if (closeAdsBtn.style.display === 'none') {
-                            console.log("⚠️ Adexium timeout, giving bonus anyway");
-                            giveBonus();
-                        }
-                    }, 10000); // 10 second timeout
-                    
-                } catch (error) {
-                    console.log("❌ Adexium show failed:", error);
-                    showMockAd();
-                }
-            } else {
-                console.log("❌ Adexium widget not available");
-                showMockAd();
-            }
-        }
-        
-        // Show mock ad
+        // Show mock ad (fallback)
         function showMockAd() {
             console.log("🎯 Showing mock ad...");
+            updateAdStatus('Showing reward...');
             adexiumContainer.innerHTML = `
                 <div style="text-align: center; color: #2c3e50;">
                     <i class="fas fa-gift" style="font-size: 40px; color: #ff6b6b;"></i>
                     <div style="font-size: 16px; font-weight: 600; margin-top: 10px;">BONUS REWARD!</div>
                     <div style="font-size: 12px; margin-top: 5px; color: #6c757d;">Thanks for playing!</div>
-                    <div style="font-size: 12px; margin-top: 10px; color: #6c757d; font-style: italic;">(Ad would play here in production)</div>
+                    <div class="ad-status">(Ad simulation - real ad would play here)</div>
                 </div>
             `;
             
@@ -600,7 +676,7 @@
                 <div style="text-align: center; color: #2c3e50;">
                     <i class="fas fa-trophy" style="font-size: 40px; color: #ffd700;"></i>
                     <div style="font-size: 24px; font-weight: 800; color: #34c759; margin-top: 10px;">+50 BONUS</div>
-                    <div style="font-size: 14px; margin-top: 5px; color: #6c757d;">Points added!</div>
+                    <div style="font-size: 14px; margin-top: 5px; color: #6c757d;">Points added to your balance!</div>
                 </div>
             `;
             
@@ -638,8 +714,10 @@
             
             console.log("🎮 Ludo Dice Game initialized");
             console.log("💰 Points:", points);
+            console.log("📱 Telegram Environment:", isInTelegram ? "✅ Yes" : "❌ No");
             console.log("📱 RichAds:", richAdsLoaded ? "✅ Loaded" : "❌ Not available");
-            console.log("📱 Adexium:", adexiumWidget ? "✅ Initialized" : "❌ Not available");
+            console.log("📱 Adexium Push Ads:", adexiumPushAds ? "✅ Initialized" : "❌ Not available");
+            console.log("📱 Adexium Interstitial:", adexiumInterstitial ? "✅ Initialized" : "❌ Not available");
         }
         
         // Start game
