@@ -3,57 +3,94 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Watch & Earn</title>
+<title>Watch & Earn Ads</title>
 
 <!-- Telegram WebApp -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<!-- TMA Rewarded Video SDK -->
-<script src="https://js.onclckvd.com/in-stream-ad-admanager/tma.js"></script>
+<!-- Monetag SDK -->
+<script src="//libtl.com/sdk.js" data-zone="10412754" data-sdk="show_10412754"></script>
+
+<!-- RichPartners SDK -->
+<script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+<script>
+window.TelegramAdsController = new TelegramAdsController();
+window.TelegramAdsController.initialize({
+  pubId: "956231",
+  appId: "5571",
+});
+let richLoaded = true;
+</script>
 
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:Segoe UI,Roboto,sans-serif;}
+*{box-sizing:border-box;font-family:Segoe UI,Roboto,sans-serif;margin:0;padding:0;}
 body{
     height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
     background:#0a0a0a;
+    overflow:hidden;
+    position:relative;
     color:#fff;
 }
+
+@keyframes shimmer {
+    0% { background-position: -500px 0; }
+    100% { background-position: 500px 0; }
+}
+body::before{
+    content:'';
+    position:absolute;
+    top:0; left:0; width:100%; height:100%;
+    background:linear-gradient(120deg, rgba(0,255,224,0.05), rgba(255,0,255,0.05), rgba(0,255,255,0.05));
+    background-size: 1000px 1000px;
+    animation: shimmer 15s linear infinite;
+    z-index:0;
+}
+
 .panel{
     width:360px;
     background:#0c0c0c;
-    border-radius:22px;
+    border-radius:24px;
     padding:24px;
     box-shadow:0 25px 70px rgba(0,0,0,.7);
-    text-align:center;
+    position:relative;
+    z-index:1;
 }
 .title{
+    text-align:center;
     font-size:22px;
-    margin-bottom:18px;
+    margin-bottom:20px;
     font-weight:700;
+    text-shadow: 0 0 8px #00ffe0;
 }
-button{
-    width:100%;
-    padding:16px;
-    font-size:16px;
-    border-radius:16px;
-    border:none;
+.card{
+    background:#111;
+    border:1px solid #2b2b2b;
+    border-radius:18px;
+    padding:18px;
+    margin-bottom:16px;
     cursor:pointer;
-    background:#00ffe0;
-    color:#000;
-    font-weight:700;
+    transition:.3s;
 }
-button:disabled{
-    background:#444;
-    color:#999;
-    cursor:not-allowed;
+.card:hover{
+    border-color:#00ffe0;
+    box-shadow:0 0 20px rgba(0,255,224,.4);
 }
-.status{
-    margin-top:14px;
+.card h4{
+    margin:0 0 8px;
+    font-size:17px;
+}
+.card span{
     font-size:12px;
     color:#aaa;
+}
+.footer{
+    text-align:center;
+    margin-top:14px;
+    font-size:12px;
+    color:#777;
 }
 </style>
 </head>
@@ -63,63 +100,54 @@ button:disabled{
 <div class="panel">
     <div class="title">Watch & Earn</div>
 
-    <button id="adBtn" onclick="playTmaAd()" disabled>
-        Loading ad…
-    </button>
+    <!-- Card 1: RichPartners -->
+    <div class="card" onclick="watchRich()">
+        <h4>RichPartners</h4>
+        <span>High CPM • Premium Ads</span>
+    </div>
 
-    <div class="status" id="status">Initializing ads</div>
+    <!-- Card 2: Monetag -->
+    <div class="card" onclick="watchMonetag()">
+        <h4>Monetag</h4>
+        <span>Worldwide Ads • Fast Load</span>
+    </div>
+
+    <div class="footer">Click any network to watch ad</div>
 </div>
 
 <script>
-/* ---------- Telegram ---------- */
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 
-/* ---------- TMA Init ---------- */
-let showTmaAd = null;
-let tmaReady = false;
-let isPlaying = false;
+let monetagRetry = 0;
+const monetagMaxRetry = 5;
 
-const adBtn = document.getElementById("adBtn");
-const statusEl = document.getElementById("status");
+// Monetag Ad with retry
+function watchMonetag() {
+    if (typeof window.show_10412754 === "function") {
+        show_10412754();
+        monetagRetry = 0; // reset retry
+    } else if (monetagRetry < monetagMaxRetry) {
+        monetagRetry++;
+        console.log("Monetag not ready, retrying... attempt:", monetagRetry);
+        setTimeout(watchMonetag, 1000); // retry after 1 sec
+    } else {
+        alert("Monetag ad not ready. Please refresh or try again later.");
+    }
+}
 
-window.initCdTma?.({ id: 6105836 }) // ✅ YOUR REAL SPOT ID
-  .then(show => {
-    showTmaAd = show;
-    tmaReady = true;
-    adBtn.disabled = false;
-    adBtn.innerText = "Watch Ad";
-    statusEl.innerText = "Ad ready";
-    console.log("TMA READY");
-  })
-  .catch(err => {
-    statusEl.innerText = "Ads unavailable";
-    console.log("TMA INIT ERROR", err);
-  });
-
-/* ---------- Play Ad ---------- */
-function playTmaAd() {
-  if (!tmaReady || !showTmaAd || isPlaying) return;
-
-  isPlaying = true;
-  adBtn.disabled = true;
-  statusEl.innerText = "Playing ad…";
-
-  showTmaAd()
-    .then(() => {
-      console.log("TMA AD VIEWED");
-      statusEl.innerText = "Reward granted";
-      // 👉 reward user here
-    })
-    .catch(err => {
-      console.log("TMA FAILED / NO FILL", err);
-      statusEl.innerText = "No ad available, try later";
-    })
-    .finally(() => {
-      isPlaying = false;
-      adBtn.disabled = false;
-      statusEl.innerText = "Ready";
-    });
+// RichPartners Ad
+function watchRich() {
+    if (richLoaded && window.TelegramAdsController) {
+        try {
+            window.TelegramAdsController.showAd();
+        } catch (err) {
+            alert("RichPartners ad could not be shown.");
+            console.error(err);
+        }
+    } else {
+        alert("RichPartners ad not ready yet. Please try again.");
+    }
 }
 </script>
 
