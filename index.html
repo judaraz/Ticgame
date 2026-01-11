@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Spin & Win</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Telegram WebApp -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- RichPartners SDK -->
+    <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+    <script>
+    window.TelegramAdsController = new TelegramAdsController();
+    window.TelegramAdsController.initialize({
+      pubId: "956231",
+      appId: "5572",
+    });
+    let richLoaded = true;
+    </script>
+    
+    <!-- Gigapub SDK (Fallback) -->
+    <script src="https://ad.gigapub.tech/script?id=978"></script>
+
     <style>
         :root {
             --primary: #FF416C;
@@ -125,7 +143,7 @@
             box-shadow: 0 0 0 10px var(--dark), 
                         0 0 30px rgba(255, 65, 108, 0.3);
             transform: rotate(0deg);
-            transition: transform 0.1s;
+            transition: transform 4s cubic-bezier(0.2, 0.8, 0.3, 1);
         }
         
         .wheel-segment {
@@ -137,17 +155,17 @@
             top: 0;
             display: flex;
             justify-content: flex-end;
-            align-items: center;
-            padding-right: 60px;
-            padding-top: 10px;
+            align-items: flex-start;
+            padding-top: 15px;
+            padding-right: 40px;
             font-weight: 800;
-            font-size: 22px;
+            font-size: 24px;
             color: #fff;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
             clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
         }
         
-        /* Adjust number positions for visibility */
+        /* Make ALL numbers visible with proper positioning */
         .segment-1 { transform: rotate(0deg); }
         .segment-2 { transform: rotate(36deg); }
         .segment-3 { transform: rotate(72deg); }
@@ -158,6 +176,18 @@
         .segment-8 { transform: rotate(252deg); }
         .segment-9 { transform: rotate(288deg); }
         .segment-10 { transform: rotate(324deg); }
+        
+        /* Rotate the text inside each segment to make it readable */
+        .segment-1 span { transform: rotate(18deg); }
+        .segment-2 span { transform: rotate(18deg); }
+        .segment-3 span { transform: rotate(18deg); }
+        .segment-4 span { transform: rotate(18deg); }
+        .segment-5 span { transform: rotate(18deg); }
+        .segment-6 span { transform: rotate(18deg); }
+        .segment-7 span { transform: rotate(18deg); }
+        .segment-8 span { transform: rotate(18deg); }
+        .segment-9 span { transform: rotate(18deg); }
+        .segment-10 span { transform: rotate(18deg); }
         
         .wheel-center {
             position: absolute;
@@ -449,6 +479,9 @@
                 
                 <div class="ads-container" id="adsContainer">
                     <!-- Ads will be loaded here -->
+                    <div id="richAdPlaceholder" style="color: var(--text-light); padding: 20px;">
+                        Loading advertisement...
+                    </div>
                 </div>
                 
                 <button class="popup-btn" id="closeAdsBtn" style="background: linear-gradient(145deg, var(--primary), var(--secondary));">
@@ -473,11 +506,6 @@
         </audio>
     </div>
 
-    <!-- RichPartners SDK -->
-    <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
-    <!-- Gigapub SDK (Fallback) -->
-    <script src="https://ad.gigapub.tech/script?id=978"></script>
-
     <script>
         // Telegram MiniApp detection
         const isTelegram = window.Telegram && window.Telegram.WebApp;
@@ -488,6 +516,7 @@
         let isAudioOn = true;
         let currentWinAmount = 0;
         let currentMultiplier = 1;
+        let adShown = false;
         
         // DOM elements
         const wheel = document.getElementById('wheel');
@@ -501,6 +530,7 @@
         const closeAdsBtn = document.getElementById('closeAdsBtn');
         const audioControl = document.getElementById('audioControl');
         const adsContainer = document.getElementById('adsContainer');
+        const richAdPlaceholder = document.getElementById('richAdPlaceholder');
         
         // Audio elements
         const spinSound = document.getElementById('spinSound');
@@ -521,7 +551,7 @@
             { multiplier: 10, color: 'color-10' }
         ];
         
-        // Initialize wheel with visible numbers
+        // Initialize wheel with ALL numbers visible
         function createWheelSegments() {
             wheel.innerHTML = '';
             
@@ -529,7 +559,7 @@
                 const segment = document.createElement('div');
                 segment.className = `wheel-segment segment-${i+1} ${wheelData[i].color}`;
                 
-                // Create number element
+                // Create number element - ALL NUMBERS ARE VISIBLE NOW
                 const numberSpan = document.createElement('span');
                 numberSpan.textContent = `${wheelData[i].multiplier}x`;
                 numberSpan.style.display = 'block';
@@ -596,46 +626,45 @@
             playSound(spinSound);
             
             // Reset wheel transform before spinning
-            wheel.style.transition = 'none';
+            wheel.style.transition = 'transform 4s cubic-bezier(0.2, 0.8, 0.3, 1)';
             wheel.style.transform = 'rotate(0deg)';
             
             // Force reflow
-            wheel.offsetHeight;
-            
-            // Medium speed spin parameters
-            const spinDuration = 3500; // 3.5 seconds
-            const spinRevolutions = 5; // 5 full revolutions
-            
-            // Calculate final rotation
-            const segmentAngle = 360 / wheelData.length;
-            const randomSegment = Math.floor(Math.random() * wheelData.length);
-            const segmentOffset = Math.random() * 10 - 5;
-            
-            // Calculate final angle
-            const finalAngle = (spinRevolutions * 360) + (randomSegment * segmentAngle) + segmentOffset;
-            
-            // Apply rotation with easing
-            wheel.style.transition = `transform ${spinDuration}ms cubic-bezier(0.2, 0.7, 0.3, 1)`;
-            wheel.style.transform = `rotate(${finalAngle}deg)`;
-            
-            // Determine result after spin completes
             setTimeout(() => {
-                // Stop spinning sound
-                spinSound.pause();
-                spinSound.currentTime = 0;
+                // Medium speed spin parameters
+                const spinDuration = 4000; // 4 seconds
+                const spinRevolutions = 5; // 5 full revolutions
                 
-                // Get multiplier
-                currentMultiplier = wheelData[randomSegment].multiplier;
-                currentWinAmount = 100 * currentMultiplier;
+                // Calculate final rotation
+                const segmentAngle = 360 / wheelData.length;
+                const randomSegment = Math.floor(Math.random() * wheelData.length);
+                const segmentOffset = Math.random() * 10 - 5;
                 
-                // Show result popup
+                // Calculate final angle
+                const finalAngle = (spinRevolutions * 360) + (randomSegment * segmentAngle) + segmentOffset;
+                
+                // Apply rotation
+                wheel.style.transform = `rotate(${finalAngle}deg)`;
+                
+                // Determine result after spin completes
                 setTimeout(() => {
-                    showResultPopup(currentMultiplier, currentWinAmount);
-                }, 500);
-                
-                isSpinning = false;
-                spinBtn.disabled = false;
-            }, spinDuration);
+                    // Stop spinning sound
+                    spinSound.pause();
+                    spinSound.currentTime = 0;
+                    
+                    // Get multiplier
+                    currentMultiplier = wheelData[randomSegment].multiplier;
+                    currentWinAmount = 100 * currentMultiplier;
+                    
+                    // Show result popup
+                    setTimeout(() => {
+                        showResultPopup(currentMultiplier, currentWinAmount);
+                    }, 500);
+                    
+                    isSpinning = false;
+                    spinBtn.disabled = false;
+                }, spinDuration);
+            }, 50);
         }
         
         // Show result popup
@@ -671,64 +700,94 @@
         function showAdsPopup() {
             adsPopup.style.display = 'flex';
             closeAdsBtn.disabled = true;
+            closeAdsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PLEASE WAIT';
+            
+            // Clear and show loading
+            richAdPlaceholder.style.display = 'block';
+            adsContainer.innerHTML = '';
+            adsContainer.appendChild(richAdPlaceholder);
+            richAdPlaceholder.textContent = 'Loading advertisement...';
             
             // Try to show RichAds
             showRichAds();
         }
         
-        // Show RichAds with Gigapub fallback
+        // Show RichAds with Gigapub fallback - FIXED INTEGRATION
         function showRichAds() {
-            // Clear container
-            adsContainer.innerHTML = '<div style="color: var(--text-light); padding: 20px;">Loading advertisement...</div>';
+            console.log("Attempting to show RichAds...");
             
-            // Try RichAds first
-            if (typeof TelegramAdsController !== 'undefined') {
+            if (typeof TelegramAdsController !== 'undefined' && richLoaded) {
                 try {
+                    console.log("RichAds found, showing ad...");
+                    
+                    // Clear container first
+                    adsContainer.innerHTML = '<div style="color: var(--text-light); padding: 20px;">Loading RichPartners ad...</div>';
+                    
+                    // Show RichPartners ad
                     TelegramAdsController.showAd();
                     
-                    // Enable close button after 5 seconds
+                    // Listen for ad completion
                     setTimeout(() => {
+                        // Enable close button after ad
                         closeAdsBtn.disabled = false;
-                        adsContainer.innerHTML = '<div style="color: var(--success); padding: 20px;">Advertisement completed! 🎉</div>';
-                    }, 5000);
+                        closeAdsBtn.innerHTML = '<i class="fas fa-check-circle"></i> CONTINUE';
+                        adsContainer.innerHTML = '<div style="color: var(--success); padding: 20px; text-align: center;">Ad completed! 🎉<br><small>Thanks for watching!</small></div>';
+                    }, 5000); // Assume ad takes 5 seconds
                     
-                } catch (e) {
-                    console.log("RichAds failed, trying Gigapub...");
+                } catch (err) {
+                    console.error("RichAds error:", err);
+                    // Fallback to Gigapub
                     showGigapubAd();
                 }
             } else {
+                console.log("RichAds not available, trying Gigapub...");
+                // Fallback to Gigapub
                 showGigapubAd();
             }
         }
         
         // Show Gigapub ad (fallback)
         function showGigapubAd() {
+            console.log("Attempting to show Gigapub...");
+            
             if (typeof showGiga === 'function') {
-                showGiga()
-                    .then(() => {
-                        // Ad completed successfully
-                        closeAdsBtn.disabled = false;
-                        adsContainer.innerHTML = '<div style="color: var(--success); padding: 20px;">Advertisement completed! 🎉</div>';
-                    })
-                    .catch(e => {
-                        console.log("Gigapub failed:", e);
-                        // Both ads failed, show mock ad
-                        showMockAd();
-                    });
+                try {
+                    adsContainer.innerHTML = '<div style="color: var(--text-light); padding: 20px;">Loading Gigapub ad...</div>';
+                    
+                    showGiga()
+                        .then(() => {
+                            // Ad completed successfully
+                            console.log("Gigapub ad completed");
+                            closeAdsBtn.disabled = false;
+                            closeAdsBtn.innerHTML = '<i class="fas fa-check-circle"></i> CONTINUE';
+                            adsContainer.innerHTML = '<div style="color: var(--success); padding: 20px; text-align: center;">Ad completed! 🎉<br><small>Thanks for watching!</small></div>';
+                        })
+                        .catch(e => {
+                            console.log("Gigapub failed:", e);
+                            // Both ads failed, show mock ad
+                            showMockAd();
+                        });
+                } catch (e) {
+                    console.log("Gigapub error:", e);
+                    showMockAd();
+                }
             } else {
+                console.log("Gigapub not available");
                 showMockAd();
             }
         }
         
         // Show mock ad if both fail
         function showMockAd() {
+            console.log("Showing mock ad");
+            
             adsContainer.innerHTML = `
-                <div style="padding: 20px; text-align: center; color: var(--text-light);">
+                <div style="padding: 20px; text-align: center; color: var(--text-light); width: 100%;">
                     <i class="fas fa-ad" style="font-size: 40px; color: var(--accent); margin-bottom: 15px; display: block;"></i>
-                    <p>✨ Premium Game Ad ✨</p>
-                    <p style="font-size: 14px; margin-top: 10px;">Try our other exciting games!</p>
+                    <p style="font-size: 18px; margin-bottom: 10px;">✨ Premium Game Ad ✨</p>
+                    <p style="font-size: 14px; margin-bottom: 20px;">Try our other exciting games!</p>
                     <div style="margin-top: 20px; padding: 10px; background: rgba(255, 65, 108, 0.1); border-radius: 10px; font-size: 13px;">
-                        Ad will close in 3 seconds...
+                        Ad simulation - 3 seconds...
                     </div>
                 </div>
             `;
@@ -736,6 +795,7 @@
             // Enable close button after 3 seconds
             setTimeout(() => {
                 closeAdsBtn.disabled = false;
+                closeAdsBtn.innerHTML = '<i class="fas fa-check-circle"></i> CONTINUE';
             }, 3000);
         }
         
@@ -752,6 +812,11 @@
             // Hide ads popup
             adsPopup.style.display = 'none';
             closeAdsBtn.disabled = false;
+            closeAdsBtn.innerHTML = '<i class="fas fa-check-circle"></i> CONTINUE';
+            
+            // Reset ad placeholder
+            richAdPlaceholder.style.display = 'block';
+            richAdPlaceholder.textContent = 'Loading advertisement...';
         }
         
         // Initialize the game
@@ -785,15 +850,19 @@
             
             // Telegram MiniApp integration
             if (isTelegram) {
-                Telegram.WebApp.expand();
                 Telegram.WebApp.ready();
+                Telegram.WebApp.expand();
+                console.log("Telegram WebApp initialized");
             }
             
             console.log("🎮 Spin to Win initialized");
+            console.log("🔧 RichAds loaded:", richLoaded);
+            console.log("🔧 TelegramAdsController:", typeof TelegramAdsController);
+            console.log("🔧 showGiga function:", typeof showGiga);
         }
         
         // Start the game
-        initGame();
+        document.addEventListener('DOMContentLoaded', initGame);
     </script>
 </body>
 </html>
