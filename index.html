@@ -3,29 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ludo Dice Roll</title>
+    <title>Ludo Dice Roll - Telegram MiniApp</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- RichPartners SDK -->
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- RichPartners SDK (Primary) -->
     <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
-    <script>
-        window.TelegramAdsController = new TelegramAdsController();
-        window.TelegramAdsController.initialize({
-            pubId: "956231",
-            appId: "5572",
-        });
-        let richLoaded = true;
-        console.log("RichAds initialized");
-    </script>
+    
+    <!-- Adexora SDK (Fallback) -->
+    <script src="https://adexora.com/cdn/ads.js?id=50"></script>
 
     <style>
         :root {
-            --red: #E53935;
-            --green: #43A047;
-            --yellow: #FDD835;
-            --blue: #1E88E5;
-            --gold: #FFD700;
-            --dark-blue: #2C3E50;
+            --telegram-blue: #3390ec;
+            --telegram-dark: #18222d;
+            --telegram-light: #f0f2f5;
+            --gold: #ffd700;
+            --success: #34c759;
+            --danger: #ff3b30;
         }
         
         * {
@@ -37,127 +34,94 @@
         }
         
         body {
-            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--telegram-dark);
             color: white;
             min-height: 100vh;
+            padding: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
-            overflow-x: hidden;
         }
         
         .container {
             width: 100%;
-            max-width: 500px;
+            max-width: 420px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 16px;
         }
         
         /* Header */
-        .header {
+        .game-header {
             width: 100%;
             text-align: center;
             padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .title {
-            font-size: 32px;
+        .game-title {
+            font-size: 28px;
             font-weight: 800;
-            background: linear-gradient(45deg, #FFD700, #FF9800);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 5px;
+            color: var(--gold);
+            margin-bottom: 4px;
         }
         
-        .subtitle {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.9);
+        .game-subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
         }
         
         /* Points Display */
-        .points-display {
+        .points-container {
             width: 100%;
-            background: linear-gradient(135deg, var(--dark-blue), #34495e);
+            background: linear-gradient(135deg, #2c3e50, #3498db);
             padding: 20px;
-            border-radius: 20px;
+            border-radius: 16px;
             text-align: center;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            border: 3px solid rgba(255, 215, 0, 0.3);
+            border: 2px solid var(--gold);
+            position: relative;
         }
         
         .points-label {
-            font-size: 16px;
+            font-size: 14px;
             color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         
         .points-value {
-            font-size: 48px;
+            font-size: 40px;
             font-weight: 900;
             color: var(--gold);
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
         }
         
         /* Ludo Board */
         .ludo-board {
-            width: 300px;
-            height: 300px;
+            width: 280px;
+            height: 280px;
             background: white;
-            border-radius: 20px;
-            border: 8px solid var(--dark-blue);
+            border-radius: 16px;
+            border: 6px solid #2c3e50;
             position: relative;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
             transform: rotate(45deg);
-            margin: 20px 0;
+            margin: 16px 0;
+            overflow: hidden;
         }
         
-        /* Quadrants */
         .quadrant {
             position: absolute;
             width: 50%;
             height: 50%;
-            border-radius: 20px;
         }
         
-        .red-quadrant {
-            top: 0;
-            left: 0;
-            background: var(--red);
-            border-bottom-right-radius: 100%;
-        }
+        .quadrant-1 { top: 0; left: 0; background: #ff6b6b; border-bottom-right-radius: 100%; }
+        .quadrant-2 { top: 0; right: 0; background: #4ecdc4; border-bottom-left-radius: 100%; }
+        .quadrant-3 { bottom: 0; left: 0; background: #ffd93d; border-top-right-radius: 100%; }
+        .quadrant-4 { bottom: 0; right: 0; background: #6c5ce7; border-top-left-radius: 100%; }
         
-        .green-quadrant {
-            top: 0;
-            right: 0;
-            background: var(--green);
-            border-bottom-left-radius: 100%;
-        }
-        
-        .yellow-quadrant {
-            bottom: 0;
-            left: 0;
-            background: var(--yellow);
-            border-top-right-radius: 100%;
-        }
-        
-        .blue-quadrant {
-            bottom: 0;
-            right: 0;
-            background: var(--blue);
-            border-top-left-radius: 100%;
-        }
-        
-        /* Board Center */
         .board-center {
             position: absolute;
             width: 40%;
@@ -166,8 +130,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            border: 4px solid var(--dark-blue);
-            border-radius: 10px;
+            border: 3px solid #2c3e50;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -175,101 +139,72 @@
         
         .board-center span {
             transform: rotate(-45deg);
-            font-size: 20px;
             font-weight: 800;
-            color: var(--dark-blue);
+            color: #2c3e50;
         }
         
-        /* Dice Container */
-        .dice-container {
+        /* Dice */
+        .dice {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) rotate(-45deg);
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
             background: white;
-            border-radius: 15px;
-            border: 5px solid var(--dark-blue);
+            border-radius: 10px;
+            border: 4px solid #2c3e50;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            font-size: 24px;
+            font-weight: 900;
+            color: #2c3e50;
             z-index: 10;
         }
-        
-        .dice-value {
-            font-size: 36px;
-            font-weight: 900;
-            color: var(--dark-blue);
-        }
-        
-        /* Dice Dots */
-        .dice-dot {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            background: var(--dark-blue);
-            border-radius: 50%;
-        }
-        
-        .dot-center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        .dot-top-left { top: 15px; left: 15px; }
-        .dot-top-right { top: 15px; right: 15px; }
-        .dot-bottom-left { bottom: 15px; left: 15px; }
-        .dot-bottom-right { bottom: 15px; right: 15px; }
-        .dot-middle-left { top: 50%; left: 15px; transform: translateY(-50%); }
-        .dot-middle-right { top: 50%; right: 15px; transform: translateY(-50%); }
         
         /* Controls */
         .controls {
             width: 100%;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 25px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            gap: 16px;
         }
         
         .roll-btn {
-            background: linear-gradient(135deg, #FF5722, #FF9800);
+            width: 100%;
+            background: var(--telegram-blue);
             color: white;
             border: none;
-            padding: 20px 50px;
-            font-size: 22px;
-            font-weight: 800;
-            border-radius: 15px;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 10px 25px rgba(255, 87, 34, 0.4);
             display: flex;
             align-items: center;
-            gap: 15px;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.2s;
         }
         
-        .roll-btn:hover:not(:disabled) {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(255, 87, 34, 0.6);
+        .roll-btn:active {
+            transform: scale(0.98);
         }
         
         .roll-btn:disabled {
-            background: linear-gradient(135deg, #666, #444);
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         
-        .roll-cost {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 16px;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-weight: 600;
+        .cost-info {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
         }
         
         /* Popups */
@@ -284,19 +219,17 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            padding: 20px;
+            padding: 16px;
         }
         
         .popup {
-            background: linear-gradient(135deg, var(--dark-blue), #4A6491);
-            border-radius: 25px;
+            background: white;
+            border-radius: 16px;
             width: 100%;
-            max-width: 400px;
-            padding: 30px 20px;
+            max-width: 320px;
+            padding: 24px;
             text-align: center;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            border: 3px solid rgba(255, 215, 0, 0.3);
-            animation: popIn 0.3s ease-out;
+            animation: popIn 0.3s;
         }
         
         @keyframes popIn {
@@ -305,113 +238,86 @@
         }
         
         .popup-title {
-            font-size: 28px;
-            color: var(--gold);
-            margin-bottom: 20px;
-            font-weight: 800;
+            font-size: 22px;
+            color: #2c3e50;
+            margin-bottom: 16px;
+            font-weight: 700;
         }
         
-        .result-dice {
-            font-size: 80px;
-            margin: 20px 0;
-            animation: diceBounce 0.5s;
-        }
-        
-        @keyframes diceBounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-        
-        .multiplier {
+        .dice-result {
             font-size: 60px;
-            font-weight: 900;
-            color: var(--gold);
-            margin: 20px 0;
+            margin: 16px 0;
         }
         
-        .win-amount {
+        .win-info {
             font-size: 36px;
             font-weight: 800;
-            color: #4CAF50;
-            margin-bottom: 30px;
+            color: var(--success);
+            margin: 16px 0;
         }
         
         .popup-btn {
-            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            width: 100%;
+            background: var(--success);
             color: white;
             border: none;
-            padding: 18px 30px;
-            font-size: 20px;
-            font-weight: 700;
-            border-radius: 15px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
-            width: 100%;
+            margin-top: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
         }
         
-        .popup-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 25px rgba(76, 175, 80, 0.5);
-        }
-        
-        /* Instructions */
-        .instructions {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.1);
+        /* Ads Popup */
+        .ads-content {
+            min-height: 180px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
         }
         
-        .instructions h3 {
-            color: var(--gold);
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-        
-        .instructions ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        
-        .instructions li {
-            margin-bottom: 10px;
-            color: rgba(255, 255, 255, 0.9);
+        .ads-loading {
+            color: #6c757d;
             font-size: 14px;
-            padding-left: 25px;
-            position: relative;
-        }
-        
-        .instructions li::before {
-            content: '🎲';
-            position: absolute;
-            left: 0;
         }
         
         /* Audio Control */
         .audio-control {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--red);
-            width: 50px;
-            height: 50px;
+            bottom: 16px;
+            right: 16px;
+            width: 48px;
+            height: 48px;
+            background: var(--telegram-blue);
             border-radius: 50%;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             cursor: pointer;
-            font-size: 22px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.3);
             z-index: 100;
+            border: 2px solid white;
+        }
+        
+        /* Instructions */
+        .instructions {
+            width: 100%;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-top: 8px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.5;
         }
         
         /* Responsive */
@@ -421,25 +327,9 @@
                 height: 250px;
             }
             
-            .dice-container {
-                width: 70px;
-                height: 70px;
-            }
-            
-            .dice-value {
-                font-size: 30px;
-            }
-            
-            .title {
-                font-size: 28px;
-            }
-            
-            .points-value {
-                font-size: 36px;
-            }
-            
-            .roll-btn {
-                padding: 16px 40px;
+            .dice {
+                width: 50px;
+                height: 50px;
                 font-size: 20px;
             }
         }
@@ -447,85 +337,71 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1 class="title">🎲 LUDO DICE ROLL 🎲</h1>
-            <p class="subtitle">Roll the dice and multiply your points!</p>
+        <div class="game-header">
+            <h1 class="game-title">🎲 LUDO DICE ROLL</h1>
+            <p class="game-subtitle">Roll dice, win points, get rewards!</p>
         </div>
         
-        <div class="points-display">
+        <div class="points-container">
             <div class="points-label">YOUR POINTS</div>
             <div class="points-value" id="pointsValue">1,000</div>
         </div>
         
         <div class="ludo-board">
-            <div class="quadrant red-quadrant"></div>
-            <div class="quadrant green-quadrant"></div>
-            <div class="quadrant yellow-quadrant"></div>
-            <div class="quadrant blue-quadrant"></div>
-            
+            <div class="quadrant quadrant-1"></div>
+            <div class="quadrant quadrant-2"></div>
+            <div class="quadrant quadrant-3"></div>
+            <div class="quadrant quadrant-4"></div>
             <div class="board-center">
                 <span>LUDO</span>
             </div>
-            
-            <div class="dice-container" id="diceContainer">
-                <div class="dice-value" id="diceValue">6</div>
-                <!-- Dots will be added by JavaScript -->
-            </div>
+            <div class="dice" id="dice">6</div>
         </div>
         
         <div class="controls">
             <button class="roll-btn" id="rollBtn">
-                <i class="fas fa-dice"></i> ROLL DICE (100 points)
+                <i class="fas fa-dice"></i> ROLL DICE - 100 POINTS
             </button>
-            <div class="roll-cost">Win 1x to 6x multiplier</div>
+            <div class="cost-info">Win multiplier: 1x to 6x</div>
         </div>
         
         <div class="instructions">
-            <h3>🎯 HOW TO PLAY:</h3>
-            <ul>
-                <li>Click ROLL DICE to roll (costs 100 points)</li>
-                <li>Get a number from 1 to 6</li>
-                <li>Win = 100 × dice number</li>
-                <li>Watch ad for bonus points</li>
-                <li>Roll again to earn more!</li>
-            </ul>
-        </div>
-        
-        <!-- Result Popup -->
-        <div class="popup-overlay" id="resultPopup">
-            <div class="popup">
-                <h2 class="popup-title">🎉 YOU ROLLED!</h2>
-                <div class="result-dice" id="resultDice">⚅</div>
-                <div class="multiplier" id="multiplier">6x</div>
-                <div class="win-amount" id="winAmount">600 points</div>
-                <button class="popup-btn" id="claimBtn">
-                    <i class="fas fa-gift"></i> CLAIM PRIZE
-                </button>
-            </div>
-        </div>
-        
-        <!-- Ads Popup -->
-        <div class="popup-overlay" id="adsPopup">
-            <div class="popup">
-                <h2 class="popup-title">🎁 BONUS REWARD</h2>
-                <p style="color: rgba(255, 255, 255, 0.9); margin: 20px 0;">
-                    Thanks for playing! You've earned bonus points!
-                </p>
-                <div style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 15px; margin: 20px 0;">
-                    <i class="fas fa-coins" style="font-size: 40px; color: var(--gold); margin-bottom: 10px; display: block;"></i>
-                    <div style="font-size: 24px; color: var(--gold);">+50 BONUS POINTS</div>
-                </div>
-                <button class="popup-btn" id="closeAdsBtn" style="background: linear-gradient(135deg, var(--red), #D32F2F);">
-                    <i class="fas fa-check"></i> CONTINUE
-                </button>
-            </div>
-        </div>
-        
-        <div class="audio-control" id="audioControl">
-            <i class="fas fa-volume-up"></i>
+            <p><strong>How to play:</strong> Tap ROLL DICE (costs 100 points). Dice shows 1-6. Win = dice number × 100 points. Watch ad for bonus!</p>
         </div>
     </div>
-
+    
+    <!-- Result Popup -->
+    <div class="popup-overlay" id="resultPopup">
+        <div class="popup">
+            <h2 class="popup-title">🎉 YOU WON!</h2>
+            <div class="dice-result" id="resultDice">⚅</div>
+            <div class="win-info" id="winAmount">600 POINTS</div>
+            <button class="popup-btn" id="claimBtn">
+                <i class="fas fa-gift"></i> CLAIM PRIZE
+            </button>
+        </div>
+    </div>
+    
+    <!-- Ads Popup -->
+    <div class="popup-overlay" id="adsPopup">
+        <div class="popup">
+            <h2 class="popup-title">🎁 BONUS REWARD</h2>
+            <div class="ads-content" id="adsContainer">
+                <div class="ads-loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading reward...
+                </div>
+            </div>
+            <button class="popup-btn" id="closeAdsBtn" style="background: var(--telegram-blue); display: none;">
+                <i class="fas fa-check"></i> CONTINUE (+50 BONUS)
+            </button>
+        </div>
+    </div>
+    
+    <!-- Audio Control -->
+    <div class="audio-control" id="audioControl">
+        <i class="fas fa-volume-up"></i>
+    </div>
+    
     <!-- Audio Elements -->
     <audio id="diceSound" src="https://assets.mixkit.co/sfx/preview/mixkit-dice-roll-1978.mp3" preload="auto"></audio>
     <audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" preload="auto"></audio>
@@ -533,24 +409,33 @@
     <audio id="bgMusic" src="https://assets.mixkit.co/music/preview/mixkit-game-show-suspense-waiting-667.mp3" preload="auto" loop></audio>
 
     <script>
+        // Telegram WebApp Setup
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            console.log("Telegram WebApp initialized");
+        }
+        
         // Game Variables
         let points = 1000;
         let isRolling = false;
         let isAudioOn = true;
         let currentWin = 0;
-        let currentMultiplier = 1;
+        let currentDice = 6;
+        let richAdsLoaded = false;
+        let adexoraLoaded = false;
         
         // DOM Elements
         const rollBtn = document.getElementById('rollBtn');
         const pointsValue = document.getElementById('pointsValue');
-        const diceValue = document.getElementById('diceValue');
-        const diceContainer = document.getElementById('diceContainer');
+        const dice = document.getElementById('dice');
         const resultPopup = document.getElementById('resultPopup');
         const resultDice = document.getElementById('resultDice');
-        const multiplier = document.getElementById('multiplier');
         const winAmount = document.getElementById('winAmount');
         const claimBtn = document.getElementById('claimBtn');
         const adsPopup = document.getElementById('adsPopup');
+        const adsContainer = document.getElementById('adsContainer');
         const closeAdsBtn = document.getElementById('closeAdsBtn');
         const audioControl = document.getElementById('audioControl');
         
@@ -560,68 +445,25 @@
         const clickSound = document.getElementById('clickSound');
         const bgMusic = document.getElementById('bgMusic');
         
-        // Dice faces and dots configuration
+        // Dice faces
         const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-        const diceDots = {
-            1: ['dot-center'],
-            2: ['dot-top-left', 'dot-bottom-right'],
-            3: ['dot-top-left', 'dot-center', 'dot-bottom-right'],
-            4: ['dot-top-left', 'dot-top-right', 'dot-bottom-left', 'dot-bottom-right'],
-            5: ['dot-top-left', 'dot-top-right', 'dot-center', 'dot-bottom-left', 'dot-bottom-right'],
-            6: ['dot-top-left', 'dot-top-right', 'dot-middle-left', 'dot-middle-right', 'dot-bottom-left', 'dot-bottom-right']
-        };
         
-        // Initialize dice dots
-        function createDiceDots() {
-            // Clear existing dots
-            document.querySelectorAll('.dice-dot').forEach(dot => dot.remove());
+        // Initialize Ads SDKs
+        function initializeAds() {
+            // Check RichAds
+            if (window.TelegramAdsController) {
+                richAdsLoaded = true;
+                console.log("✅ RichAds SDK is ready");
+            } else {
+                console.log("❌ RichAds SDK not loaded");
+            }
             
-            // Create all possible dot positions
-            const positions = [
-                {class: 'dot-center', top: '50%', left: '50%', transform: 'translate(-50%, -50%)'},
-                {class: 'dot-top-left', top: '15px', left: '15px'},
-                {class: 'dot-top-right', top: '15px', right: '15px'},
-                {class: 'dot-bottom-left', bottom: '15px', left: '15px'},
-                {class: 'dot-bottom-right', bottom: '15px', right: '15px'},
-                {class: 'dot-middle-left', top: '50%', left: '15px', transform: 'translateY(-50%)'},
-                {class: 'dot-middle-right', top: '50%', right: '15px', transform: 'translateY(-50%)'}
-            ];
-            
-            positions.forEach(pos => {
-                const dot = document.createElement('div');
-                dot.className = 'dice-dot ' + pos.class;
-                dot.style.position = 'absolute';
-                dot.style.width = '12px';
-                dot.style.height = '12px';
-                dot.style.background = '#2C3E50';
-                dot.style.borderRadius = '50%';
-                dot.style.top = pos.top;
-                dot.style.left = pos.left;
-                dot.style.right = pos.right;
-                dot.style.transform = pos.transform;
-                dot.style.display = 'none';
-                diceContainer.appendChild(dot);
-            });
-            
-            // Show dots for initial 6
-            showDiceDots(6);
-        }
-        
-        // Show dots for specific number
-        function showDiceDots(number) {
-            // Hide all dots first
-            document.querySelectorAll('.dice-dot').forEach(dot => {
-                dot.style.display = 'none';
-            });
-            
-            // Show dots for this number
-            if (diceDots[number]) {
-                diceDots[number].forEach(dotClass => {
-                    const dot = document.querySelector(`.${dotClass}`);
-                    if (dot) {
-                        dot.style.display = 'block';
-                    }
-                });
+            // Check Adexora
+            if (typeof showAdexora === 'function') {
+                adexoraLoaded = true;
+                console.log("✅ Adexora SDK is ready");
+            } else {
+                console.log("❌ Adexora SDK not loaded");
             }
         }
         
@@ -649,18 +491,16 @@
             
             if (isAudioOn) {
                 icon.className = 'fas fa-volume-up';
-                audioControl.style.background = 'var(--red)';
                 playSound(clickSound);
-                bgMusic.volume = 0.3;
+                bgMusic.volume = 0.2;
                 bgMusic.play().catch(e => console.log("Music:", e));
             } else {
                 icon.className = 'fas fa-volume-mute';
-                audioControl.style.background = '#666';
                 bgMusic.pause();
             }
         }
         
-        // Roll the dice
+        // Roll dice function
         function rollDice() {
             if (isRolling || points < 100) return;
             
@@ -670,35 +510,29 @@
             // Deduct points
             points -= 100;
             updatePoints();
-            
-            // Play dice sound
             playSound(diceSound);
             
-            // Animate dice rolling
+            // Dice rolling animation
             let rolls = 0;
             const totalRolls = 15;
             
             function animateRoll() {
                 if (rolls < totalRolls) {
-                    const randomNum = Math.floor(Math.random() * 6) + 1;
-                    diceValue.textContent = randomNum;
-                    showDiceDots(randomNum);
+                    currentDice = Math.floor(Math.random() * 6) + 1;
+                    dice.textContent = currentDice;
                     
-                    // Add shake animation
-                    diceContainer.style.transform = 'translate(-50%, -50%) rotate(-45deg)';
-                    diceContainer.style.transform += ` rotate(${Math.random() * 360}deg)`;
+                    // Add visual effect
+                    dice.style.transform = `translate(-50%, -50%) rotate(-45deg) rotate(${Math.random() * 360}deg)`;
                     
                     rolls++;
-                    setTimeout(animateRoll, 100);
+                    setTimeout(animateRoll, 80);
                 } else {
                     // Final result
-                    const finalNum = Math.floor(Math.random() * 6) + 1;
-                    currentMultiplier = finalNum;
-                    currentWin = 100 * finalNum;
+                    currentDice = Math.floor(Math.random() * 6) + 1;
+                    currentWin = currentDice * 100;
                     
-                    diceValue.textContent = finalNum;
-                    showDiceDots(finalNum);
-                    diceContainer.style.transform = 'translate(-50%, -50%) rotate(-45deg)';
+                    dice.textContent = currentDice;
+                    dice.style.transform = 'translate(-50%, -50%) rotate(-45deg)';
                     
                     // Show result
                     setTimeout(showResult, 500);
@@ -713,9 +547,8 @@
         
         // Show result
         function showResult() {
-            resultDice.textContent = diceFaces[currentMultiplier - 1];
-            multiplier.textContent = currentMultiplier + 'x';
-            winAmount.textContent = formatNumber(currentWin) + ' points';
+            resultDice.textContent = diceFaces[currentDice - 1];
+            winAmount.textContent = formatNumber(currentWin) + ' POINTS';
             
             playSound(winSound);
             resultPopup.style.display = 'flex';
@@ -729,49 +562,119 @@
             points += currentWin;
             updatePoints();
             
-            // Close popup
+            // Close result popup
             resultPopup.style.display = 'none';
             
-            // Show ads popup
-            setTimeout(() => {
-                showAds();
-            }, 300);
+            // Show ads to get bonus
+            setTimeout(showAdsForBonus, 300);
         }
         
-        // Show ads
-        function showAds() {
+        // Show ads for bonus
+        function showAdsForBonus() {
             adsPopup.style.display = 'flex';
+            closeAdsBtn.style.display = 'none';
+            adsContainer.innerHTML = '<div class="ads-loading"><i class="fas fa-spinner fa-spin"></i> Loading reward...</div>';
             
-            // Try to show RichAds
-            if (typeof TelegramAdsController !== 'undefined' && richLoaded) {
+            // Try to show ads in sequence
+            showRichAds();
+        }
+        
+        // Show RichAds (Primary)
+        function showRichAds() {
+            if (richAdsLoaded && window.TelegramAdsController) {
+                console.log("Showing RichAds...");
+                adsContainer.innerHTML = '<div class="ads-loading"><i class="fas fa-ad"></i> Loading RichAds...</div>';
+                
                 try {
-                    TelegramAdsController.showAd();
-                } catch (err) {
-                    console.log("RichAds:", err);
+                    window.TelegramAdsController.showAd();
+                    
+                    // Wait for ad completion
+                    setTimeout(() => {
+                        showBonusReward();
+                    }, 5000); // Assume ad takes 5 seconds
+                    
+                } catch (error) {
+                    console.log("RichAds error:", error);
+                    showAdexoraAds();
                 }
+            } else {
+                showAdexoraAds();
             }
         }
         
-        // Close ads
+        // Show Adexora Ads (Fallback)
+        function showAdexoraAds() {
+            if (adexoraLoaded && typeof showAdexora === 'function') {
+                console.log("Showing Adexora ads...");
+                adsContainer.innerHTML = '<div class="ads-loading"><i class="fas fa-ad"></i> Loading Adexora Ads...</div>';
+                
+                showAdexora()
+                    .then(() => {
+                        console.log("✅ Adexora ad completed");
+                        showBonusReward();
+                    })
+                    .catch(error => {
+                        console.log("❌ Adexora ad failed:", error);
+                        showMockAd();
+                    });
+            } else {
+                showMockAd();
+            }
+        }
+        
+        // Show mock ad if both fail
+        function showMockAd() {
+            console.log("Showing mock ad...");
+            adsContainer.innerHTML = `
+                <div style="text-align: center; color: #2c3e50;">
+                    <i class="fas fa-gift" style="font-size: 40px; color: #ff6b6b; margin-bottom: 10px;"></i>
+                    <div style="font-size: 16px; font-weight: 600;">🎮 GAME REWARD 🎮</div>
+                    <div style="font-size: 12px; margin-top: 8px; color: #6c757d;">Thank you for playing!</div>
+                    <div style="margin-top: 15px; padding: 10px; background: #e9ecef; border-radius: 8px; font-size: 11px;">
+                        Ad simulation - 3 seconds
+                    </div>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                showBonusReward();
+            }, 3000);
+        }
+        
+        // Show bonus reward
+        function showBonusReward() {
+            adsContainer.innerHTML = `
+                <div style="text-align: center; color: #2c3e50;">
+                    <i class="fas fa-trophy" style="font-size: 40px; color: var(--gold); margin-bottom: 10px;"></i>
+                    <div style="font-size: 24px; font-weight: 800; color: var(--success);">+50 BONUS</div>
+                    <div style="font-size: 14px; margin-top: 8px; color: #6c757d;">Points added to your balance!</div>
+                </div>
+            `;
+            
+            closeAdsBtn.style.display = 'flex';
+        }
+        
+        // Close ads and give bonus
         function closeAds() {
             playSound(clickSound);
             
-            // Add bonus
+            // Add bonus points
             points += 50;
             updatePoints();
             
+            // Close ads popup
             adsPopup.style.display = 'none';
         }
         
         // Initialize game
         function initGame() {
-            // Create dice dots
-            createDiceDots();
+            // Initialize ads
+            initializeAds();
             
             // Update points
             updatePoints();
             
-            // Set up event listeners
+            // Event listeners
             rollBtn.addEventListener('click', rollDice);
             claimBtn.addEventListener('click', claimPrize);
             closeAdsBtn.addEventListener('click', closeAds);
@@ -779,14 +682,17 @@
             
             // Close popups on overlay click
             resultPopup.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.style.display = 'none';
-                }
+                if (e.target === this) this.style.display = 'none';
             });
             
             adsPopup.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeAds();
+                if (e.target === this) closeAds();
+            });
+            
+            // Keyboard support
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' && !isRolling && points >= 100) {
+                    rollDice();
                 }
             });
             
@@ -794,12 +700,13 @@
             diceSound.volume = 0.6;
             winSound.volume = 0.7;
             clickSound.volume = 0.5;
-            bgMusic.volume = 0.3;
+            bgMusic.volume = 0.2;
             
             // Start background music
             bgMusic.play().catch(e => console.log("Music autoplay:", e));
             
-            console.log("🎲 Ludo Dice Roll initialized");
+            console.log("🎲 Ludo Dice Game initialized");
+            console.log("📱 Telegram WebApp:", tg ? "Available" : "Not available");
         }
         
         // Start game
