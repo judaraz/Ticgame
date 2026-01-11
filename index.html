@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ludo Spin & Win</title>
+    <title>Ludo Dice Roll</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- RichPartners SDK -->
@@ -15,22 +15,17 @@
             appId: "5572",
         });
         let richLoaded = true;
-        console.log("RichAds initialized for Ludo Spin");
+        console.log("RichAds initialized");
     </script>
 
     <style>
         :root {
-            --red: #FF5252;
-            --green: #4CAF50;
-            --yellow: #FFEB3B;
-            --blue: #2196F3;
-            --ludo-red: #E53935;
-            --ludo-green: #43A047;
-            --ludo-yellow: #FDD835;
-            --ludo-blue: #1E88E5;
-            --dark: #2C3E50;
-            --light: #ECF0F1;
+            --red: #E53935;
+            --green: #43A047;
+            --yellow: #FDD835;
+            --blue: #1E88E5;
             --gold: #FFD700;
+            --dark-blue: #2C3E50;
         }
         
         * {
@@ -68,10 +63,10 @@
             text-align: center;
             padding: 20px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 25px;
+            border-radius: 20px;
             backdrop-filter: blur(10px);
             border: 2px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
         }
         
         .title {
@@ -82,42 +77,22 @@
             background-clip: text;
             color: transparent;
             margin-bottom: 5px;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
         
         .subtitle {
             font-size: 14px;
             color: rgba(255, 255, 255, 0.9);
-            opacity: 0.9;
         }
         
         /* Points Display */
         .points-display {
             width: 100%;
-            background: linear-gradient(135deg, #3498db, #2980b9);
+            background: linear-gradient(135deg, var(--dark-blue), #34495e);
             padding: 20px;
             border-radius: 20px;
             text-align: center;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .points-display::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transform: translateX(-100%);
-            animation: shimmer 2s infinite;
-        }
-        
-        @keyframes shimmer {
-            100% { transform: translateX(100%); }
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border: 3px solid rgba(255, 215, 0, 0.3);
         }
         
         .points-label {
@@ -129,32 +104,60 @@
         .points-value {
             font-size: 48px;
             font-weight: 900;
-            color: #FFD700;
+            color: var(--gold);
             text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-            line-height: 1;
         }
         
-        /* Ludo Wheel Section */
-        .ludo-wheel-section {
-            width: 320px;
-            height: 320px;
-            position: relative;
-            margin: 20px auto;
-        }
-        
+        /* Ludo Board */
         .ludo-board {
-            width: 100%;
-            height: 100%;
-            position: relative;
+            width: 300px;
+            height: 300px;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-            overflow: hidden;
-            border: 8px solid #2C3E50;
+            border: 8px solid var(--dark-blue);
+            position: relative;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
             transform: rotate(45deg);
+            margin: 20px 0;
         }
         
-        /* Ludo board pattern */
+        /* Quadrants */
+        .quadrant {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            border-radius: 20px;
+        }
+        
+        .red-quadrant {
+            top: 0;
+            left: 0;
+            background: var(--red);
+            border-bottom-right-radius: 100%;
+        }
+        
+        .green-quadrant {
+            top: 0;
+            right: 0;
+            background: var(--green);
+            border-bottom-left-radius: 100%;
+        }
+        
+        .yellow-quadrant {
+            bottom: 0;
+            left: 0;
+            background: var(--yellow);
+            border-top-right-radius: 100%;
+        }
+        
+        .blue-quadrant {
+            bottom: 0;
+            right: 0;
+            background: var(--blue);
+            border-top-left-radius: 100%;
+        }
+        
+        /* Board Center */
         .board-center {
             position: absolute;
             width: 40%;
@@ -163,117 +166,60 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            border: 4px solid #2C3E50;
+            border: 4px solid var(--dark-blue);
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            font-weight: 800;
-            color: #2C3E50;
         }
         
         .board-center span {
             transform: rotate(-45deg);
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--dark-blue);
         }
         
-        /* Ludo quadrants */
-        .quadrant {
-            position: absolute;
-            width: 50%;
-            height: 50%;
-        }
-        
-        .quadrant-1 {
-            top: 0;
-            left: 0;
-            background: var(--ludo-red);
-            border-bottom-right-radius: 100%;
-        }
-        
-        .quadrant-2 {
-            top: 0;
-            right: 0;
-            background: var(--ludo-green);
-            border-bottom-left-radius: 100%;
-        }
-        
-        .quadrant-3 {
-            bottom: 0;
-            left: 0;
-            background: var(--ludo-yellow);
-            border-top-right-radius: 100%;
-        }
-        
-        .quadrant-4 {
-            bottom: 0;
-            right: 0;
-            background: var(--ludo-blue);
-            border-top-left-radius: 100%;
-        }
-        
-        /* Dice positions */
-        .dice-position {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background: white;
-            border-radius: 10px;
-            border: 4px solid #2C3E50;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            font-weight: 900;
-            color: #2C3E50;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            transform: rotate(-45deg);
-        }
-        
-        .dice-1 { top: 20%; left: 20%; }
-        .dice-2 { top: 20%; right: 20%; }
-        .dice-3 { bottom: 20%; left: 20%; }
-        .dice-4 { bottom: 20%; right: 20%; }
-        
-        /* Spinning dice */
-        .spinning-dice {
+        /* Dice Container */
+        .dice-container {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) rotate(-45deg);
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, #FFD700, #FF9800);
+            background: white;
             border-radius: 15px;
-            border: 5px solid #2C3E50;
+            border: 5px solid var(--dark-blue);
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+        
+        .dice-value {
             font-size: 36px;
             font-weight: 900;
-            color: #2C3E50;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-            z-index: 10;
-            transition: transform 0.3s;
+            color: var(--dark-blue);
         }
         
-        /* Pointer */
-        .pointer {
+        /* Dice Dots */
+        .dice-dot {
             position: absolute;
-            top: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 60px;
-            z-index: 20;
-            filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
+            width: 12px;
+            height: 12px;
+            background: var(--dark-blue);
+            border-radius: 50%;
         }
         
-        .pointer svg {
-            width: 100%;
-            height: 100%;
-            fill: #E53935;
-        }
+        .dot-center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .dot-top-left { top: 15px; left: 15px; }
+        .dot-top-right { top: 15px; right: 15px; }
+        .dot-bottom-left { bottom: 15px; left: 15px; }
+        .dot-bottom-right { bottom: 15px; right: 15px; }
+        .dot-middle-left { top: 50%; left: 15px; transform: translateY(-50%); }
+        .dot-middle-right { top: 50%; right: 15px; transform: translateY(-50%); }
         
         /* Controls */
         .controls {
@@ -281,7 +227,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 25px;
+            gap: 20px;
             background: rgba(255, 255, 255, 0.1);
             padding: 25px;
             border-radius: 20px;
@@ -289,7 +235,7 @@
             border: 2px solid rgba(255, 255, 255, 0.2);
         }
         
-        .spin-btn {
+        .roll-btn {
             background: linear-gradient(135deg, #FF5722, #FF9800);
             color: white;
             border: none;
@@ -300,46 +246,24 @@
             cursor: pointer;
             transition: all 0.3s;
             box-shadow: 0 10px 25px rgba(255, 87, 34, 0.4);
-            letter-spacing: 1px;
             display: flex;
             align-items: center;
             gap: 15px;
-            position: relative;
-            overflow: hidden;
         }
         
-        .spin-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: 0.5s;
-        }
-        
-        .spin-btn:hover:not(:disabled)::before {
-            left: 100%;
-        }
-        
-        .spin-btn:hover:not(:disabled) {
+        .roll-btn:hover:not(:disabled) {
             transform: translateY(-5px);
             box-shadow: 0 15px 30px rgba(255, 87, 34, 0.6);
         }
         
-        .spin-btn:active:not(:disabled) {
-            transform: translateY(0);
-        }
-        
-        .spin-btn:disabled {
+        .roll-btn:disabled {
             background: linear-gradient(135deg, #666, #444);
             cursor: not-allowed;
             transform: none;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         
-        .spin-cost {
+        .roll-cost {
             color: rgba(255, 255, 255, 0.9);
             font-size: 16px;
             background: rgba(0, 0, 0, 0.2);
@@ -364,74 +288,45 @@
         }
         
         .popup {
-            background: linear-gradient(135deg, #2C3E50, #4A6491);
+            background: linear-gradient(135deg, var(--dark-blue), #4A6491);
             border-radius: 25px;
             width: 100%;
             max-width: 400px;
-            padding: 40px 25px;
+            padding: 30px 20px;
             text-align: center;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
             border: 3px solid rgba(255, 215, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: popIn 0.3s ease-out;
         }
         
         @keyframes popIn {
-            0% { transform: scale(0.5) rotate(-10deg); opacity: 0; }
-            100% { transform: scale(1) rotate(0); opacity: 1; }
-        }
-        
-        .popup::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, #E53935, #43A047, #FDD835, #1E88E5);
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
         
         .popup-title {
             font-size: 28px;
-            color: #FFD700;
+            color: var(--gold);
             margin-bottom: 20px;
             font-weight: 800;
         }
         
-        .dice-result {
+        .result-dice {
             font-size: 80px;
-            font-weight: 900;
-            background: linear-gradient(45deg, #E53935, #43A047, #FDD835, #1E88E5);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
             margin: 20px 0;
-            text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
-            animation: diceRoll 0.5s ease-out;
+            animation: diceBounce 0.5s;
         }
         
-        @keyframes diceRoll {
-            0% { transform: scale(0) rotate(-180deg); }
-            70% { transform: scale(1.2) rotate(20deg); }
-            100% { transform: scale(1) rotate(0); }
+        @keyframes diceBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
         }
         
-        .multiplier-display {
+        .multiplier {
             font-size: 60px;
             font-weight: 900;
-            background: linear-gradient(45deg, #FFD700, #FF9800);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            color: var(--gold);
             margin: 20px 0;
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
         }
         
         .win-amount {
@@ -439,13 +334,6 @@
             font-weight: 800;
             color: #4CAF50;
             margin-bottom: 30px;
-            text-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
-        }
-        
-        .popup-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
         }
         
         .popup-btn {
@@ -459,6 +347,7 @@
             cursor: pointer;
             transition: all 0.3s;
             box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+            width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -482,10 +371,9 @@
         }
         
         .instructions h3 {
-            color: #FFD700;
+            color: var(--gold);
             margin-bottom: 15px;
             font-size: 18px;
-            font-weight: 700;
         }
         
         .instructions ul {
@@ -495,10 +383,10 @@
         
         .instructions li {
             margin-bottom: 10px;
-            padding-left: 25px;
-            position: relative;
             color: rgba(255, 255, 255, 0.9);
             font-size: 14px;
+            padding-left: 25px;
+            position: relative;
         }
         
         .instructions li::before {
@@ -512,7 +400,7 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: #E53935;
+            background: var(--red);
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -524,45 +412,22 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             border: 2px solid rgba(255, 255, 255, 0.3);
             z-index: 100;
-            transition: all 0.3s;
         }
-        
-        .audio-control:hover {
-            transform: scale(1.1);
-        }
-        
-        /* Dice Animation */
-        @keyframes diceSpin {
-            0% { transform: translate(-50%, -50%) rotate(-45deg) rotateX(0) rotateY(0); }
-            25% { transform: translate(-50%, -50%) rotate(-45deg) rotateX(180deg) rotateY(0); }
-            50% { transform: translate(-50%, -50%) rotate(-45deg) rotateX(180deg) rotateY(180deg); }
-            75% { transform: translate(-50%, -50%) rotate(-45deg) rotateX(0) rotateY(180deg); }
-            100% { transform: translate(-50%, -50%) rotate(-45deg) rotateX(0) rotateY(0); }
-        }
-        
-        .spinning {
-            animation: diceSpin 0.1s linear infinite;
-        }
-        
-        /* Ludo Pieces */
-        .ludo-piece {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-        }
-        
-        .piece-red { background: #E53935; top: 15%; left: 15%; }
-        .piece-green { background: #43A047; top: 15%; right: 15%; }
-        .piece-yellow { background: #FDD835; bottom: 15%; left: 15%; }
-        .piece-blue { background: #1E88E5; bottom: 15%; right: 15%; }
         
         /* Responsive */
         @media (max-width: 480px) {
-            .ludo-wheel-section {
-                width: 280px;
-                height: 280px;
+            .ludo-board {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .dice-container {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .dice-value {
+                font-size: 30px;
             }
             
             .title {
@@ -573,41 +438,18 @@
                 font-size: 36px;
             }
             
-            .spin-btn {
+            .roll-btn {
                 padding: 16px 40px;
                 font-size: 20px;
             }
-            
-            .multiplier-display {
-                font-size: 50px;
-            }
-            
-            .win-amount {
-                font-size: 28px;
-            }
         }
-        
-        /* Colorful dots on dice */
-        .dice-dot {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background: #2C3E50;
-            border-radius: 50%;
-        }
-        
-        .dot-1 { top: 15px; left: 15px; }
-        .dot-2 { top: 15px; right: 15px; }
-        .dot-3 { bottom: 15px; left: 15px; }
-        .dot-4 { bottom: 15px; right: 15px; }
-        .dot-5 { top: 50%; left: 50%; transform: translate(-50%, -50%); }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1 class="title">🎲 LUDO SPIN & WIN 🎲</h1>
-            <p class="subtitle">Roll the dice on the Ludo board and multiply your points!</p>
+            <h1 class="title">🎲 LUDO DICE ROLL 🎲</h1>
+            <p class="subtitle">Roll the dice and multiply your points!</p>
         </div>
         
         <div class="points-display">
@@ -615,79 +457,50 @@
             <div class="points-value" id="pointsValue">1,000</div>
         </div>
         
-        <div class="ludo-wheel-section">
-            <div class="pointer">
-                <svg viewBox="0 0 100 100">
-                    <polygon points="50,0 65,70 50,100 35,70" />
-                </svg>
+        <div class="ludo-board">
+            <div class="quadrant red-quadrant"></div>
+            <div class="quadrant green-quadrant"></div>
+            <div class="quadrant yellow-quadrant"></div>
+            <div class="quadrant blue-quadrant"></div>
+            
+            <div class="board-center">
+                <span>LUDO</span>
             </div>
             
-            <div class="ludo-board">
-                <!-- Ludo quadrants -->
-                <div class="quadrant quadrant-1"></div>
-                <div class="quadrant quadrant-2"></div>
-                <div class="quadrant quadrant-3"></div>
-                <div class="quadrant quadrant-4"></div>
-                
-                <!-- Board center -->
-                <div class="board-center">
-                    <span>LUDO</span>
-                </div>
-                
-                <!-- Dice positions -->
-                <div class="dice-position dice-1">1x</div>
-                <div class="dice-position dice-2">2x</div>
-                <div class="dice-position dice-3">3x</div>
-                <div class="dice-position dice-4">6x</div>
-                
-                <!-- Ludo pieces -->
-                <div class="ludo-piece piece-red"></div>
-                <div class="ludo-piece piece-green"></div>
-                <div class="ludo-piece piece-yellow"></div>
-                <div class="ludo-piece piece-blue"></div>
-                
-                <!-- Spinning dice -->
-                <div class="spinning-dice" id="spinningDice">
-                    <span id="diceValue">6</span>
-                    <div class="dice-dot dot-1"></div>
-                    <div class="dice-dot dot-2"></div>
-                    <div class="dice-dot dot-3"></div>
-                    <div class="dice-dot dot-4"></div>
-                    <div class="dice-dot dot-5"></div>
-                </div>
+            <div class="dice-container" id="diceContainer">
+                <div class="dice-value" id="diceValue">6</div>
+                <!-- Dots will be added by JavaScript -->
             </div>
         </div>
         
         <div class="controls">
-            <button class="spin-btn" id="spinBtn">
-                <i class="fas fa-dice"></i> ROLL THE DICE
+            <button class="roll-btn" id="rollBtn">
+                <i class="fas fa-dice"></i> ROLL DICE (100 points)
             </button>
-            <div class="spin-cost">Cost: 100 points | Win: 1x - 6x multiplier</div>
+            <div class="roll-cost">Win 1x to 6x multiplier</div>
         </div>
         
         <div class="instructions">
             <h3>🎯 HOW TO PLAY:</h3>
             <ul>
-                <li>Click "ROLL THE DICE" to spin the Ludo dice (costs 100 points)</li>
-                <li>Dice will land on a number from 1 to 6</li>
-                <li>Your winnings = 100 points × dice number</li>
-                <li>Watch ad after winning for bonus points</li>
-                <li>Continue rolling to increase your points!</li>
+                <li>Click ROLL DICE to roll (costs 100 points)</li>
+                <li>Get a number from 1 to 6</li>
+                <li>Win = 100 × dice number</li>
+                <li>Watch ad for bonus points</li>
+                <li>Roll again to earn more!</li>
             </ul>
         </div>
         
         <!-- Result Popup -->
         <div class="popup-overlay" id="resultPopup">
             <div class="popup">
-                <h2 class="popup-title">🎉 DICE ROLLED! 🎉</h2>
-                <div class="dice-result" id="diceResult">⚅</div>
-                <div class="multiplier-display" id="multiplierValue">6x</div>
+                <h2 class="popup-title">🎉 YOU ROLLED!</h2>
+                <div class="result-dice" id="resultDice">⚅</div>
+                <div class="multiplier" id="multiplier">6x</div>
                 <div class="win-amount" id="winAmount">600 points</div>
-                <div class="popup-buttons">
-                    <button class="popup-btn" id="claimBtn">
-                        <i class="fas fa-gem"></i> CLAIM PRIZE
-                    </button>
-                </div>
+                <button class="popup-btn" id="claimBtn">
+                    <i class="fas fa-gift"></i> CLAIM PRIZE
+                </button>
             </div>
         </div>
         
@@ -695,19 +508,15 @@
         <div class="popup-overlay" id="adsPopup">
             <div class="popup">
                 <h2 class="popup-title">🎁 BONUS REWARD</h2>
-                <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 20px; font-size: 16px;">
-                    Watch this short ad to get <strong>+50 bonus points</strong> for your next roll!
+                <p style="color: rgba(255, 255, 255, 0.9); margin: 20px 0;">
+                    Thanks for playing! You've earned bonus points!
                 </p>
-                
-                <div style="min-height: 150px; width: 100%; background: rgba(0, 0, 0, 0.3); border-radius: 15px; margin: 20px 0; display: flex; align-items: center; justify-content: center; border: 2px dashed rgba(255, 255, 255, 0.2);">
-                    <div style="color: rgba(255, 255, 255, 0.7); text-align: center; padding: 20px;">
-                        <i class="fas fa-ad" style="font-size: 40px; margin-bottom: 10px; display: block; color: #FFD700;"></i>
-                        <p>Advertisement Loading...</p>
-                    </div>
+                <div style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 15px; margin: 20px 0;">
+                    <i class="fas fa-coins" style="font-size: 40px; color: var(--gold); margin-bottom: 10px; display: block;"></i>
+                    <div style="font-size: 24px; color: var(--gold);">+50 BONUS POINTS</div>
                 </div>
-                
-                <button class="popup-btn" id="closeAdsBtn" style="background: linear-gradient(135deg, #E53935, #D32F2F);">
-                    <i class="fas fa-check-circle"></i> CONTINUE
+                <button class="popup-btn" id="closeAdsBtn" style="background: linear-gradient(135deg, var(--red), #D32F2F);">
+                    <i class="fas fa-check"></i> CONTINUE
                 </button>
             </div>
         </div>
@@ -715,38 +524,30 @@
         <div class="audio-control" id="audioControl">
             <i class="fas fa-volume-up"></i>
         </div>
-        
-        <!-- Audio elements -->
-        <audio id="diceSound" preload="auto">
-            <source src="https://assets.mixkit.co/sfx/preview/mixkit-dice-roll-1978.mp3" type="audio/mpeg">
-        </audio>
-        <audio id="winSound" preload="auto">
-            <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
-        </audio>
-        <audio id="clickSound" preload="auto">
-            <source src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" type="audio/mpeg">
-        </audio>
-        <audio id="ludoMusic" loop preload="auto">
-            <source src="https://assets.mixkit.co/music/preview/mixkit-game-show-suspense-waiting-667.mp3" type="audio/mpeg">
-        </audio>
     </div>
+
+    <!-- Audio Elements -->
+    <audio id="diceSound" src="https://assets.mixkit.co/sfx/preview/mixkit-dice-roll-1978.mp3" preload="auto"></audio>
+    <audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" preload="auto"></audio>
+    <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" preload="auto"></audio>
+    <audio id="bgMusic" src="https://assets.mixkit.co/music/preview/mixkit-game-show-suspense-waiting-667.mp3" preload="auto" loop></audio>
 
     <script>
         // Game Variables
         let points = 1000;
-        let isSpinning = false;
+        let isRolling = false;
         let isAudioOn = true;
-        let currentWinAmount = 0;
+        let currentWin = 0;
         let currentMultiplier = 1;
         
         // DOM Elements
-        const spinBtn = document.getElementById('spinBtn');
+        const rollBtn = document.getElementById('rollBtn');
         const pointsValue = document.getElementById('pointsValue');
         const diceValue = document.getElementById('diceValue');
-        const spinningDice = document.getElementById('spinningDice');
+        const diceContainer = document.getElementById('diceContainer');
         const resultPopup = document.getElementById('resultPopup');
-        const diceResult = document.getElementById('diceResult');
-        const multiplierValue = document.getElementById('multiplierValue');
+        const resultDice = document.getElementById('resultDice');
+        const multiplier = document.getElementById('multiplier');
         const winAmount = document.getElementById('winAmount');
         const claimBtn = document.getElementById('claimBtn');
         const adsPopup = document.getElementById('adsPopup');
@@ -757,34 +558,88 @@
         const diceSound = document.getElementById('diceSound');
         const winSound = document.getElementById('winSound');
         const clickSound = document.getElementById('clickSound');
-        const ludoMusic = document.getElementById('ludoMusic');
+        const bgMusic = document.getElementById('bgMusic');
         
-        // Dice faces (Unicode dice)
+        // Dice faces and dots configuration
         const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-        const diceNumbers = [1, 2, 3, 4, 5, 6];
+        const diceDots = {
+            1: ['dot-center'],
+            2: ['dot-top-left', 'dot-bottom-right'],
+            3: ['dot-top-left', 'dot-center', 'dot-bottom-right'],
+            4: ['dot-top-left', 'dot-top-right', 'dot-bottom-left', 'dot-bottom-right'],
+            5: ['dot-top-left', 'dot-top-right', 'dot-center', 'dot-bottom-left', 'dot-bottom-right'],
+            6: ['dot-top-left', 'dot-top-right', 'dot-middle-left', 'dot-middle-right', 'dot-bottom-left', 'dot-bottom-right']
+        };
         
-        // Format numbers with commas
+        // Initialize dice dots
+        function createDiceDots() {
+            // Clear existing dots
+            document.querySelectorAll('.dice-dot').forEach(dot => dot.remove());
+            
+            // Create all possible dot positions
+            const positions = [
+                {class: 'dot-center', top: '50%', left: '50%', transform: 'translate(-50%, -50%)'},
+                {class: 'dot-top-left', top: '15px', left: '15px'},
+                {class: 'dot-top-right', top: '15px', right: '15px'},
+                {class: 'dot-bottom-left', bottom: '15px', left: '15px'},
+                {class: 'dot-bottom-right', bottom: '15px', right: '15px'},
+                {class: 'dot-middle-left', top: '50%', left: '15px', transform: 'translateY(-50%)'},
+                {class: 'dot-middle-right', top: '50%', right: '15px', transform: 'translateY(-50%)'}
+            ];
+            
+            positions.forEach(pos => {
+                const dot = document.createElement('div');
+                dot.className = 'dice-dot ' + pos.class;
+                dot.style.position = 'absolute';
+                dot.style.width = '12px';
+                dot.style.height = '12px';
+                dot.style.background = '#2C3E50';
+                dot.style.borderRadius = '50%';
+                dot.style.top = pos.top;
+                dot.style.left = pos.left;
+                dot.style.right = pos.right;
+                dot.style.transform = pos.transform;
+                dot.style.display = 'none';
+                diceContainer.appendChild(dot);
+            });
+            
+            // Show dots for initial 6
+            showDiceDots(6);
+        }
+        
+        // Show dots for specific number
+        function showDiceDots(number) {
+            // Hide all dots first
+            document.querySelectorAll('.dice-dot').forEach(dot => {
+                dot.style.display = 'none';
+            });
+            
+            // Show dots for this number
+            if (diceDots[number]) {
+                diceDots[number].forEach(dotClass => {
+                    const dot = document.querySelector(`.${dotClass}`);
+                    if (dot) {
+                        dot.style.display = 'block';
+                    }
+                });
+            }
+        }
+        
+        // Format numbers
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
         
         // Update points display
-        function updatePointsDisplay() {
+        function updatePoints() {
             pointsValue.textContent = formatNumber(points);
-            
-            // Add animation
-            pointsValue.style.transform = 'scale(1.1)';
-            setTimeout(() => {
-                pointsValue.style.transform = 'scale(1)';
-            }, 200);
         }
         
-        // Play sound effect
+        // Play sound
         function playSound(sound) {
             if (!isAudioOn) return;
-            
             sound.currentTime = 0;
-            sound.play().catch(e => console.log("Audio error:", e));
+            sound.play().catch(e => console.log("Audio:", e));
         }
         
         // Toggle audio
@@ -794,161 +649,75 @@
             
             if (isAudioOn) {
                 icon.className = 'fas fa-volume-up';
-                audioControl.style.background = '#E53935';
+                audioControl.style.background = 'var(--red)';
                 playSound(clickSound);
-                ludoMusic.volume = 0.3;
-                ludoMusic.play().catch(e => console.log("Music error:", e));
+                bgMusic.volume = 0.3;
+                bgMusic.play().catch(e => console.log("Music:", e));
             } else {
                 icon.className = 'fas fa-volume-mute';
                 audioControl.style.background = '#666';
-                ludoMusic.pause();
+                bgMusic.pause();
             }
-        }
-        
-        // Get dice face from number
-        function getDiceFace(number) {
-            return diceFaces[number - 1];
-        }
-        
-        // Update dice dots based on number
-        function updateDiceDots(number) {
-            const dots = document.querySelectorAll('.dice-dot');
-            dots.forEach(dot => dot.style.display = 'none');
-            
-            switch(number) {
-                case 1:
-                    document.querySelector('.dot-5').style.display = 'block';
-                    break;
-                case 2:
-                    document.querySelector('.dot-1').style.display = 'block';
-                    document.querySelector('.dot-4').style.display = 'block';
-                    break;
-                case 3:
-                    document.querySelector('.dot-1').style.display = 'block';
-                    document.querySelector('.dot-4').style.display = 'block';
-                    document.querySelector('.dot-5').style.display = 'block';
-                    break;
-                case 4:
-                    document.querySelector('.dot-1').style.display = 'block';
-                    document.querySelector('.dot-2').style.display = 'block';
-                    document.querySelector('.dot-3').style.display = 'block';
-                    document.querySelector('.dot-4').style.display = 'block';
-                    break;
-                case 5:
-                    document.querySelector('.dot-1').style.display = 'block';
-                    document.querySelector('.dot-2').style.display = 'block';
-                    document.querySelector('.dot-3').style.display = 'block';
-                    document.querySelector('.dot-4').style.display = 'block';
-                    document.querySelector('.dot-5').style.display = 'block';
-                    break;
-                case 6:
-                    document.querySelector('.dot-1').style.display = 'block';
-                    document.querySelector('.dot-2').style.display = 'block';
-                    document.querySelector('.dot-3').style.display = 'block';
-                    document.querySelector('.dot-4').style.display = 'block';
-                    document.querySelectorAll('.dice-dot')[4].style.display = 'block';
-                    document.querySelectorAll('.dice-dot')[5]?.style.display = 'block' || 
-                    createExtraDot();
-                    break;
-            }
-        }
-        
-        // Create extra dot for 6
-        function createExtraDot() {
-            const dot = document.createElement('div');
-            dot.className = 'dice-dot dot-6';
-            dot.style.position = 'absolute';
-            dot.style.width = '10px';
-            dot.style.height = '10px';
-            dot.style.background = '#2C3E50';
-            dot.style.borderRadius = '50%';
-            dot.style.top = '50%';
-            dot.style.left = '15px';
-            dot.style.transform = 'translateY(-50%)';
-            
-            const dot2 = document.createElement('div');
-            dot2.className = 'dice-dot dot-7';
-            dot2.style.position = 'absolute';
-            dot2.style.width = '10px';
-            dot2.style.height = '10px';
-            dot2.style.background = '#2C3E50';
-            dot2.style.borderRadius = '50%';
-            dot2.style.top = '50%';
-            dot2.style.right = '15px';
-            dot2.style.transform = 'translateY(-50%)';
-            
-            spinningDice.appendChild(dot);
-            spinningDice.appendChild(dot2);
         }
         
         // Roll the dice
         function rollDice() {
-            if (isSpinning || points < 100) return;
+            if (isRolling || points < 100) return;
             
-            playSound(clickSound);
-            isSpinning = true;
-            spinBtn.disabled = true;
+            isRolling = true;
+            rollBtn.disabled = true;
             
-            // Deduct roll cost
+            // Deduct points
             points -= 100;
-            updatePointsDisplay();
+            updatePoints();
             
-            // Start dice sound
+            // Play dice sound
             playSound(diceSound);
             
-            // Add spinning animation
-            spinningDice.classList.add('spinning');
-            
-            // Random roll duration (2-3 seconds)
-            const rollDuration = 2000 + Math.random() * 1000;
-            
-            // Random dice result (1-6)
-            const diceResultIndex = Math.floor(Math.random() * 6);
-            currentMultiplier = diceNumbers[diceResultIndex];
-            currentWinAmount = 100 * currentMultiplier;
-            
             // Animate dice rolling
-            let rollCount = 0;
-            const maxRolls = Math.floor(rollDuration / 100);
+            let rolls = 0;
+            const totalRolls = 15;
             
             function animateRoll() {
-                if (rollCount < maxRolls) {
-                    const randomFace = Math.floor(Math.random() * 6);
-                    diceValue.textContent = diceNumbers[randomFace];
-                    updateDiceDots(diceNumbers[randomFace]);
-                    rollCount++;
+                if (rolls < totalRolls) {
+                    const randomNum = Math.floor(Math.random() * 6) + 1;
+                    diceValue.textContent = randomNum;
+                    showDiceDots(randomNum);
+                    
+                    // Add shake animation
+                    diceContainer.style.transform = 'translate(-50%, -50%) rotate(-45deg)';
+                    diceContainer.style.transform += ` rotate(${Math.random() * 360}deg)`;
+                    
+                    rolls++;
                     setTimeout(animateRoll, 100);
                 } else {
-                    // Roll complete
-                    diceSound.pause();
-                    diceSound.currentTime = 0;
-                    spinningDice.classList.remove('spinning');
-                    diceValue.textContent = currentMultiplier;
-                    updateDiceDots(currentMultiplier);
+                    // Final result
+                    const finalNum = Math.floor(Math.random() * 6) + 1;
+                    currentMultiplier = finalNum;
+                    currentWin = 100 * finalNum;
                     
-                    // Show result popup
-                    setTimeout(() => {
-                        showResultPopup(currentMultiplier, currentWinAmount);
-                    }, 500);
+                    diceValue.textContent = finalNum;
+                    showDiceDots(finalNum);
+                    diceContainer.style.transform = 'translate(-50%, -50%) rotate(-45deg)';
                     
-                    isSpinning = false;
-                    spinBtn.disabled = false;
+                    // Show result
+                    setTimeout(showResult, 500);
+                    
+                    isRolling = false;
+                    rollBtn.disabled = false;
                 }
             }
             
             animateRoll();
         }
         
-        // Show result popup
-        function showResultPopup(multiplier, winnings) {
-            diceResult.textContent = getDiceFace(multiplier);
-            multiplierValue.textContent = `${multiplier}x`;
-            winAmount.textContent = `${formatNumber(winnings)} points`;
+        // Show result
+        function showResult() {
+            resultDice.textContent = diceFaces[currentMultiplier - 1];
+            multiplier.textContent = currentMultiplier + 'x';
+            winAmount.textContent = formatNumber(currentWin) + ' points';
             
-            // Play win sound
             playSound(winSound);
-            
-            // Show popup with animation
             resultPopup.style.display = 'flex';
         }
         
@@ -956,89 +725,85 @@
         function claimPrize() {
             playSound(clickSound);
             
-            // Add winnings to points
-            points += currentWinAmount;
-            updatePointsDisplay();
+            // Add winnings
+            points += currentWin;
+            updatePoints();
             
-            // Close result popup
+            // Close popup
             resultPopup.style.display = 'none';
             
             // Show ads popup
             setTimeout(() => {
-                showAdsPopup();
+                showAds();
             }, 300);
         }
         
-        // Show ads popup
-        function showAdsPopup() {
+        // Show ads
+        function showAds() {
             adsPopup.style.display = 'flex';
             
             // Try to show RichAds
             if (typeof TelegramAdsController !== 'undefined' && richLoaded) {
                 try {
-                    // Show ad
                     TelegramAdsController.showAd();
                 } catch (err) {
-                    console.log("RichAds error:", err);
-                    // Continue anyway
+                    console.log("RichAds:", err);
                 }
             }
         }
         
-        // Close ads and give bonus
+        // Close ads
         function closeAds() {
             playSound(clickSound);
             
-            // Give bonus points
+            // Add bonus
             points += 50;
-            updatePointsDisplay();
+            updatePoints();
             
-            // Hide ads popup
             adsPopup.style.display = 'none';
         }
         
-        // Initialize the game
+        // Initialize game
         function initGame() {
-            // Set initial dice
-            updateDiceDots(6);
+            // Create dice dots
+            createDiceDots();
             
-            // Update points display
-            updatePointsDisplay();
+            // Update points
+            updatePoints();
             
-            // Event listeners
-            spinBtn.addEventListener('click', rollDice);
+            // Set up event listeners
+            rollBtn.addEventListener('click', rollDice);
             claimBtn.addEventListener('click', claimPrize);
             closeAdsBtn.addEventListener('click', closeAds);
             audioControl.addEventListener('click', toggleAudio);
             
-            // Close popup when clicking outside
-            resultPopup.addEventListener('click', (e) => {
-                if (e.target === resultPopup) {
-                    resultPopup.style.display = 'none';
+            // Close popups on overlay click
+            resultPopup.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
                 }
             });
             
-            adsPopup.addEventListener('click', (e) => {
-                if (e.target === adsPopup) {
+            adsPopup.addEventListener('click', function(e) {
+                if (e.target === this) {
                     closeAds();
                 }
             });
             
             // Audio setup
-            diceSound.volume = 0.5;
-            winSound.volume = 0.6;
+            diceSound.volume = 0.6;
+            winSound.volume = 0.7;
             clickSound.volume = 0.5;
-            ludoMusic.volume = 0.3;
+            bgMusic.volume = 0.3;
             
             // Start background music
-            ludoMusic.play().catch(e => console.log("Music autoplay blocked"));
+            bgMusic.play().catch(e => console.log("Music autoplay:", e));
             
-            console.log("🎲 Ludo Spin & Win initialized");
-            console.log("🔧 RichAds loaded:", richLoaded);
+            console.log("🎲 Ludo Dice Roll initialized");
         }
         
-        // Start the game when page loads
-        window.addEventListener('load', initGame);
+        // Start game
+        window.addEventListener('DOMContentLoaded', initGame);
     </script>
 </body>
 </html>
