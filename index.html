@@ -2,86 +2,144 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Watch & Earn Ads</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CashReward App</title>
 
-<!-- Telegram WebApp -->
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<!-- ================= RICHPARTNERS SDK ================= -->
+<!-- RichPartners SDK -->
 <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
 <script>
 window.TelegramAdsController = new TelegramAdsController();
-
 window.TelegramAdsController.initialize({
   pubId: "956231",
   appId: "5572",
-  push: true,
-  interstitial: true
 });
-
-let richReady = false;
-
-// FORCE AD PRELOAD
-window.TelegramAdsController.onReady(function () {
-  richReady = true;
-});
+let richLoaded = true;
 </script>
 
-<!-- YOUR EXISTING CSS FILES (UNCHANGED) -->
-<!-- <link rel="stylesheet" href="style.css"> -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
 
+<style>
+body { font-family: 'Poppins', sans-serif; background-color: #1a1a1a; color: #ffffff; }
+.main-bg { background-color: #1a1a1a; }
+.card-bg { background-color: #2c2c2c; }
+.input-field { background-color: #3f3f46; border: 1px solid #52525b; }
+.accent-yellow { color: #facc15; }
+.accent-yellow-bg { background-color: #facc15; }
+.btn-accent { background-color: #facc15; color: #1a1a1a; font-weight: bold; border-radius: 9999px; }
+.btn-accent:active { transform: scale(0.95); }
+.main-page { display: none; }
+.main-page.active { display: flex; }
+.sub-page { display: none; }
+.sub-page.active { display: block; }
+.bottom-nav { background: #2c2c2c; border-top: 1px solid #444; }
+</style>
 </head>
-<body>
 
-<!-- =================
-     YOUR EXISTING HTML
-     NOTHING MODIFIED
-================== -->
+<body class="max-w-md mx-auto">
 
-<!-- ================= AD LOGIC ONLY ================= -->
-<script>
+<!-- Loader -->
+<div id="loader" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+  <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-yellow-400"></div>
+</div>
+
+<!-- Auth Section -->
+<div id="auth-section" class="min-h-screen p-6 flex-col justify-center main-page main-bg">
+  <h1 class="text-5xl font-extrabold text-center mb-2 accent-yellow">CashReward</h1>
+  <p class="text-center text-gray-400 mb-8">Login or Signup to continue</p>
+
+  <div id="login-view">
+    <input id="login-email" type="email" placeholder="Email" class="w-full p-3 rounded-lg input-field mb-4">
+    <input id="login-password" type="password" placeholder="Password" class="w-full p-3 rounded-lg input-field mb-4">
+    <button id="login-btn" class="w-full p-3 btn-accent mb-4">Login</button>
+  </div>
+</div>
+
+<!-- App Container -->
+<div id="app-container" class="min-h-screen flex-col main-page main-bg">
+<header class="p-4 flex justify-between">
+  <h2 id="header-profile-name">Hi, User</h2>
+  <span id="header-coin-balance">0</span>
+</header>
+
+<main class="p-4">
+  <button onclick="claimReward()" class="btn-accent w-full p-4">Watch & Earn</button>
+</main>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA3palpYZDFdNpBDIF564YsiOAN2dtbxzA",
+  authDomain: "tic-tac-toe-87d49.firebaseapp.com",
+  projectId: "tic-tac-toe-87d49",
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+let userData = null;
+
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    currentUser = user;
+    const snap = await getDoc(doc(db, "users", user.uid));
+    userData = snap.data();
+    document.getElementById("auth-section").classList.remove("active");
+    document.getElementById("app-container").classList.add("active");
+  }
+});
+
+/* ===========================
+   RICHADS AD FUNCTION
+   =========================== */
 async function showMonetixAd() {
   return new Promise((resolve, reject) => {
-    if (!window.TelegramAdsController || !richReady) {
-      return reject("Ad not ready");
-    }
-
-    try {
-      // INTERSTITIAL
-      window.TelegramAdsController.show();
-
-      // PUSH AFTER (non-blocking)
-      setTimeout(function () {
-        try {
-          window.TelegramAdsController.push();
-        } catch (e) {}
-      }, 400);
-
-      resolve(true);
-    } catch (e) {
-      reject("Ad failed");
+    if (
+      window.TelegramAdsController &&
+      typeof window.TelegramAdsController.show === "function"
+    ) {
+      try {
+        window.TelegramAdsController.show();
+        resolve(true);
+      } catch (e) {
+        reject("Ad failed to load");
+      }
+    } else {
+      reject("Ad not ready");
     }
   });
 }
 
-// OPTIONAL WRAPPER (USE ONLY IF YOU WANT)
-async function runWithAd(actionFn) {
+/* ===========================
+   WATCH & EARN
+   =========================== */
+window.claimReward = async function () {
   try {
     await showMonetixAd();
-    await actionFn();
-  } catch (e) {
-    if (typeof showAlert === "function") {
-      showAlert(e);
-    } else {
-      alert(e);
-    }
+    const reward = 10;
+    const newBalance = (userData.balance || 0) + reward;
+    await updateDoc(doc(db, "users", currentUser.uid), { balance: newBalance });
+    userData.balance = newBalance;
+    document.getElementById("header-coin-balance").textContent = newBalance;
+    alert("You earned " + reward + " coins");
+  } catch (err) {
+    alert(err);
   }
-}
-</script>
+};
 
-<!-- YOUR EXISTING JS FILES (UNCHANGED) -->
-<!-- <script src="app.js"></script> -->
+document.getElementById("login-btn").onclick = async () => {
+  const email = document.getElementById("login-email").value;
+  const pass = document.getElementById("login-password").value;
+  await signInWithEmailAndPassword(auth, email, pass);
+};
+</script>
 
 </body>
 </html>
