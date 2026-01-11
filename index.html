@@ -8,10 +8,10 @@
 <!-- RichAds SDK -->
 <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
 <script>
+window.richReady = false;
 window.TelegramAdsController = new TelegramAdsController();
 window.TelegramAdsController.initialize({ pubId: "956231", appId: "5572", push: true, interstitial: true });
-let richReady = false;
-window.TelegramAdsController.onReady(() => { richReady = true; });
+window.TelegramAdsController.onReady(() => { window.richReady = true; console.log("RichAds ready"); });
 </script>
 
 <!-- Tailwind & Fonts -->
@@ -50,7 +50,14 @@ body { font-family: 'Poppins', sans-serif; background-color: #1a1a1a; color: #ff
   <h1 class="text-xl mb-4">Welcome, <span id="username">User</span></h1>
   <p>Balance: <span id="balance">0</span> coins</p>
   <button id="claim-ad-btn" class="btn-accent mt-4 w-full py-2">Watch Ad & Claim Reward</button>
-  <button id="logout-btn" class="btn-accent mt-4 w-full py-2">Logout</button>
+  <h2 class="mt-6 text-lg">Tasks</h2>
+  <div class="space-y-2 mt-2">
+    <button class="btn-accent w-full py-2 task-btn" data-reward="5" data-task="color-game">Play Color Game</button>
+    <button class="btn-accent w-full py-2 task-btn" data-reward="3" data-task="visit-website">Visit Website</button>
+    <button class="btn-accent w-full py-2 task-btn" data-reward="4" data-task="social-follow">Social Follow</button>
+    <button class="btn-accent w-full py-2 task-btn" data-reward="10" data-task="referral">Use Referral Code</button>
+  </div>
+  <button id="logout-btn" class="btn-accent mt-6 w-full py-2">Logout</button>
 </div>
 
 <!-- Alerts -->
@@ -80,7 +87,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyA3palpYZDFdNpBDIF564YsiOAN2dtbxzA",
   authDomain: "tic-tac-toe-87d49.firebaseapp.com",
   projectId: "tic-tac-toe-87d49",
-  storageBucket: "tic-tac-toe-87d49.firebasestorage.app",
+  storageBucket: "tic-tac-toe-87d49.app",
   messagingSenderId: "1051665363188",
   appId: "1:1051665363188:web:c6389dddb74491a14ceea1"
 };
@@ -90,7 +97,7 @@ const db = getFirestore(app);
 
 let currentUser = null;
 let userData = { balance: 0, dailyAdCount: 0 };
-let appConfig = { adWatchReward: 10, watchAdSpecialTaskCount: 5, watchAdSpecialTaskTimer: 60 };
+const appConfig = { adWatchReward: 10, watchAdSpecialTaskCount: 5, watchAdSpecialTaskTimer: 60 };
 
 // Loader
 const loader = document.getElementById('loader');
@@ -130,15 +137,20 @@ document.getElementById('register-btn').addEventListener('click', async ()=>{
 });
 document.getElementById('logout-btn').addEventListener('click',async()=>{ showLoader(); await signOut(auth); hideLoader(); });
 
-// Show RichAd
+// Show RichAd reliably
 async function showRichAd(){
   return new Promise((resolve,reject)=>{
-    if(!window.TelegramAdsController||!richReady) return reject("Ad not ready.");
-    try{
-      window.TelegramAdsController.show();
-      setTimeout(()=>{ try{ window.TelegramAdsController.push(); }catch(e){} },400);
-      resolve(true);
-    }catch(e){ reject("Failed to show ad."); }
+    let attempts = 0;
+    function tryShow(){
+      if(window.richReady){
+        try{ window.TelegramAdsController.show(); resolve(true); }catch(e){ reject(e); }
+      } else {
+        attempts++;
+        if(attempts>20) return reject("Ad not ready after multiple attempts.");
+        setTimeout(tryShow, 500);
+      }
+    }
+    tryShow();
   });
 }
 
@@ -181,6 +193,22 @@ document.getElementById('special-ad-claim').addEventListener('click',async()=>{
     document.getElementById('special-ad-popup').classList.add('hidden');
   } catch(e){ showAlert(e); }
   finally{ hideLoader(); }
+});
+
+// Task buttons
+document.querySelectorAll('.task-btn').forEach(btn=>{
+  btn.addEventListener('click', async()=>{
+    showLoader();
+    const reward=parseInt(btn.dataset.reward);
+    const task=btn.dataset.task;
+    try{
+      // Simulate task completion (you can replace with actual logic)
+      await new Promise(r=>setTimeout(r,1000));
+      await updateBalance(reward);
+      showAlert(`Task "${task}" completed! +${reward} coins`);
+    } catch(e){ showAlert(e); }
+    finally{ hideLoader(); }
+  });
 });
 
 // Auth State
