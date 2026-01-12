@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ludo Dice Roll - Win Big Rewards!</title>
+    <title>Ludo Dice - Win Rewards</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Telegram WebApp -->
@@ -11,7 +11,7 @@
     
     <!-- RichPartners SDK (Primary) -->
     <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
-
+    
     <!-- Gigapub SDK (Fallback) -->
     <script src="https://ad.gigapub.tech/script?id=978"></script>
 
@@ -22,8 +22,6 @@
             --gold: #ffd700;
             --success: #34c759;
             --danger: #ff3b30;
-            --purple: #9d4edd;
-            --richads-blue: #3498db;
         }
         
         * {
@@ -39,231 +37,22 @@
             background: var(--telegram-dark);
             color: white;
             min-height: 100vh;
+            padding: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow-x: hidden;
         }
         
-        /* Logo Screen */
-        .logo-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #18222d 0%, #2c3e50 100%);
-            z-index: 3000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .logo-container {
-            text-align: center;
-            animation: logoFloat 3s ease-in-out infinite;
-        }
-        
-        @keyframes logoFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .logo-icon {
-            font-size: 100px;
-            margin-bottom: 20px;
-            background: linear-gradient(45deg, #ffd700, #ff9500, #ff6b6b);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            animation: logoSpin 20s linear infinite;
-        }
-        
-        @keyframes logoSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .logo-title {
-            font-size: 48px;
-            font-weight: 900;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #ffd700, #ff9500);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
-        }
-        
-        .logo-subtitle {
-            font-size: 18px;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 30px;
-            font-weight: 300;
-        }
-        
-        .logo-tagline {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-top: 30px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-        
-        /* Welcome Intro Screen */
-        .welcome-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #18222d 0%, #2c3e50 100%);
-            z-index: 2000;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .welcome-content {
-            max-width: 380px;
-            width: 100%;
-            animation: contentSlide 0.6s ease-out 0.3s both;
-        }
-        
-        @keyframes contentSlide {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        .welcome-header {
-            margin-bottom: 30px;
-        }
-        
-        .welcome-icon {
-            font-size: 60px;
-            margin-bottom: 15px;
-            background: linear-gradient(45deg, #ffd700, #ff9500);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        
-        .welcome-title {
-            font-size: 36px;
-            font-weight: 800;
-            margin-bottom: 10px;
-            color: var(--gold);
-            text-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
-        }
-        
-        .welcome-subtitle {
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.9);
-            line-height: 1.4;
-        }
-        
-        .intro-features {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin: 30px 0;
-        }
-        
-        .feature-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: left;
-            transition: transform 0.3s, background 0.3s;
-        }
-        
-        .feature-item:hover {
-            transform: translateX(5px);
-            background: rgba(255, 255, 255, 0.08);
-        }
-        
-        .feature-icon {
-            width: 50px;
-            height: 50px;
-            background: var(--purple);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            flex-shrink: 0;
-        }
-        
-        .feature-text {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.9);
-            line-height: 1.4;
-        }
-        
-        .feature-text strong {
-            color: var(--gold);
-            font-weight: 600;
-            display: block;
-            margin-bottom: 3px;
-            font-size: 16px;
-        }
-        
-        .start-button {
-            background: linear-gradient(45deg, var(--telegram-blue), var(--purple));
-            color: white;
-            border: none;
-            padding: 20px 32px;
-            font-size: 20px;
-            font-weight: 700;
-            border-radius: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 20px;
-            width: 100%;
-            transition: all 0.3s;
-            box-shadow: 0 6px 20px rgba(51, 144, 236, 0.4);
-        }
-        
-        .start-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(51, 144, 236, 0.5);
-        }
-        
-        .start-button:active {
-            transform: translateY(0);
-        }
-        
-        .welcome-footer {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-top: 30px;
-            line-height: 1.5;
-        }
-        
-        /* Game Content */
-        .game-content {
+        .container {
             width: 100%;
             max-width: 420px;
-            display: none;
+            display: flex;
             flex-direction: column;
             align-items: center;
             gap: 16px;
-            padding: 16px;
         }
         
+        /* Header */
         .game-header {
             width: 100%;
             text-align: center;
@@ -271,12 +60,6 @@
             background: rgba(255, 255, 255, 0.05);
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            animation: slideDown 0.5s ease-out;
-        }
-        
-        @keyframes slideDown {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
         }
         
         .game-title {
@@ -299,13 +82,6 @@
             border-radius: 16px;
             text-align: center;
             border: 2px solid var(--gold);
-            position: relative;
-            animation: fadeIn 0.5s ease-out 0.2s both;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
         
         .points-label {
@@ -320,58 +96,6 @@
             color: var(--gold);
         }
         
-        /* Free Rolls Display */
-        .free-rolls-container {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(52, 199, 89, 0.9);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        /* Ad Status Indicator */
-        .ad-status {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 6px 10px;
-            border-radius: 15px;
-            font-size: 10px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 0.8; }
-            50% { opacity: 1; }
-            100% { opacity: 0.8; }
-        }
-        
-        .ad-status.richads { 
-            background: rgba(52, 152, 219, 0.8);
-            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
-        }
-        .ad-status.gigapub { 
-            background: rgba(155, 89, 182, 0.7); 
-            box-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
-        }
-        .ad-status.mock { 
-            background: rgba(149, 165, 166, 0.7); 
-            box-shadow: 0 0 10px rgba(149, 165, 166, 0.5);
-        }
-        
         /* Ludo Board */
         .ludo-board {
             width: 280px;
@@ -383,7 +107,6 @@
             transform: rotate(45deg);
             margin: 16px 0;
             overflow: hidden;
-            animation: fadeIn 0.5s ease-out 0.4s both;
         }
         
         .quadrant {
@@ -449,7 +172,6 @@
             flex-direction: column;
             align-items: center;
             gap: 16px;
-            animation: fadeIn 0.5s ease-out 0.6s both;
         }
         
         .roll-btn {
@@ -480,28 +202,6 @@
         .cost-info {
             font-size: 14px;
             color: rgba(255, 255, 255, 0.7);
-        }
-        
-        /* Bonus Ad Button */
-        .bonus-btn {
-            width: 100%;
-            background: linear-gradient(45deg, var(--success), #2ecc71);
-            color: white;
-            border: none;
-            padding: 16px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 8px;
-        }
-        
-        .bonus-btn i {
-            font-size: 18px;
         }
         
         /* Popups */
@@ -611,26 +311,6 @@
             font-size: 13px;
             color: rgba(255, 255, 255, 0.7);
             line-height: 1.5;
-            animation: fadeIn 0.5s ease-out 0.8s both;
-        }
-        
-        /* Back Button */
-        .back-button {
-            position: absolute;
-            top: 16px;
-            left: 16px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 18px;
-            z-index: 100;
         }
         
         @media (max-width: 480px) {
@@ -657,115 +337,17 @@
                 padding: 16px;
                 font-size: 16px;
             }
-            
-            .welcome-title {
-                font-size: 28px;
-            }
-            
-            .logo-title {
-                font-size: 36px;
-            }
-            
-            .logo-icon {
-                font-size: 80px;
-            }
         }
     </style>
 </head>
 <body>
-    <!-- Logo Screen -->
-    <div class="logo-screen" id="logoScreen">
-        <div class="logo-container">
-            <div class="logo-icon">🎲</div>
-            <div class="logo-title">LUDO DICE ROLL</div>
-            <div class="logo-subtitle">Get Ready to Win Big!</div>
-            <div class="logo-tagline">Loading...</div>
-        </div>
-    </div>
-    
-    <!-- Welcome Introduction Screen -->
-    <div class="welcome-screen" id="welcomeScreen">
-        <button class="back-button" id="backToLogoBtn">
-            <i class="fas fa-arrow-left"></i>
-        </button>
-        
-        <div class="welcome-content">
-            <div class="welcome-header">
-                <div class="welcome-icon">🎲</div>
-                <div class="welcome-title">LET'S PLAY!</div>
-                <div class="welcome-subtitle">
-                    Test your luck and win amazing rewards!<br>
-                    Simple rules, instant wins!
-                </div>
-            </div>
-            
-            <div class="intro-features">
-                <div class="feature-item">
-                    <div class="feature-icon">🎯</div>
-                    <div class="feature-text">
-                        <strong>Lucky Dice Rolls</strong>
-                        Roll the dice (1-6) and win points!<br>
-                        Higher number = bigger win!
-                    </div>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">💰</div>
-                    <div class="feature-text">
-                        <strong>Free Daily Rolls</strong>
-                        Start with 5 FREE rolls every day!<br>
-                        No ads required to play!
-                    </div>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">🏆</div>
-                    <div class="feature-text">
-                        <strong>Bonus Rewards</strong>
-                        Watch optional ads for extra points!<br>
-                        Completely voluntary!
-                    </div>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">⚡</div>
-                    <div class="feature-text">
-                        <strong>Instant Wins</strong>
-                        Get your rewards immediately!<br>
-                        No waiting, no delays!
-                    </div>
-                </div>
-            </div>
-            
-            <button class="start-button" id="startGameBtn">
-                <i class="fas fa-play"></i> START PLAYING NOW
-            </button>
-            
-            <div class="welcome-footer">
-                Fair play guaranteed • Instant rewards • No hidden fees
-            </div>
-        </div>
-    </div>
-    
-    <!-- Main Game Content -->
-    <div class="game-content" id="gameContent">
-        <button class="back-button" id="backToIntroBtn">
-            <i class="fas fa-arrow-left"></i>
-        </button>
-        
+    <div class="container">
         <div class="game-header">
             <h1 class="game-title">🎲 LUDO DICE ROLL</h1>
             <p class="game-subtitle">Roll dice, win points, get rewards!</p>
         </div>
         
         <div class="points-container">
-            <div class="ad-status richads" id="adStatusDisplay">
-                <i class="fas fa-ad"></i> <span id="adStatusText">RichAds</span>
-            </div>
-            <div class="free-rolls-container" id="freeRollsDisplay">
-                <i class="fas fa-dice"></i>
-                <span id="freeRollsCount">5</span> FREE
-            </div>
             <div class="points-label">YOUR POINTS</div>
             <div class="points-value" id="pointsValue">1,000</div>
         </div>
@@ -783,19 +365,13 @@
         
         <div class="controls">
             <button class="roll-btn" id="rollBtn">
-                <i class="fas fa-dice"></i> ROLL DICE
-                <span id="rollCost">(FREE ROLL)</span>
+                <i class="fas fa-dice"></i> ROLL DICE - 100 POINTS
             </button>
             <div class="cost-info">Win multiplier: 1x to 6x</div>
-            
-            <button class="bonus-btn" id="bonusBtn">
-                <i class="fas fa-gift"></i> GET BONUS REWARDS
-                <span style="font-size: 12px; margin-left: 5px;">(+100 POINTS)</span>
-            </button>
         </div>
         
         <div class="instructions">
-            <p><strong>How to play:</strong> Use your free rolls to play for free! Each roll gives you 1-6 points ×100. Watch optional ads for bonus rewards when you want extra points!</p>
+            <p><strong>How to play:</strong> Tap ROLL DICE (costs 100 points). Dice shows 1-6. Win = dice number × 100 points. Watch ad for bonus!</p>
         </div>
     </div>
     
@@ -821,7 +397,7 @@
                 </div>
             </div>
             <button class="popup-btn" id="closeAdsBtn" style="background: var(--telegram-blue); display: none;">
-                <i class="fas fa-check"></i> CONTINUE (+100 BONUS)
+                <i class="fas fa-check"></i> CONTINUE (+50 BONUS)
             </button>
         </div>
     </div>
@@ -840,85 +416,6 @@
         let richAdsLoaded = false;
         let gigapubLoaded = false;
         
-        // Function to initialize RichAds (Primary)
-        function initializeRichAds() {
-            console.log("🔄 Initializing RichAds (Primary)...");
-            
-            if (typeof TelegramAdsController !== 'undefined') {
-                try {
-                    window.TelegramAdsController = new TelegramAdsController();
-                    window.TelegramAdsController.initialize({
-                        pubId: "956231",
-                        appId: "5584",
-                    });
-                    richAdsLoaded = true;
-                    console.log("✅ RichAds initialized successfully");
-                    updateAdStatus();
-                    return true;
-                } catch (error) {
-                    console.log("❌ RichAds initialization error:", error);
-                    return false;
-                }
-            } else {
-                console.log("❌ TelegramAdsController not defined");
-                return false;
-            }
-        }
-        
-        // Function to check Gigapub (Fallback)
-        function checkGigapub() {
-            console.log("🔄 Checking Gigapub (Fallback)...");
-            
-            if (typeof showGiga === 'function') {
-                gigapubLoaded = true;
-                console.log("✅ Gigapub SDK available");
-                return true;
-            } else {
-                console.log("❌ Gigapub SDK not available");
-                return false;
-            }
-        }
-        
-        // Function to update ad status display
-        function updateAdStatus() {
-            const adStatusElement = document.getElementById('adStatusDisplay');
-            const adStatusText = document.getElementById('adStatusText');
-            
-            if (richAdsLoaded) {
-                adStatusElement.className = 'ad-status richads';
-                adStatusText.textContent = 'RichAds';
-                console.log("📊 Ad Status: RichAds Active");
-            } else if (gigapubLoaded) {
-                adStatusElement.className = 'ad-status gigapub';
-                adStatusText.textContent = 'Gigapub';
-                console.log("📊 Ad Status: Gigapub Active");
-            } else {
-                adStatusElement.className = 'ad-status mock';
-                adStatusText.textContent = 'Mock Ads';
-                console.log("📊 Ad Status: Mock Ads (No SDK)");
-            }
-        }
-        
-        // Initialize all ad SDKs
-        function initializeAdSDKs() {
-            console.log("🎯 Initializing Advertising SDKs...");
-            
-            // First try RichAds (Primary)
-            const richadsSuccess = initializeRichAds();
-            
-            // If RichAds fails, try Gigapub
-            if (!richadsSuccess) {
-                console.log("🔄 RichAds failed, trying Gigapub...");
-                const gigapubSuccess = checkGigapub();
-                
-                if (!gigapubSuccess) {
-                    console.log("⚠️ No ad SDKs loaded. Using mock ads.");
-                }
-            }
-            
-            updateAdStatus();
-        }
-        
         // Initialize Telegram WebApp
         if (window.Telegram && window.Telegram.WebApp) {
             const tg = window.Telegram.WebApp;
@@ -927,27 +424,41 @@
             console.log("✅ Telegram WebApp initialized");
         }
         
+        // Initialize RichAds
+        try {
+            if (typeof TelegramAdsController !== 'undefined') {
+                window.TelegramAdsController = new TelegramAdsController();
+                window.TelegramAdsController.initialize({
+                    pubId: "956231",
+                    appId: "5584",
+                });
+                richAdsLoaded = true;
+                console.log("✅ RichAds initialized successfully");
+            } else {
+                console.log("❌ TelegramAdsController not defined");
+            }
+        } catch (error) {
+            console.log("❌ RichAds initialization error:", error);
+        }
+        
+        // Check if Gigapub loaded
+        if (typeof showGiga === 'function') {
+            gigapubLoaded = true;
+            console.log("✅ Gigapub SDK loaded");
+        } else {
+            console.log("❌ Gigapub SDK not loaded");
+        }
+        
         // ===== GAME VARIABLES =====
         let points = 1000;
-        let freeRolls = 5; // Free rolls per day
         let isRolling = false;
         let isAudioOn = true;
         let currentWin = 0;
         let currentDice = 6;
         
         // DOM Elements
-        const logoScreen = document.getElementById('logoScreen');
-        const welcomeScreen = document.getElementById('welcomeScreen');
-        const gameContent = document.getElementById('gameContent');
-        const startGameBtn = document.getElementById('startGameBtn');
-        const backToLogoBtn = document.getElementById('backToLogoBtn');
-        const backToIntroBtn = document.getElementById('backToIntroBtn');
         const rollBtn = document.getElementById('rollBtn');
-        const rollCost = document.getElementById('rollCost');
         const pointsValue = document.getElementById('pointsValue');
-        const freeRollsDisplay = document.getElementById('freeRollsDisplay');
-        const freeRollsCount = document.getElementById('freeRollsCount');
-        const bonusBtn = document.getElementById('bonusBtn');
         const dice = document.getElementById('dice');
         const resultPopup = document.getElementById('resultPopup');
         const resultDice = document.getElementById('resultDice');
@@ -966,31 +477,6 @@
         // Dice faces
         const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
         
-        // ===== SCREEN NAVIGATION =====
-        function showLogo() {
-            logoScreen.style.display = 'flex';
-            welcomeScreen.style.display = 'none';
-            gameContent.style.display = 'none';
-        }
-        
-        function showWelcome() {
-            logoScreen.style.display = 'none';
-            welcomeScreen.style.display = 'flex';
-            gameContent.style.display = 'none';
-        }
-        
-        function showGame() {
-            logoScreen.style.display = 'none';
-            welcomeScreen.style.display = 'none';
-            gameContent.style.display = 'flex';
-            updatePoints();
-            
-            // Force reflow to ensure animations work
-            setTimeout(() => {
-                gameContent.style.opacity = '1';
-            }, 10);
-        }
-        
         // ===== GAME FUNCTIONS =====
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -998,19 +484,6 @@
         
         function updatePoints() {
             pointsValue.textContent = formatNumber(points);
-            freeRollsCount.textContent = freeRolls;
-            
-            // Update roll button text based on free rolls
-            if (freeRolls > 0) {
-                rollCost.textContent = "(FREE ROLL)";
-                rollBtn.disabled = false;
-            } else if (points >= 100) {
-                rollCost.textContent = "(100 POINTS)";
-                rollBtn.disabled = false;
-            } else {
-                rollCost.textContent = "(NEED POINTS)";
-                rollBtn.disabled = true;
-            }
         }
         
         function playSound(sound) {
@@ -1026,31 +499,15 @@
             playSound(clickSound);
         }
         
-        function startGame() {
-            playSound(clickSound);
-            showGame();
-        }
-        
         // ===== DICE ROLL FUNCTION =====
         function rollDice() {
-            if (isRolling) return;
-            
-            // Check if we can roll
-            if (freeRolls <= 0 && points < 100) {
-                alert("You need points to roll! Get bonus rewards or wait for free rolls reset.");
-                return;
-            }
+            if (isRolling || points < 100) return;
             
             isRolling = true;
             rollBtn.disabled = true;
             
-            // Deduct cost
-            if (freeRolls > 0) {
-                freeRolls--;
-            } else {
-                points -= 100;
-            }
-            
+            // Deduct points
+            points -= 100;
             updatePoints();
             playSound(diceSound);
             
@@ -1093,150 +550,114 @@
             points += currentWin;
             updatePoints();
             resultPopup.style.display = 'none';
+            setTimeout(showAdsForBonus, 300);
         }
         
-        // ===== BONUS ADS SYSTEM =====
-        function showBonusAds() {
-            playSound(clickSound);
+        // ===== ADS SYSTEM =====
+        function showAdsForBonus() {
             adsPopup.style.display = 'flex';
             closeAdsBtn.style.display = 'none';
             adsContainer.innerHTML = '<div style="color: #6c757d; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading reward...</div>';
             
-            // Try RichAds first (PRIMARY)
+            // Try RichAds first
             if (richAdsLoaded && window.TelegramAdsController) {
-                console.log("🎯 Showing RichAds (Primary)...");
+                console.log("🎯 Showing RichAds...");
                 showRichAds();
-            } else if (gigapubLoaded && typeof showGiga === 'function') {
-                // If RichAds not available, try Gigapub
-                console.log("🎯 Showing Gigapub (Fallback)...");
-                showGigapubAds();
             } else {
-                // If both fail, show mock ad
-                console.log("🎯 No ad SDK available, showing mock ad...");
-                showMockAd();
+                // If RichAds not available, try Gigapub
+                console.log("🎯 RichAds not available, trying Gigapub...");
+                showGigapubAds();
             }
         }
         
         function showRichAds() {
-            if (richAdsLoaded && window.TelegramAdsController) {
-                try {
-                    // Try to show RichAds
-                    window.TelegramAdsController.showAd();
-                    
-                    // Wait for ad completion (assume 5 seconds)
-                    setTimeout(() => {
-                        console.log("✅ RichAds completed");
-                        giveBonus(100);
-                    }, 5000);
-                    
-                } catch (error) {
-                    console.log("❌ RichAds error:", error);
-                    // Try Gigapub as fallback
-                    if (gigapubLoaded && typeof showGiga === 'function') {
-                        console.log("🔄 Trying Gigapub after RichAds failed...");
-                        showGigapubAds();
-                    } else {
-                        giveBonus(50); // Give smaller bonus for failed ad
-                    }
-                }
-            } else {
-                // If RichAds not available, try Gigapub
+            try {
+                // Try to show RichAds
+                window.TelegramAdsController.showAd();
+                
+                // Wait for ad completion (assume 5 seconds)
+                setTimeout(() => {
+                    console.log("✅ RichAds completed");
+                    giveBonus();
+                }, 5000);
+                
+            } catch (error) {
+                console.log("❌ RichAds error:", error);
                 showGigapubAds();
             }
         }
         
         function showGigapubAds() {
             if (gigapubLoaded && typeof showGiga === 'function') {
+                console.log("🎯 Showing Gigapub ads...");
+                
                 showGiga()
                     .then(() => {
                         console.log("✅ Gigapub ad completed");
-                        giveBonus(100);
+                        giveBonus();
                     })
                     .catch(error => {
                         console.log("❌ Gigapub ad failed:", error);
-                        giveBonus(50); // Give smaller bonus for failed ad
+                        showMockAd();
                     });
+                    
             } else {
-                giveBonus(30); // Give minimal bonus
+                console.log("❌ Gigapub not available");
+                showMockAd();
             }
         }
         
         function showMockAd() {
             console.log("🎯 Showing mock ad...");
-            // Simulate ad loading
+            adsContainer.innerHTML = `
+                <div style="text-align: center; color: #2c3e50;">
+                    <i class="fas fa-gift" style="font-size: 40px; color: #ff6b6b;"></i>
+                    <div style="font-size: 16px; font-weight: 600; margin-top: 10px;">BONUS REWARD!</div>
+                    <div style="font-size: 12px; margin-top: 5px; color: #6c757d;">Thanks for playing!</div>
+                </div>
+            `;
+            
             setTimeout(() => {
-                giveBonus(20); // Give free bonus
+                giveBonus();
             }, 2000);
         }
         
-        function giveBonus(bonusAmount) {
+        function giveBonus() {
             adsContainer.innerHTML = `
                 <div style="text-align: center; color: #2c3e50;">
                     <i class="fas fa-trophy" style="font-size: 40px; color: #ffd700;"></i>
-                    <div style="font-size: 24px; font-weight: 800; color: #34c759; margin-top: 10px;">+${bonusAmount} BONUS</div>
+                    <div style="font-size: 24px; font-weight: 800; color: #34c759; margin-top: 10px;">+50 BONUS</div>
                     <div style="font-size: 14px; margin-top: 5px; color: #6c757d;">Points added to your balance!</div>
                 </div>
             `;
             
-            points += bonusAmount;
-            updatePoints();
             closeAdsBtn.style.display = 'flex';
         }
         
         function closeAds() {
             playSound(clickSound);
+            points += 50;
+            updatePoints();
             adsPopup.style.display = 'none';
         }
         
         // ===== INITIALIZE GAME =====
         function initGame() {
-            console.log("🎮 Initializing Ludo Dice Game...");
-            
-            // Initialize ad SDKs after a short delay
-            setTimeout(() => {
-                initializeAdSDKs();
-            }, 1000);
-            
-            // Start with logo screen
-            showLogo();
-            
-            // Show logo for 2 seconds, then auto-proceed to welcome screen
-            setTimeout(() => {
-                console.log("🔄 Moving to welcome screen...");
-                showWelcome();
-            }, 2000);
+            updatePoints();
             
             // Event listeners
-            startGameBtn.addEventListener('click', startGame);
-            backToLogoBtn.addEventListener('click', () => {
-                console.log("⬅️ Back to logo clicked");
-                playSound(clickSound);
-                showLogo();
-            });
-            backToIntroBtn.addEventListener('click', () => {
-                console.log("⬅️ Back to intro clicked");
-                playSound(clickSound);
-                showWelcome();
-            });
             rollBtn.addEventListener('click', rollDice);
             claimBtn.addEventListener('click', claimPrize);
-            bonusBtn.addEventListener('click', showBonusAds);
             closeAdsBtn.addEventListener('click', closeAds);
             audioControl.addEventListener('click', toggleAudio);
             
             // Close popups on overlay click
             resultPopup.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    playSound(clickSound);
-                    this.style.display = 'none';
-                }
+                if (e.target === this) this.style.display = 'none';
             });
             
             adsPopup.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    playSound(clickSound);
-                    closeAds();
-                }
+                if (e.target === this) closeAds();
             });
             
             // Audio setup
@@ -1244,16 +665,14 @@
             winSound.volume = 0.7;
             clickSound.volume = 0.5;
             
-            console.log("✅ Game initialized successfully");
+            console.log("🎮 Ludo Dice Game initialized");
             console.log("💰 Points:", points);
-            console.log("🎲 Free Rolls:", freeRolls);
+            console.log("📱 RichAds:", richAdsLoaded ? "✅ Loaded" : "❌ Not available");
+            console.log("📱 Gigapub:", gigapubLoaded ? "✅ Loaded" : "❌ Not available");
         }
         
-        // Start game when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log("📄 DOM loaded, initializing game...");
-            initGame();
-        });
+        // Start game
+        window.addEventListener('DOMContentLoaded', initGame);
     </script>
 </body>
 </html>
