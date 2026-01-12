@@ -12,12 +12,8 @@
     <!-- RichPartners SDK (Primary) -->
     <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
     
-    <!-- Telega.io SDK (Fallback) -->
-    <script src="https://inapp.telega.io/sdk/v1/sdk.js"></script>
-    <script>
-      const ads = window.TelegaIn.AdsController.create_miniapp({
-        token: 'c66dd970-a8e9-443b-9f0c-70edbcae2791' });
-    </script>
+    <!-- Gigapub SDK (Fallback) -->
+    <script src="https://ad.gigapub.tech/script?id=978"></script>
 
     <style>
         :root {
@@ -802,7 +798,7 @@
     <script>
         // ===== ADS SDK INITIALIZATION =====
         let richAdsLoaded = false;
-        let telegaLoaded = false;
+        let gigapubLoaded = false;
         
         // Initialize Telegram WebApp
         if (window.Telegram && window.Telegram.WebApp) {
@@ -829,12 +825,12 @@
             console.log("❌ RichAds initialization error:", error);
         }
         
-        // Check if Telega.io loaded
-        if (typeof ads !== 'undefined' && typeof ads.ad_show === 'function') {
-            telegaLoaded = true;
-            console.log("✅ Telega.io SDK loaded");
+        // Check if Gigapub loaded
+        if (typeof showGiga === 'function') {
+            gigapubLoaded = true;
+            console.log("✅ Gigapub SDK loaded");
         } else {
-            console.log("❌ Telega.io SDK not loaded");
+            console.log("❌ Gigapub SDK not loaded");
         }
         
         // ===== GAME VARIABLES =====
@@ -894,6 +890,11 @@
             welcomeScreen.style.display = 'none';
             gameContent.style.display = 'flex';
             updatePoints();
+            
+            // Force reflow to ensure animations work
+            setTimeout(() => {
+                gameContent.style.opacity = '1';
+            }, 10);
         }
         
         // ===== GAME FUNCTIONS =====
@@ -1012,9 +1013,9 @@
                 console.log("🎯 Showing RichAds for bonus...");
                 showRichAds();
             } else {
-                // If RichAds not available, try Telega.io
-                console.log("🎯 RichAds not available, trying Telega.io...");
-                showTelegaAds();
+                // If RichAds not available, try Gigapub
+                console.log("🎯 RichAds not available, trying Gigapub...");
+                showGigapubAds();
             }
         }
         
@@ -1031,41 +1032,26 @@
                 
             } catch (error) {
                 console.log("❌ RichAds error:", error);
-                showTelegaAds();
+                showGigapubAds();
             }
         }
         
-        function showTelegaAds() {
-            if (telegaLoaded && typeof ads !== 'undefined') {
-                console.log("🎯 Showing Telega.io ads for bonus...");
+        function showGigapubAds() {
+            if (gigapubLoaded && typeof showGiga === 'function') {
+                console.log("🎯 Showing Gigapub ads for bonus...");
                 
-                // First try reward ad
-                try {
-                    ads.ad_show({
-                        adBlockUuid: "55ac6839-babf-4e04-95b9-df7a276fdd0a" // Reward
-                    }).then(() => {
-                        console.log("✅ Telega.io reward ad completed");
+                showGiga()
+                    .then(() => {
+                        console.log("✅ Gigapub ad completed");
                         giveBonus(100);
-                    }).catch(error => {
-                        console.log("❌ Telega.io reward ad failed, trying interstitial:", error);
-                        // Fallback to interstitial
-                        ads.ad_show({
-                            adBlockUuid: "136f4f44-647c-4bf2-92b9-776215f047e3" // Interstitial
-                        }).then(() => {
-                            console.log("✅ Telega.io interstitial ad completed");
-                            giveBonus(100);
-                        }).catch(interstitialError => {
-                            console.log("❌ Telega.io interstitial also failed:", interstitialError);
-                            giveBonus(50); // Give smaller bonus for failed ad
-                        });
+                    })
+                    .catch(error => {
+                        console.log("❌ Gigapub ad failed:", error);
+                        giveBonus(50); // Give smaller bonus for failed ad
                     });
-                } catch (error) {
-                    console.log("❌ Telega.io ad call error:", error);
-                    giveBonus(30); // Give minimal bonus
-                }
                     
             } else {
-                console.log("❌ Telega.io not available");
+                console.log("❌ Gigapub not available");
                 giveBonus(20); // Give free bonus
             }
         }
@@ -1091,21 +1077,26 @@
         
         // ===== INITIALIZE GAME =====
         function initGame() {
+            console.log("🎮 Initializing Ludo Dice Game...");
+            
             // Start with logo screen
             showLogo();
             
-            // Show logo for 3 seconds, then auto-proceed to welcome screen
+            // Show logo for 2 seconds, then auto-proceed to welcome screen
             setTimeout(() => {
+                console.log("🔄 Moving to welcome screen...");
                 showWelcome();
-            }, 3000);
+            }, 2000);
             
-            // Event listeners
+            // Event listeners - FIXED: Added proper event listeners
             startGameBtn.addEventListener('click', startGame);
             backToLogoBtn.addEventListener('click', () => {
+                console.log("⬅️ Back to logo clicked");
                 playSound(clickSound);
                 showLogo();
             });
             backToIntroBtn.addEventListener('click', () => {
+                console.log("⬅️ Back to intro clicked");
                 playSound(clickSound);
                 showWelcome();
             });
@@ -1135,15 +1126,23 @@
             winSound.volume = 0.7;
             clickSound.volume = 0.5;
             
-            console.log("🎮 Ludo Dice Game initialized");
+            console.log("✅ Game initialized successfully");
             console.log("💰 Points:", points);
             console.log("🎲 Free Rolls:", freeRolls);
             console.log("📱 RichAds:", richAdsLoaded ? "✅ Loaded" : "❌ Not available");
-            console.log("📱 Telega.io:", telegaLoaded ? "✅ Loaded" : "❌ Not available");
+            console.log("📱 Gigapub:", gigapubLoaded ? "✅ Loaded" : "❌ Not available");
         }
         
-        // Start game
-        window.addEventListener('DOMContentLoaded', initGame);
+        // Start game when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("📄 DOM loaded, initializing game...");
+            initGame();
+        });
+        
+        // Also initialize when window loads (extra safety)
+        window.addEventListener('load', function() {
+            console.log("🔄 Window loaded");
+        });
     </script>
 </body>
 </html>
