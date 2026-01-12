@@ -42,20 +42,78 @@
             background: var(--telegram-dark);
             color: white;
             min-height: 100vh;
-            padding: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
             overflow-x: hidden;
         }
         
-        .container {
+        /* Logo Screen */
+        .logo-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 420px;
+            height: 100%;
+            background: linear-gradient(135deg, #18222d 0%, #2c3e50 100%);
+            z-index: 3000;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 16px;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .logo-container {
+            text-align: center;
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+        
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .logo-icon {
+            font-size: 100px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ffd700, #ff9500, #ff6b6b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: logoSpin 20s linear infinite;
+        }
+        
+        @keyframes logoSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .logo-title {
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ffd700, #ff9500);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+        }
+        
+        .logo-subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+        
+        .logo-tagline {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 30px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
         
         /* Welcome Intro Screen */
@@ -67,22 +125,16 @@
             height: 100%;
             background: linear-gradient(135deg, #18222d 0%, #2c3e50 100%);
             z-index: 2000;
-            display: flex;
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
             text-align: center;
-            animation: welcomeIn 0.5s ease-out;
-        }
-        
-        @keyframes welcomeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
         }
         
         .welcome-content {
-            max-width: 360px;
+            max-width: 380px;
             width: 100%;
             animation: contentSlide 0.6s ease-out 0.3s both;
         }
@@ -92,22 +144,31 @@
             to { transform: translateY(0); opacity: 1; }
         }
         
-        .welcome-title {
-            font-size: 42px;
-            font-weight: 900;
-            margin-bottom: 10px;
+        .welcome-header {
+            margin-bottom: 30px;
+        }
+        
+        .welcome-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
             background: linear-gradient(45deg, #ffd700, #ff9500);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+        }
+        
+        .welcome-title {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: var(--gold);
             text-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
         }
         
         .welcome-subtitle {
-            font-size: 20px;
+            font-size: 16px;
             color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 30px;
-            font-weight: 500;
+            line-height: 1.4;
         }
         
         .intro-features {
@@ -121,40 +182,50 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px;
+            padding: 15px;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
+            border-radius: 15px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: left;
+            transition: transform 0.3s, background 0.3s;
+        }
+        
+        .feature-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.08);
         }
         
         .feature-icon {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             background: var(--purple);
-            border-radius: 10px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 20px;
             flex-shrink: 0;
         }
         
         .feature-text {
             font-size: 14px;
             color: rgba(255, 255, 255, 0.9);
+            line-height: 1.4;
         }
         
         .feature-text strong {
             color: var(--gold);
             font-weight: 600;
+            display: block;
+            margin-bottom: 3px;
+            font-size: 16px;
         }
         
         .start-button {
             background: linear-gradient(45deg, var(--telegram-blue), var(--purple));
             color: white;
             border: none;
-            padding: 18px 32px;
+            padding: 20px 32px;
             font-size: 20px;
             font-weight: 700;
             border-radius: 16px;
@@ -188,7 +259,12 @@
         /* Game Content */
         .game-content {
             width: 100%;
+            max-width: 420px;
             display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
         }
         
         .game-header {
@@ -505,6 +581,25 @@
             animation: fadeIn 0.5s ease-out 0.8s both;
         }
         
+        /* Back Button */
+        .back-button {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            z-index: 100;
+        }
+        
         @media (max-width: 480px) {
             .ludo-board {
                 width: 250px;
@@ -531,52 +626,80 @@
             }
             
             .welcome-title {
+                font-size: 28px;
+            }
+            
+            .logo-title {
                 font-size: 36px;
             }
             
-            .welcome-subtitle {
-                font-size: 18px;
+            .logo-icon {
+                font-size: 80px;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Logo Screen -->
+    <div class="logo-screen" id="logoScreen">
+        <div class="logo-container">
+            <div class="logo-icon">🎲</div>
+            <div class="logo-title">LUDO DICE ROLL</div>
+            <div class="logo-subtitle">Get Ready to Win Big!</div>
+            <div class="logo-tagline">Loading...</div>
+        </div>
+    </div>
+    
     <!-- Welcome Introduction Screen -->
     <div class="welcome-screen" id="welcomeScreen">
+        <button class="back-button" id="backToLogoBtn">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        
         <div class="welcome-content">
-            <div class="welcome-title">🎲 LUDO DICE ROLL</div>
-            <div class="welcome-subtitle">Roll Your Way to Riches!</div>
+            <div class="welcome-header">
+                <div class="welcome-icon">🎲</div>
+                <div class="welcome-title">LET'S PLAY!</div>
+                <div class="welcome-subtitle">
+                    Test your luck and win amazing rewards!<br>
+                    Simple rules, instant wins!
+                </div>
+            </div>
             
             <div class="intro-features">
                 <div class="feature-item">
                     <div class="feature-icon">🎯</div>
                     <div class="feature-text">
-                        <strong>Lucky Dice Rolls</strong><br>
-                        Roll 1-6, win up to 6x points!
+                        <strong>Lucky Dice Rolls</strong>
+                        Roll the dice (1-6) and win points!<br>
+                        Higher number = bigger win!
                     </div>
                 </div>
                 
                 <div class="feature-item">
                     <div class="feature-icon">💰</div>
                     <div class="feature-text">
-                        <strong>Free Daily Rolls</strong><br>
-                        Start with 5 free rolls every day!
+                        <strong>Free Daily Rolls</strong>
+                        Start with 5 FREE rolls every day!<br>
+                        No ads required to play!
                     </div>
                 </div>
                 
                 <div class="feature-item">
                     <div class="feature-icon">🏆</div>
                     <div class="feature-text">
-                        <strong>Bonus Rewards</strong><br>
-                        Watch optional ads for extra points!
+                        <strong>Bonus Rewards</strong>
+                        Watch optional ads for extra points!<br>
+                        Completely voluntary!
                     </div>
                 </div>
                 
                 <div class="feature-item">
                     <div class="feature-icon">⚡</div>
                     <div class="feature-text">
-                        <strong>Fast & Fair</strong><br>
-                        Instant wins, no waiting!
+                        <strong>Instant Wins</strong>
+                        Get your rewards immediately!<br>
+                        No waiting, no delays!
                     </div>
                 </div>
             </div>
@@ -586,14 +709,17 @@
             </button>
             
             <div class="welcome-footer">
-                Challenge your luck and win big!<br>
-                Play fair, win points, have fun!
+                Fair play guaranteed • Instant rewards • No hidden fees
             </div>
         </div>
     </div>
     
     <!-- Main Game Content -->
-    <div class="container game-content" id="gameContent">
+    <div class="game-content" id="gameContent">
+        <button class="back-button" id="backToIntroBtn">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        
         <div class="game-header">
             <h1 class="game-title">🎲 LUDO DICE ROLL</h1>
             <p class="game-subtitle">Roll dice, win points, get rewards!</p>
@@ -720,9 +846,12 @@
         let currentDice = 6;
         
         // DOM Elements
+        const logoScreen = document.getElementById('logoScreen');
         const welcomeScreen = document.getElementById('welcomeScreen');
         const gameContent = document.getElementById('gameContent');
         const startGameBtn = document.getElementById('startGameBtn');
+        const backToLogoBtn = document.getElementById('backToLogoBtn');
+        const backToIntroBtn = document.getElementById('backToIntroBtn');
         const rollBtn = document.getElementById('rollBtn');
         const rollCost = document.getElementById('rollCost');
         const pointsValue = document.getElementById('pointsValue');
@@ -746,6 +875,26 @@
         
         // Dice faces
         const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+        
+        // ===== SCREEN NAVIGATION =====
+        function showLogo() {
+            logoScreen.style.display = 'flex';
+            welcomeScreen.style.display = 'none';
+            gameContent.style.display = 'none';
+        }
+        
+        function showWelcome() {
+            logoScreen.style.display = 'none';
+            welcomeScreen.style.display = 'flex';
+            gameContent.style.display = 'none';
+        }
+        
+        function showGame() {
+            logoScreen.style.display = 'none';
+            welcomeScreen.style.display = 'none';
+            gameContent.style.display = 'flex';
+            updatePoints();
+        }
         
         // ===== GAME FUNCTIONS =====
         function formatNumber(num) {
@@ -784,20 +933,7 @@
         
         function startGame() {
             playSound(clickSound);
-            // Animate welcome screen out
-            welcomeScreen.style.opacity = '0';
-            welcomeScreen.style.transform = 'scale(1.1)';
-            
-            setTimeout(() => {
-                welcomeScreen.style.display = 'none';
-                gameContent.style.display = 'flex';
-                updatePoints();
-                
-                // Animate game content in
-                setTimeout(() => {
-                    gameContent.style.opacity = '1';
-                }, 100);
-            }, 300);
+            showGame();
         }
         
         // ===== DICE ROLL FUNCTION =====
@@ -955,12 +1091,24 @@
         
         // ===== INITIALIZE GAME =====
         function initGame() {
-            // Set initial welcome screen
-            welcomeScreen.style.display = 'flex';
-            gameContent.style.display = 'none';
+            // Start with logo screen
+            showLogo();
+            
+            // Show logo for 3 seconds, then auto-proceed to welcome screen
+            setTimeout(() => {
+                showWelcome();
+            }, 3000);
             
             // Event listeners
             startGameBtn.addEventListener('click', startGame);
+            backToLogoBtn.addEventListener('click', () => {
+                playSound(clickSound);
+                showLogo();
+            });
+            backToIntroBtn.addEventListener('click', () => {
+                playSound(clickSound);
+                showWelcome();
+            });
             rollBtn.addEventListener('click', rollDice);
             claimBtn.addEventListener('click', claimPrize);
             bonusBtn.addEventListener('click', showBonusAds);
