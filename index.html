@@ -12,8 +12,12 @@
     <!-- RichPartners SDK (Primary) -->
     <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
     
-    <!-- Gigapub SDK (Fallback) -->
-    <script src="https://ad.gigapub.tech/script?id=978"></script>
+    <!-- Telega.io SDK (Fallback) -->
+    <script src="https://inapp.telega.io/sdk/v1/sdk.js"></script>
+    <script>
+      const ads = window.TelegaIn.AdsController.create_miniapp({
+        token: 'c66dd970-a8e9-443b-9f0c-70edbcae2791' });
+    </script>
 
     <style>
         :root {
@@ -414,7 +418,7 @@
     <script>
         // ===== ADS SDK INITIALIZATION =====
         let richAdsLoaded = false;
-        let gigapubLoaded = false;
+        let telegaLoaded = false;
         
         // Initialize Telegram WebApp
         if (window.Telegram && window.Telegram.WebApp) {
@@ -441,12 +445,12 @@
             console.log("❌ RichAds initialization error:", error);
         }
         
-        // Check if Gigapub loaded
-        if (typeof showGiga === 'function') {
-            gigapubLoaded = true;
-            console.log("✅ Gigapub SDK loaded");
+        // Check if Telega.io loaded
+        if (typeof ads !== 'undefined' && typeof ads.ad_show === 'function') {
+            telegaLoaded = true;
+            console.log("✅ Telega.io SDK loaded");
         } else {
-            console.log("❌ Gigapub SDK not loaded");
+            console.log("❌ Telega.io SDK not loaded");
         }
         
         // ===== GAME VARIABLES =====
@@ -564,9 +568,9 @@
                 console.log("🎯 Showing RichAds...");
                 showRichAds();
             } else {
-                // If RichAds not available, try Gigapub
-                console.log("🎯 RichAds not available, trying Gigapub...");
-                showGigapubAds();
+                // If RichAds not available, try Telega.io
+                console.log("🎯 RichAds not available, trying Telega.io...");
+                showTelegaAds();
             }
         }
         
@@ -583,26 +587,41 @@
                 
             } catch (error) {
                 console.log("❌ RichAds error:", error);
-                showGigapubAds();
+                showTelegaAds();
             }
         }
         
-        function showGigapubAds() {
-            if (gigapubLoaded && typeof showGiga === 'function') {
-                console.log("🎯 Showing Gigapub ads...");
+        function showTelegaAds() {
+            if (telegaLoaded && typeof ads !== 'undefined') {
+                console.log("🎯 Showing Telega.io ads...");
                 
-                showGiga()
-                    .then(() => {
-                        console.log("✅ Gigapub ad completed");
+                // First try reward ad
+                try {
+                    ads.ad_show({
+                        adBlockUuid: "55ac6839-babf-4e04-95b9-df7a276fdd0a" // Reward
+                    }).then(() => {
+                        console.log("✅ Telega.io reward ad completed");
                         giveBonus();
-                    })
-                    .catch(error => {
-                        console.log("❌ Gigapub ad failed:", error);
-                        showMockAd();
+                    }).catch(error => {
+                        console.log("❌ Telega.io reward ad failed, trying interstitial:", error);
+                        // Fallback to interstitial
+                        ads.ad_show({
+                            adBlockUuid: "136f4f44-647c-4bf2-92b9-776215f047e3" // Interstitial
+                        }).then(() => {
+                            console.log("✅ Telega.io interstitial ad completed");
+                            giveBonus();
+                        }).catch(interstitialError => {
+                            console.log("❌ Telega.io interstitial also failed:", interstitialError);
+                            showMockAd();
+                        });
                     });
+                } catch (error) {
+                    console.log("❌ Telega.io ad call error:", error);
+                    showMockAd();
+                }
                     
             } else {
-                console.log("❌ Gigapub not available");
+                console.log("❌ Telega.io not available");
                 showMockAd();
             }
         }
@@ -668,7 +687,7 @@
             console.log("🎮 Ludo Dice Game initialized");
             console.log("💰 Points:", points);
             console.log("📱 RichAds:", richAdsLoaded ? "✅ Loaded" : "❌ Not available");
-            console.log("📱 Gigapub:", gigapubLoaded ? "✅ Loaded" : "❌ Not available");
+            console.log("📱 Telega.io:", telegaLoaded ? "✅ Loaded" : "❌ Not available");
         }
         
         // Start game
