@@ -11,7 +11,7 @@
     
     <!-- RichPartners SDK (Primary) -->
     <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
-    
+
     <!-- Gigapub SDK (Fallback) -->
     <script src="https://ad.gigapub.tech/script?id=978"></script>
 
@@ -23,6 +23,7 @@
             --success: #34c759;
             --danger: #ff3b30;
             --purple: #9d4edd;
+            --richads-blue: #3498db;
         }
         
         * {
@@ -333,6 +334,42 @@
             display: flex;
             align-items: center;
             gap: 6px;
+        }
+        
+        /* Ad Status Indicator */
+        .ad-status {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 15px;
+            font-size: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+        
+        .ad-status.richads { 
+            background: rgba(52, 152, 219, 0.8);
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+        .ad-status.gigapub { 
+            background: rgba(155, 89, 182, 0.7); 
+            box-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
+        }
+        .ad-status.mock { 
+            background: rgba(149, 165, 166, 0.7); 
+            box-shadow: 0 0 10px rgba(149, 165, 166, 0.5);
         }
         
         /* Ludo Board */
@@ -722,6 +759,9 @@
         </div>
         
         <div class="points-container">
+            <div class="ad-status richads" id="adStatusDisplay">
+                <i class="fas fa-ad"></i> <span id="adStatusText">RichAds</span>
+            </div>
             <div class="free-rolls-container" id="freeRollsDisplay">
                 <i class="fas fa-dice"></i>
                 <span id="freeRollsCount">5</span> FREE
@@ -800,37 +840,91 @@
         let richAdsLoaded = false;
         let gigapubLoaded = false;
         
+        // Function to initialize RichAds (Primary)
+        function initializeRichAds() {
+            console.log("🔄 Initializing RichAds (Primary)...");
+            
+            if (typeof TelegramAdsController !== 'undefined') {
+                try {
+                    window.TelegramAdsController = new TelegramAdsController();
+                    window.TelegramAdsController.initialize({
+                        pubId: "956231",
+                        appId: "5584",
+                    });
+                    richAdsLoaded = true;
+                    console.log("✅ RichAds initialized successfully");
+                    updateAdStatus();
+                    return true;
+                } catch (error) {
+                    console.log("❌ RichAds initialization error:", error);
+                    return false;
+                }
+            } else {
+                console.log("❌ TelegramAdsController not defined");
+                return false;
+            }
+        }
+        
+        // Function to check Gigapub (Fallback)
+        function checkGigapub() {
+            console.log("🔄 Checking Gigapub (Fallback)...");
+            
+            if (typeof showGiga === 'function') {
+                gigapubLoaded = true;
+                console.log("✅ Gigapub SDK available");
+                return true;
+            } else {
+                console.log("❌ Gigapub SDK not available");
+                return false;
+            }
+        }
+        
+        // Function to update ad status display
+        function updateAdStatus() {
+            const adStatusElement = document.getElementById('adStatusDisplay');
+            const adStatusText = document.getElementById('adStatusText');
+            
+            if (richAdsLoaded) {
+                adStatusElement.className = 'ad-status richads';
+                adStatusText.textContent = 'RichAds';
+                console.log("📊 Ad Status: RichAds Active");
+            } else if (gigapubLoaded) {
+                adStatusElement.className = 'ad-status gigapub';
+                adStatusText.textContent = 'Gigapub';
+                console.log("📊 Ad Status: Gigapub Active");
+            } else {
+                adStatusElement.className = 'ad-status mock';
+                adStatusText.textContent = 'Mock Ads';
+                console.log("📊 Ad Status: Mock Ads (No SDK)");
+            }
+        }
+        
+        // Initialize all ad SDKs
+        function initializeAdSDKs() {
+            console.log("🎯 Initializing Advertising SDKs...");
+            
+            // First try RichAds (Primary)
+            const richadsSuccess = initializeRichAds();
+            
+            // If RichAds fails, try Gigapub
+            if (!richadsSuccess) {
+                console.log("🔄 RichAds failed, trying Gigapub...");
+                const gigapubSuccess = checkGigapub();
+                
+                if (!gigapubSuccess) {
+                    console.log("⚠️ No ad SDKs loaded. Using mock ads.");
+                }
+            }
+            
+            updateAdStatus();
+        }
+        
         // Initialize Telegram WebApp
         if (window.Telegram && window.Telegram.WebApp) {
             const tg = window.Telegram.WebApp;
             tg.ready();
             tg.expand();
             console.log("✅ Telegram WebApp initialized");
-        }
-        
-        // Initialize RichAds
-        try {
-            if (typeof TelegramAdsController !== 'undefined') {
-                window.TelegramAdsController = new TelegramAdsController();
-                window.TelegramAdsController.initialize({
-                    pubId: "956231",
-                    appId: "5584",
-                });
-                richAdsLoaded = true;
-                console.log("✅ RichAds initialized successfully");
-            } else {
-                console.log("❌ TelegramAdsController not defined");
-            }
-        } catch (error) {
-            console.log("❌ RichAds initialization error:", error);
-        }
-        
-        // Check if Gigapub loaded
-        if (typeof showGiga === 'function') {
-            gigapubLoaded = true;
-            console.log("✅ Gigapub SDK loaded");
-        } else {
-            console.log("❌ Gigapub SDK not loaded");
         }
         
         // ===== GAME VARIABLES =====
@@ -1006,40 +1100,53 @@
             playSound(clickSound);
             adsPopup.style.display = 'flex';
             closeAdsBtn.style.display = 'none';
-            adsContainer.innerHTML = '<div style="color: #6c757d; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading bonus reward...</div>';
+            adsContainer.innerHTML = '<div style="color: #6c757d; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading reward...</div>';
             
-            // Try RichAds first
+            // Try RichAds first (PRIMARY)
             if (richAdsLoaded && window.TelegramAdsController) {
-                console.log("🎯 Showing RichAds for bonus...");
+                console.log("🎯 Showing RichAds (Primary)...");
                 showRichAds();
-            } else {
+            } else if (gigapubLoaded && typeof showGiga === 'function') {
                 // If RichAds not available, try Gigapub
-                console.log("🎯 RichAds not available, trying Gigapub...");
+                console.log("🎯 Showing Gigapub (Fallback)...");
                 showGigapubAds();
+            } else {
+                // If both fail, show mock ad
+                console.log("🎯 No ad SDK available, showing mock ad...");
+                showMockAd();
             }
         }
         
         function showRichAds() {
-            try {
-                // Try to show RichAds
-                window.TelegramAdsController.showAd();
-                
-                // Wait for ad completion (assume 5 seconds)
-                setTimeout(() => {
-                    console.log("✅ RichAds bonus completed");
-                    giveBonus(100);
-                }, 5000);
-                
-            } catch (error) {
-                console.log("❌ RichAds error:", error);
+            if (richAdsLoaded && window.TelegramAdsController) {
+                try {
+                    // Try to show RichAds
+                    window.TelegramAdsController.showAd();
+                    
+                    // Wait for ad completion (assume 5 seconds)
+                    setTimeout(() => {
+                        console.log("✅ RichAds completed");
+                        giveBonus(100);
+                    }, 5000);
+                    
+                } catch (error) {
+                    console.log("❌ RichAds error:", error);
+                    // Try Gigapub as fallback
+                    if (gigapubLoaded && typeof showGiga === 'function') {
+                        console.log("🔄 Trying Gigapub after RichAds failed...");
+                        showGigapubAds();
+                    } else {
+                        giveBonus(50); // Give smaller bonus for failed ad
+                    }
+                }
+            } else {
+                // If RichAds not available, try Gigapub
                 showGigapubAds();
             }
         }
         
         function showGigapubAds() {
             if (gigapubLoaded && typeof showGiga === 'function') {
-                console.log("🎯 Showing Gigapub ads for bonus...");
-                
                 showGiga()
                     .then(() => {
                         console.log("✅ Gigapub ad completed");
@@ -1049,11 +1156,17 @@
                         console.log("❌ Gigapub ad failed:", error);
                         giveBonus(50); // Give smaller bonus for failed ad
                     });
-                    
             } else {
-                console.log("❌ Gigapub not available");
-                giveBonus(20); // Give free bonus
+                giveBonus(30); // Give minimal bonus
             }
+        }
+        
+        function showMockAd() {
+            console.log("🎯 Showing mock ad...");
+            // Simulate ad loading
+            setTimeout(() => {
+                giveBonus(20); // Give free bonus
+            }, 2000);
         }
         
         function giveBonus(bonusAmount) {
@@ -1079,6 +1192,11 @@
         function initGame() {
             console.log("🎮 Initializing Ludo Dice Game...");
             
+            // Initialize ad SDKs after a short delay
+            setTimeout(() => {
+                initializeAdSDKs();
+            }, 1000);
+            
             // Start with logo screen
             showLogo();
             
@@ -1088,7 +1206,7 @@
                 showWelcome();
             }, 2000);
             
-            // Event listeners - FIXED: Added proper event listeners
+            // Event listeners
             startGameBtn.addEventListener('click', startGame);
             backToLogoBtn.addEventListener('click', () => {
                 console.log("⬅️ Back to logo clicked");
@@ -1129,19 +1247,12 @@
             console.log("✅ Game initialized successfully");
             console.log("💰 Points:", points);
             console.log("🎲 Free Rolls:", freeRolls);
-            console.log("📱 RichAds:", richAdsLoaded ? "✅ Loaded" : "❌ Not available");
-            console.log("📱 Gigapub:", gigapubLoaded ? "✅ Loaded" : "❌ Not available");
         }
         
         // Start game when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             console.log("📄 DOM loaded, initializing game...");
             initGame();
-        });
-        
-        // Also initialize when window loads (extra safety)
-        window.addEventListener('load', function() {
-            console.log("🔄 Window loaded");
         });
     </script>
 </body>
