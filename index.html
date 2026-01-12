@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ludo Dice - Win Rewards</title>
+    <title>Ludo Dice Roll - Win Big Rewards!</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Telegram WebApp -->
@@ -12,8 +12,12 @@
     <!-- RichPartners SDK (Primary) -->
     <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
     
-    <!-- Gigapub SDK (Fallback) -->
-    <script src="https://ad.gigapub.tech/script?id=978"></script>
+    <!-- Telega.io SDK (Fallback) -->
+    <script src="https://inapp.telega.io/sdk/v1/sdk.js"></script>
+    <script>
+      const ads = window.TelegaIn.AdsController.create_miniapp({
+        token: 'c66dd970-a8e9-443b-9f0c-70edbcae2791' });
+    </script>
 
     <style>
         :root {
@@ -22,6 +26,7 @@
             --gold: #ffd700;
             --success: #34c759;
             --danger: #ff3b30;
+            --purple: #9d4edd;
         }
         
         * {
@@ -41,6 +46,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-x: hidden;
         }
         
         .container {
@@ -52,7 +58,139 @@
             gap: 16px;
         }
         
-        /* Header */
+        /* Welcome Intro Screen */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #18222d 0%, #2c3e50 100%);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            animation: welcomeIn 0.5s ease-out;
+        }
+        
+        @keyframes welcomeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .welcome-content {
+            max-width: 360px;
+            width: 100%;
+            animation: contentSlide 0.6s ease-out 0.3s both;
+        }
+        
+        @keyframes contentSlide {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .welcome-title {
+            font-size: 42px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ffd700, #ff9500);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+        }
+        
+        .welcome-subtitle {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+        
+        .intro-features {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: left;
+        }
+        
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--purple);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .feature-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .feature-text strong {
+            color: var(--gold);
+            font-weight: 600;
+        }
+        
+        .start-button {
+            background: linear-gradient(45deg, var(--telegram-blue), var(--purple));
+            color: white;
+            border: none;
+            padding: 18px 32px;
+            font-size: 20px;
+            font-weight: 700;
+            border-radius: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+            width: 100%;
+            transition: all 0.3s;
+            box-shadow: 0 6px 20px rgba(51, 144, 236, 0.4);
+        }
+        
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(51, 144, 236, 0.5);
+        }
+        
+        .start-button:active {
+            transform: translateY(0);
+        }
+        
+        .welcome-footer {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 30px;
+            line-height: 1.5;
+        }
+        
+        /* Game Content */
+        .game-content {
+            width: 100%;
+            display: none;
+        }
+        
         .game-header {
             width: 100%;
             text-align: center;
@@ -60,6 +198,12 @@
             background: rgba(255, 255, 255, 0.05);
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideDown 0.5s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
         
         .game-title {
@@ -82,6 +226,13 @@
             border-radius: 16px;
             text-align: center;
             border: 2px solid var(--gold);
+            position: relative;
+            animation: fadeIn 0.5s ease-out 0.2s both;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         .points-label {
@@ -96,6 +247,22 @@
             color: var(--gold);
         }
         
+        /* Free Rolls Display */
+        .free-rolls-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(52, 199, 89, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
         /* Ludo Board */
         .ludo-board {
             width: 280px;
@@ -107,6 +274,7 @@
             transform: rotate(45deg);
             margin: 16px 0;
             overflow: hidden;
+            animation: fadeIn 0.5s ease-out 0.4s both;
         }
         
         .quadrant {
@@ -172,6 +340,7 @@
             flex-direction: column;
             align-items: center;
             gap: 16px;
+            animation: fadeIn 0.5s ease-out 0.6s both;
         }
         
         .roll-btn {
@@ -202,6 +371,28 @@
         .cost-info {
             font-size: 14px;
             color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Bonus Ad Button */
+        .bonus-btn {
+            width: 100%;
+            background: linear-gradient(45deg, var(--success), #2ecc71);
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        
+        .bonus-btn i {
+            font-size: 18px;
         }
         
         /* Popups */
@@ -311,6 +502,7 @@
             font-size: 13px;
             color: rgba(255, 255, 255, 0.7);
             line-height: 1.5;
+            animation: fadeIn 0.5s ease-out 0.8s both;
         }
         
         @media (max-width: 480px) {
@@ -337,17 +529,81 @@
                 padding: 16px;
                 font-size: 16px;
             }
+            
+            .welcome-title {
+                font-size: 36px;
+            }
+            
+            .welcome-subtitle {
+                font-size: 18px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Welcome Introduction Screen -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-content">
+            <div class="welcome-title">🎲 LUDO DICE ROLL</div>
+            <div class="welcome-subtitle">Roll Your Way to Riches!</div>
+            
+            <div class="intro-features">
+                <div class="feature-item">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-text">
+                        <strong>Lucky Dice Rolls</strong><br>
+                        Roll 1-6, win up to 6x points!
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">💰</div>
+                    <div class="feature-text">
+                        <strong>Free Daily Rolls</strong><br>
+                        Start with 5 free rolls every day!
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🏆</div>
+                    <div class="feature-text">
+                        <strong>Bonus Rewards</strong><br>
+                        Watch optional ads for extra points!
+                    </div>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-text">
+                        <strong>Fast & Fair</strong><br>
+                        Instant wins, no waiting!
+                    </div>
+                </div>
+            </div>
+            
+            <button class="start-button" id="startGameBtn">
+                <i class="fas fa-play"></i> START PLAYING NOW
+            </button>
+            
+            <div class="welcome-footer">
+                Challenge your luck and win big!<br>
+                Play fair, win points, have fun!
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Game Content -->
+    <div class="container game-content" id="gameContent">
         <div class="game-header">
             <h1 class="game-title">🎲 LUDO DICE ROLL</h1>
             <p class="game-subtitle">Roll dice, win points, get rewards!</p>
         </div>
         
         <div class="points-container">
+            <div class="free-rolls-container" id="freeRollsDisplay">
+                <i class="fas fa-dice"></i>
+                <span id="freeRollsCount">5</span> FREE
+            </div>
             <div class="points-label">YOUR POINTS</div>
             <div class="points-value" id="pointsValue">1,000</div>
         </div>
@@ -365,13 +621,19 @@
         
         <div class="controls">
             <button class="roll-btn" id="rollBtn">
-                <i class="fas fa-dice"></i> ROLL DICE - 100 POINTS
+                <i class="fas fa-dice"></i> ROLL DICE
+                <span id="rollCost">(FREE ROLL)</span>
             </button>
             <div class="cost-info">Win multiplier: 1x to 6x</div>
+            
+            <button class="bonus-btn" id="bonusBtn">
+                <i class="fas fa-gift"></i> GET BONUS REWARDS
+                <span style="font-size: 12px; margin-left: 5px;">(+100 POINTS)</span>
+            </button>
         </div>
         
         <div class="instructions">
-            <p><strong>How to play:</strong> Tap ROLL DICE (costs 100 points). Dice shows 1-6. Win = dice number × 100 points. Watch ad for bonus!</p>
+            <p><strong>How to play:</strong> Use your free rolls to play for free! Each roll gives you 1-6 points ×100. Watch optional ads for bonus rewards when you want extra points!</p>
         </div>
     </div>
     
@@ -397,7 +659,7 @@
                 </div>
             </div>
             <button class="popup-btn" id="closeAdsBtn" style="background: var(--telegram-blue); display: none;">
-                <i class="fas fa-check"></i> CONTINUE (+50 BONUS)
+                <i class="fas fa-check"></i> CONTINUE (+100 BONUS)
             </button>
         </div>
     </div>
@@ -414,7 +676,7 @@
     <script>
         // ===== ADS SDK INITIALIZATION =====
         let richAdsLoaded = false;
-        let gigapubLoaded = false;
+        let telegaLoaded = false;
         
         // Initialize Telegram WebApp
         if (window.Telegram && window.Telegram.WebApp) {
@@ -441,24 +703,32 @@
             console.log("❌ RichAds initialization error:", error);
         }
         
-        // Check if Gigapub loaded
-        if (typeof showGiga === 'function') {
-            gigapubLoaded = true;
-            console.log("✅ Gigapub SDK loaded");
+        // Check if Telega.io loaded
+        if (typeof ads !== 'undefined' && typeof ads.ad_show === 'function') {
+            telegaLoaded = true;
+            console.log("✅ Telega.io SDK loaded");
         } else {
-            console.log("❌ Gigapub SDK not loaded");
+            console.log("❌ Telega.io SDK not loaded");
         }
         
         // ===== GAME VARIABLES =====
         let points = 1000;
+        let freeRolls = 5; // Free rolls per day
         let isRolling = false;
         let isAudioOn = true;
         let currentWin = 0;
         let currentDice = 6;
         
         // DOM Elements
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const gameContent = document.getElementById('gameContent');
+        const startGameBtn = document.getElementById('startGameBtn');
         const rollBtn = document.getElementById('rollBtn');
+        const rollCost = document.getElementById('rollCost');
         const pointsValue = document.getElementById('pointsValue');
+        const freeRollsDisplay = document.getElementById('freeRollsDisplay');
+        const freeRollsCount = document.getElementById('freeRollsCount');
+        const bonusBtn = document.getElementById('bonusBtn');
         const dice = document.getElementById('dice');
         const resultPopup = document.getElementById('resultPopup');
         const resultDice = document.getElementById('resultDice');
@@ -484,6 +754,19 @@
         
         function updatePoints() {
             pointsValue.textContent = formatNumber(points);
+            freeRollsCount.textContent = freeRolls;
+            
+            // Update roll button text based on free rolls
+            if (freeRolls > 0) {
+                rollCost.textContent = "(FREE ROLL)";
+                rollBtn.disabled = false;
+            } else if (points >= 100) {
+                rollCost.textContent = "(100 POINTS)";
+                rollBtn.disabled = false;
+            } else {
+                rollCost.textContent = "(NEED POINTS)";
+                rollBtn.disabled = true;
+            }
         }
         
         function playSound(sound) {
@@ -499,15 +782,44 @@
             playSound(clickSound);
         }
         
+        function startGame() {
+            playSound(clickSound);
+            // Animate welcome screen out
+            welcomeScreen.style.opacity = '0';
+            welcomeScreen.style.transform = 'scale(1.1)';
+            
+            setTimeout(() => {
+                welcomeScreen.style.display = 'none';
+                gameContent.style.display = 'flex';
+                updatePoints();
+                
+                // Animate game content in
+                setTimeout(() => {
+                    gameContent.style.opacity = '1';
+                }, 100);
+            }, 300);
+        }
+        
         // ===== DICE ROLL FUNCTION =====
         function rollDice() {
-            if (isRolling || points < 100) return;
+            if (isRolling) return;
+            
+            // Check if we can roll
+            if (freeRolls <= 0 && points < 100) {
+                alert("You need points to roll! Get bonus rewards or wait for free rolls reset.");
+                return;
+            }
             
             isRolling = true;
             rollBtn.disabled = true;
             
-            // Deduct points
-            points -= 100;
+            // Deduct cost
+            if (freeRolls > 0) {
+                freeRolls--;
+            } else {
+                points -= 100;
+            }
+            
             updatePoints();
             playSound(diceSound);
             
@@ -550,23 +862,23 @@
             points += currentWin;
             updatePoints();
             resultPopup.style.display = 'none';
-            setTimeout(showAdsForBonus, 300);
         }
         
-        // ===== ADS SYSTEM =====
-        function showAdsForBonus() {
+        // ===== BONUS ADS SYSTEM =====
+        function showBonusAds() {
+            playSound(clickSound);
             adsPopup.style.display = 'flex';
             closeAdsBtn.style.display = 'none';
-            adsContainer.innerHTML = '<div style="color: #6c757d; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading reward...</div>';
+            adsContainer.innerHTML = '<div style="color: #6c757d; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading bonus reward...</div>';
             
             // Try RichAds first
             if (richAdsLoaded && window.TelegramAdsController) {
-                console.log("🎯 Showing RichAds...");
+                console.log("🎯 Showing RichAds for bonus...");
                 showRichAds();
             } else {
-                // If RichAds not available, try Gigapub
-                console.log("🎯 RichAds not available, trying Gigapub...");
-                showGigapubAds();
+                // If RichAds not available, try Telega.io
+                console.log("🎯 RichAds not available, trying Telega.io...");
+                showTelegaAds();
             }
         }
         
@@ -577,87 +889,97 @@
                 
                 // Wait for ad completion (assume 5 seconds)
                 setTimeout(() => {
-                    console.log("✅ RichAds completed");
-                    giveBonus();
+                    console.log("✅ RichAds bonus completed");
+                    giveBonus(100);
                 }, 5000);
                 
             } catch (error) {
                 console.log("❌ RichAds error:", error);
-                showGigapubAds();
+                showTelegaAds();
             }
         }
         
-        function showGigapubAds() {
-            if (gigapubLoaded && typeof showGiga === 'function') {
-                console.log("🎯 Showing Gigapub ads...");
+        function showTelegaAds() {
+            if (telegaLoaded && typeof ads !== 'undefined') {
+                console.log("🎯 Showing Telega.io ads for bonus...");
                 
-                showGiga()
-                    .then(() => {
-                        console.log("✅ Gigapub ad completed");
-                        giveBonus();
-                    })
-                    .catch(error => {
-                        console.log("❌ Gigapub ad failed:", error);
-                        showMockAd();
+                // First try reward ad
+                try {
+                    ads.ad_show({
+                        adBlockUuid: "55ac6839-babf-4e04-95b9-df7a276fdd0a" // Reward
+                    }).then(() => {
+                        console.log("✅ Telega.io reward ad completed");
+                        giveBonus(100);
+                    }).catch(error => {
+                        console.log("❌ Telega.io reward ad failed, trying interstitial:", error);
+                        // Fallback to interstitial
+                        ads.ad_show({
+                            adBlockUuid: "136f4f44-647c-4bf2-92b9-776215f047e3" // Interstitial
+                        }).then(() => {
+                            console.log("✅ Telega.io interstitial ad completed");
+                            giveBonus(100);
+                        }).catch(interstitialError => {
+                            console.log("❌ Telega.io interstitial also failed:", interstitialError);
+                            giveBonus(50); // Give smaller bonus for failed ad
+                        });
                     });
+                } catch (error) {
+                    console.log("❌ Telega.io ad call error:", error);
+                    giveBonus(30); // Give minimal bonus
+                }
                     
             } else {
-                console.log("❌ Gigapub not available");
-                showMockAd();
+                console.log("❌ Telega.io not available");
+                giveBonus(20); // Give free bonus
             }
         }
         
-        function showMockAd() {
-            console.log("🎯 Showing mock ad...");
-            adsContainer.innerHTML = `
-                <div style="text-align: center; color: #2c3e50;">
-                    <i class="fas fa-gift" style="font-size: 40px; color: #ff6b6b;"></i>
-                    <div style="font-size: 16px; font-weight: 600; margin-top: 10px;">BONUS REWARD!</div>
-                    <div style="font-size: 12px; margin-top: 5px; color: #6c757d;">Thanks for playing!</div>
-                </div>
-            `;
-            
-            setTimeout(() => {
-                giveBonus();
-            }, 2000);
-        }
-        
-        function giveBonus() {
+        function giveBonus(bonusAmount) {
             adsContainer.innerHTML = `
                 <div style="text-align: center; color: #2c3e50;">
                     <i class="fas fa-trophy" style="font-size: 40px; color: #ffd700;"></i>
-                    <div style="font-size: 24px; font-weight: 800; color: #34c759; margin-top: 10px;">+50 BONUS</div>
+                    <div style="font-size: 24px; font-weight: 800; color: #34c759; margin-top: 10px;">+${bonusAmount} BONUS</div>
                     <div style="font-size: 14px; margin-top: 5px; color: #6c757d;">Points added to your balance!</div>
                 </div>
             `;
             
+            points += bonusAmount;
+            updatePoints();
             closeAdsBtn.style.display = 'flex';
         }
         
         function closeAds() {
             playSound(clickSound);
-            points += 50;
-            updatePoints();
             adsPopup.style.display = 'none';
         }
         
         // ===== INITIALIZE GAME =====
         function initGame() {
-            updatePoints();
+            // Set initial welcome screen
+            welcomeScreen.style.display = 'flex';
+            gameContent.style.display = 'none';
             
             // Event listeners
+            startGameBtn.addEventListener('click', startGame);
             rollBtn.addEventListener('click', rollDice);
             claimBtn.addEventListener('click', claimPrize);
+            bonusBtn.addEventListener('click', showBonusAds);
             closeAdsBtn.addEventListener('click', closeAds);
             audioControl.addEventListener('click', toggleAudio);
             
             // Close popups on overlay click
             resultPopup.addEventListener('click', function(e) {
-                if (e.target === this) this.style.display = 'none';
+                if (e.target === this) {
+                    playSound(clickSound);
+                    this.style.display = 'none';
+                }
             });
             
             adsPopup.addEventListener('click', function(e) {
-                if (e.target === this) closeAds();
+                if (e.target === this) {
+                    playSound(clickSound);
+                    closeAds();
+                }
             });
             
             // Audio setup
@@ -667,8 +989,9 @@
             
             console.log("🎮 Ludo Dice Game initialized");
             console.log("💰 Points:", points);
+            console.log("🎲 Free Rolls:", freeRolls);
             console.log("📱 RichAds:", richAdsLoaded ? "✅ Loaded" : "❌ Not available");
-            console.log("📱 Gigapub:", gigapubLoaded ? "✅ Loaded" : "❌ Not available");
+            console.log("📱 Telega.io:", telegaLoaded ? "✅ Loaded" : "❌ Not available");
         }
         
         // Start game
