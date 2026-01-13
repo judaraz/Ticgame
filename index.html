@@ -385,7 +385,7 @@
                 <i class="fas fa-gift"></i> CLAIM PRIZE
             </button>
         </div>
-</div>
+    </div>
     
     <!-- Ads Popup -->
     <div class="popup-overlay" id="adsPopup">
@@ -441,10 +441,13 @@
             console.log("❌ RichAds initialization error:", error);
         }
         
-        // Check if Taddy.pro loaded
-        if (typeof Taddy !== 'undefined' && typeof Taddy.showRewardedAd === 'function') {
+        // Check if Taddy.pro loaded - FIXED CHECK
+        if (typeof window.taddySDK !== 'undefined' && window.taddySDK) {
             taddyLoaded = true;
-            console.log("✅ Taddy.pro SDK loaded");
+            console.log("✅ Taddy.pro SDK loaded", window.taddySDK);
+        } else if (typeof Taddy !== 'undefined') {
+            taddyLoaded = true;
+            console.log("✅ Taddy.pro SDK loaded (global Taddy object)");
         } else {
             console.log("❌ Taddy.pro SDK not loaded");
         }
@@ -588,19 +591,88 @@
         }
         
         function showTaddyAds() {
-            if (taddyLoaded && typeof Taddy !== 'undefined' && typeof Taddy.showRewardedAd === 'function') {
-                console.log("🎯 Showing Taddy.pro ads...");
+            console.log("🔄 Attempting to show Taddy.pro ads...");
+            console.log("taddySDK available:", typeof window.taddySDK !== 'undefined');
+            console.log("Taddy global:", typeof Taddy !== 'undefined');
+            
+            if (typeof window.taddySDK !== 'undefined' && window.taddySDK) {
+                console.log("🎯 Using window.taddySDK...");
                 
-                Taddy.showRewardedAd()
-                    .then(() => {
-                        console.log("✅ Taddy.pro ad completed");
-                        giveBonus();
-                    })
-                    .catch(error => {
-                        console.log("❌ Taddy.pro ad failed:", error);
+                try {
+                    // Taddy.pro SDK usually provides showAd() or showRewardedAd() method
+                    if (typeof window.taddySDK.showAd === 'function') {
+                        window.taddySDK.showAd()
+                            .then(() => {
+                                console.log("✅ Taddy.pro ad completed");
+                                giveBonus();
+                            })
+                            .catch(error => {
+                                console.log("❌ Taddy.pro ad failed:", error);
+                                showMockAd();
+                            });
+                    } else if (typeof window.taddySDK.showRewardedAd === 'function') {
+                        window.taddySDK.showRewardedAd()
+                            .then(() => {
+                                console.log("✅ Taddy.pro rewarded ad completed");
+                                giveBonus();
+                            })
+                            .catch(error => {
+                                console.log("❌ Taddy.pro rewarded ad failed:", error);
+                                showMockAd();
+                            });
+                    } else {
+                        console.log("❌ No showAd method found in taddySDK");
                         showMockAd();
-                    });
+                    }
+                } catch (error) {
+                    console.log("❌ Taddy.pro SDK error:", error);
+                    showMockAd();
+                }
                     
+            } else if (typeof Taddy !== 'undefined') {
+                console.log("🎯 Using global Taddy object...");
+                
+                try {
+                    // Try different possible methods
+                    if (typeof Taddy.showAd === 'function') {
+                        Taddy.showAd()
+                            .then(() => {
+                                console.log("✅ Taddy.pro ad completed");
+                                giveBonus();
+                            })
+                            .catch(error => {
+                                console.log("❌ Taddy.pro ad failed:", error);
+                                showMockAd();
+                            });
+                    } else if (typeof Taddy.showRewardedAd === 'function') {
+                        Taddy.showRewardedAd()
+                            .then(() => {
+                                console.log("✅ Taddy.pro rewarded ad completed");
+                                giveBonus();
+                            })
+                            .catch(error => {
+                                console.log("❌ Taddy.pro rewarded ad failed:", error);
+                                showMockAd();
+                            });
+                    } else if (typeof Taddy.loadAd === 'function') {
+                        // Some versions use loadAd
+                        Taddy.loadAd()
+                            .then(() => {
+                                console.log("✅ Taddy.pro ad loaded and completed");
+                                giveBonus();
+                            })
+                            .catch(error => {
+                                console.log("❌ Taddy.pro ad failed:", error);
+                                showMockAd();
+                            });
+                    } else {
+                        console.log("❌ No ad method found in Taddy object");
+                        showMockAd();
+                    }
+                } catch (error) {
+                    console.log("❌ Taddy object error:", error);
+                    showMockAd();
+                }
             } else {
                 console.log("❌ Taddy.pro not available");
                 showMockAd();
