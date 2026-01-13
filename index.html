@@ -12,8 +12,8 @@
     <!-- RichPartners SDK (Primary) -->
     <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
     
-    <!-- Gigapub SDK (Fallback) -->
-    <script src="https://ad.gigapub.tech/script?id=978"></script>
+    <!-- Taddy.pro SDK (Fallback) -->
+    <script src="https://sdk.taddy.pro/web/taddy.min.js" data-pub-id="d25a02d83a9b189188294e772cb5a425"></script>
 
     <style>
         :root {
@@ -385,7 +385,7 @@
                 <i class="fas fa-gift"></i> CLAIM PRIZE
             </button>
         </div>
-    </div>
+</div>
     
     <!-- Ads Popup -->
     <div class="popup-overlay" id="adsPopup">
@@ -414,7 +414,7 @@
     <script>
         // ===== ADS SDK INITIALIZATION =====
         let richAdsLoaded = false;
-        let gigapubLoaded = false;
+        let taddyLoaded = false;
         
         // Initialize Telegram WebApp
         if (window.Telegram && window.Telegram.WebApp) {
@@ -441,12 +441,12 @@
             console.log("❌ RichAds initialization error:", error);
         }
         
-        // Check if Gigapub loaded
-        if (typeof showGiga === 'function') {
-            gigapubLoaded = true;
-            console.log("✅ Gigapub SDK loaded");
+        // Check if Taddy.pro loaded
+        if (typeof Taddy !== 'undefined' && typeof Taddy.showRewardedAd === 'function') {
+            taddyLoaded = true;
+            console.log("✅ Taddy.pro SDK loaded");
         } else {
-            console.log("❌ Gigapub SDK not loaded");
+            console.log("❌ Taddy.pro SDK not loaded");
         }
         
         // ===== GAME VARIABLES =====
@@ -564,9 +564,9 @@
                 console.log("🎯 Showing RichAds...");
                 showRichAds();
             } else {
-                // If RichAds not available, try Gigapub
-                console.log("🎯 RichAds not available, trying Gigapub...");
-                showGigapubAds();
+                // If RichAds not available, try Taddy.pro
+                console.log("🎯 RichAds not available, trying Taddy.pro...");
+                showTaddyAds();
             }
         }
         
@@ -583,26 +583,26 @@
                 
             } catch (error) {
                 console.log("❌ RichAds error:", error);
-                showGigapubAds();
+                showTaddyAds();
             }
         }
         
-        function showGigapubAds() {
-            if (gigapubLoaded && typeof showGiga === 'function') {
-                console.log("🎯 Showing Gigapub ads...");
+        function showTaddyAds() {
+            if (taddyLoaded && typeof Taddy !== 'undefined' && typeof Taddy.showRewardedAd === 'function') {
+                console.log("🎯 Showing Taddy.pro ads...");
                 
-                showGiga()
+                Taddy.showRewardedAd()
                     .then(() => {
-                        console.log("✅ Gigapub ad completed");
+                        console.log("✅ Taddy.pro ad completed");
                         giveBonus();
                     })
                     .catch(error => {
-                        console.log("❌ Gigapub ad failed:", error);
+                        console.log("❌ Taddy.pro ad failed:", error);
                         showMockAd();
                     });
                     
             } else {
-                console.log("❌ Gigapub not available");
+                console.log("❌ Taddy.pro not available");
                 showMockAd();
             }
         }
@@ -668,7 +668,7 @@
             console.log("🎮 Ludo Dice Game initialized");
             console.log("💰 Points:", points);
             console.log("📱 RichAds:", richAdsLoaded ? "✅ Loaded" : "❌ Not available");
-            console.log("📱 Gigapub:", gigapubLoaded ? "✅ Loaded" : "❌ Not available");
+            console.log("📱 Taddy.pro:", taddyLoaded ? "✅ Loaded" : "❌ Not available");
         }
         
         // Start game
