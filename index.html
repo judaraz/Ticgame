@@ -7,14 +7,68 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Telegram WebApp -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
     
-    <!-- RichPartners SDK (Primary) -->
+    <!-- ========== ADEXIUM ADS (High Priority - Interstitial + Push-like) ========== -->
+    <!-- Adexium Core Script -->
+    <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
+    <script type="text/javascript">
+        // Adexium Widgets - Configure both Interstitial and Push-like formats for maximum fill rate
+        document.addEventListener('DOMContentLoaded', () => {
+            // Widget 1: Interstitial Format (full-screen)
+            if (typeof AdexiumWidget !== 'undefined') {
+                try {
+                    const adexiumInterstitial = new AdexiumWidget({
+                        wid: 'f2c903be-ac1d-4f6b-b0c7-8a281363517e', 
+                        adFormat: 'interstitial'
+                    });
+                    adexiumInterstitial.autoMode();
+                    window.adexiumInterstitial = adexiumInterstitial;
+                    console.log('✅ Adexium Interstitial initialized');
+                } catch(e) { console.log('Adexium Interstitial init error:', e); }
+                
+                // Widget 2: Push-like Format (subtle, high frequency)
+                try {
+                    const adexiumPushLike = new AdexiumWidget({
+                        wid: '30015b9a-df1e-4895-be7b-c5bc1b148fcf', 
+                        adFormat: 'push-like'
+                    });
+                    adexiumPushLike.autoMode();
+                    window.adexiumPushLike = adexiumPushLike;
+                    console.log('✅ Adexium Push-like initialized');
+                } catch(e) { console.log('Adexium Push-like init error:', e); }
+            } else {
+                console.warn('⚠️ AdexiumWidget not loaded');
+            }
+        });
+    </script>
+    
+    <!-- ========== RICHADS (Richpartners - Secondary High-Frequency Ads) ========== -->
     <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+    <script>
+        // Initialize RichAds Controller with aggressive settings for max impressions
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof TelegramAdsController !== 'undefined') {
+                try {
+                    window.RichAdsController = new TelegramAdsController();
+                    window.RichAdsController.initialize({
+                        pubId: "1005581",
+                        appId: "6673",
+                    });
+                    // Auto-show ads on idle to maximize frequency
+                    console.log('✅ RichAds initialized successfully');
+                    window.richAdsReady = true;
+                } catch(e) { console.log('RichAds init error:', e); window.richAdsReady = false; }
+            } else {
+                console.warn('⚠️ TelegramAdsController not defined');
+                window.richAdsReady = false;
+            }
+        });
+    </script>
     
-    <!-- Taddy.pro SDK (Fallback) -->
+    <!-- ========== TADDY.PRO (Fallback - Ensures 100% ad fill) ========== -->
     <script src="https://sdk.taddy.pro/web/taddy.min.js?1317" data-pub-id="d25a02d83a9b189188294e772cb5a425"></script>
-
+    
     <style>
         :root {
             --telegram-blue: #3390ec;
@@ -30,6 +84,7 @@
             box-sizing: border-box;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
         
         body {
@@ -52,7 +107,6 @@
             gap: 16px;
         }
         
-        /* Header */
         .game-header {
             width: 100%;
             text-align: center;
@@ -74,7 +128,6 @@
             color: rgba(255, 255, 255, 0.7);
         }
         
-        /* Points Display */
         .points-container {
             width: 100%;
             background: linear-gradient(135deg, #2c3e50, #3498db);
@@ -96,7 +149,6 @@
             color: var(--gold);
         }
         
-        /* Ludo Board */
         .ludo-board {
             width: 280px;
             height: 280px;
@@ -114,7 +166,6 @@
             width: 50%;
             height: 50%;
         }
-        
         .quadrant-1 { top: 0; left: 0; background: #ff6b6b; border-bottom-right-radius: 100%; }
         .quadrant-2 { top: 0; right: 0; background: #4ecdc4; border-bottom-left-radius: 100%; }
         .quadrant-3 { bottom: 0; left: 0; background: #ffd93d; border-top-right-radius: 100%; }
@@ -134,14 +185,8 @@
             align-items: center;
             justify-content: center;
         }
+        .board-center span { transform: rotate(-45deg); font-weight: 800; color: #2c3e50; }
         
-        .board-center span {
-            transform: rotate(-45deg);
-            font-weight: 800;
-            color: #2c3e50;
-        }
-        
-        /* Dice */
         .dice {
             position: absolute;
             top: 50%;
@@ -159,9 +204,9 @@
             font-weight: 900;
             color: #2c3e50;
             z-index: 10;
+            transition: transform 0.1s ease;
         }
         
-        /* Controls */
         .controls {
             width: 100%;
             padding: 20px;
@@ -188,23 +233,12 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
+            transition: transform 0.1s ease;
         }
+        .roll-btn:active { transform: scale(0.98); }
+        .roll-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .cost-info { font-size: 14px; color: rgba(255, 255, 255, 0.7); }
         
-        .roll-btn:active {
-            transform: scale(0.98);
-        }
-        
-        .roll-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .cost-info {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-        
-        /* Popups */
         .popup-overlay {
             position: fixed;
             top: 0;
@@ -234,25 +268,9 @@
             to { transform: scale(1); opacity: 1; }
         }
         
-        .popup-title {
-            font-size: 22px;
-            color: #2c3e50;
-            margin-bottom: 16px;
-            font-weight: 700;
-        }
-        
-        .dice-result {
-            font-size: 60px;
-            margin: 16px 0;
-        }
-        
-        .win-info {
-            font-size: 36px;
-            font-weight: 800;
-            color: var(--success);
-            margin: 16px 0;
-        }
-        
+        .popup-title { font-size: 22px; color: #2c3e50; margin-bottom: 16px; font-weight: 700; }
+        .dice-result { font-size: 60px; margin: 16px 0; }
+        .win-info { font-size: 36px; font-weight: 800; color: var(--success); margin: 16px 0; }
         .popup-btn {
             width: 100%;
             background: var(--success);
@@ -270,7 +288,6 @@
             gap: 8px;
         }
         
-        /* Ads Popup */
         .ads-content {
             min-height: 180px;
             background: #f8f9fa;
@@ -301,7 +318,6 @@
             border: 2px solid white;
         }
         
-        /* Instructions */
         .instructions {
             width: 100%;
             padding: 16px;
@@ -314,29 +330,20 @@
         }
         
         @media (max-width: 480px) {
-            .ludo-board {
-                width: 250px;
-                height: 250px;
-            }
-            
-            .dice {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
-            }
-            
-            .game-title {
-                font-size: 24px;
-            }
-            
-            .points-value {
-                font-size: 36px;
-            }
-            
-            .roll-btn {
-                padding: 16px;
-                font-size: 16px;
-            }
+            .ludo-board { width: 250px; height: 250px; }
+            .dice { width: 50px; height: 50px; font-size: 20px; }
+            .game-title { font-size: 24px; }
+            .points-value { font-size: 36px; }
+            .roll-btn { padding: 16px; font-size: 16px; }
+        }
+        
+        .bonus-animation {
+            animation: pulse 0.5s ease;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); background: rgba(52, 199, 89, 0.3); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
@@ -344,12 +351,12 @@
     <div class="container">
         <div class="game-header">
             <h1 class="game-title">🎲 LUDO DICE ROLL</h1>
-            <p class="game-subtitle">Roll dice, win points, get rewards!</p>
+            <p class="game-subtitle">Roll dice, win points, watch ads for massive bonuses!</p>
         </div>
         
         <div class="points-container">
             <div class="points-label">YOUR POINTS</div>
-            <div class="points-value" id="pointsValue">1,000</div>
+            <div class="points-value" id="pointsValue">1,500</div>
         </div>
         
         <div class="ludo-board">
@@ -357,9 +364,7 @@
             <div class="quadrant quadrant-2"></div>
             <div class="quadrant quadrant-3"></div>
             <div class="quadrant quadrant-4"></div>
-            <div class="board-center">
-                <span>LUDO</span>
-            </div>
+            <div class="board-center"><span>LUDO</span></div>
             <div class="dice" id="dice">6</div>
         </div>
         
@@ -367,11 +372,12 @@
             <button class="roll-btn" id="rollBtn">
                 <i class="fas fa-dice"></i> ROLL DICE - 100 POINTS
             </button>
-            <div class="cost-info">Win multiplier: 1x to 6x</div>
+            <div class="cost-info">🎁 Win multiplier: 1x-6x | After win, watch AD for +50 BONUS + Extra Rewards!</div>
         </div>
         
         <div class="instructions">
-            <p><strong>How to play:</strong> Tap ROLL DICE (costs 100 points). Dice shows 1-6. Win = dice number × 100 points. Watch ad for bonus!</p>
+            <p><strong>How to play:</strong> Roll dice (cost 100 points). Win = dice number × 100 points. After each win, claim prize and watch an ad to get +50 bonus points! Ads appear frequently for maximum rewards.</p>
+            <p><strong>🔥 Pro Tip:</strong> More rolls = more ads = more bonus points!</p>
         </div>
     </div>
     
@@ -382,22 +388,22 @@
             <div class="dice-result" id="resultDice">⚅</div>
             <div class="win-info" id="winAmount">600 POINTS</div>
             <button class="popup-btn" id="claimBtn">
-                <i class="fas fa-gift"></i> CLAIM PRIZE
+                <i class="fas fa-gift"></i> CLAIM & WATCH AD FOR BONUS
             </button>
         </div>
     </div>
     
-    <!-- Ads Popup -->
+    <!-- Ads Bonus Popup -->
     <div class="popup-overlay" id="adsPopup">
         <div class="popup">
-            <h2 class="popup-title">🎁 BONUS REWARD</h2>
+            <h2 class="popup-title">🎁 EXTRA REWARD</h2>
             <div class="ads-content" id="adsContainer">
                 <div style="color: #6c757d; text-align: center;">
-                    <i class="fas fa-spinner fa-spin"></i> Loading reward...
+                    <i class="fas fa-spinner fa-spin"></i> Loading premium ad...
                 </div>
             </div>
             <button class="popup-btn" id="closeAdsBtn" style="background: var(--telegram-blue); display: none;">
-                <i class="fas fa-check"></i> CONTINUE (+50 BONUS)
+                <i class="fas fa-check-circle"></i> COLLECT BONUS (+50 POINTS)
             </button>
         </div>
     </div>
@@ -412,76 +418,18 @@
     <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" preload="auto"></audio>
 
     <script>
-        // ===== ADS SDK INITIALIZATION =====
-        let richAdsLoaded = false;
-        let taddyLoaded = false;
-        let taddyAds = null;
-        
-        // Initialize Telegram WebApp
-        if (window.Telegram && window.Telegram.WebApp) {
-            const tg = window.Telegram.WebApp;
-            tg.ready();
-            tg.expand();
-            console.log("✅ Telegram WebApp initialized");
-        }
-        
-        // Initialize RichAds
-        try {
-            if (typeof TelegramAdsController !== 'undefined') {
-                window.TelegramAdsController = new TelegramAdsController();
-                window.TelegramAdsController.initialize({
-                    pubId: "956231",
-                    appId: "5595",
-                });
-                richAdsLoaded = true;
-                console.log("✅ RichAds initialized successfully");
-            } else {
-                console.log("❌ TelegramAdsController not defined");
-            }
-        } catch (error) {
-            console.log("❌ RichAds initialization error:", error);
-        }
-        
-        // Check and initialize Taddy.pro
-        function initializeTaddy() {
-            if (typeof window.Taddy !== 'undefined' && window.Taddy) {
-                try {
-                    console.log("🔄 Initializing Taddy.pro...");
-                    
-                    // Taddy auto-initializes with data-pub-id, but we can call ready()
-                    if (typeof window.Taddy.ready === 'function') {
-                        window.Taddy.ready();
-                        console.log("✅ Taddy.ready() called");
-                    }
-                    
-                    // Get ads service
-                    if (typeof window.Taddy.ads === 'function') {
-                        taddyAds = window.Taddy.ads();
-                        taddyLoaded = true;
-                        console.log("✅ Taddy.pro ads service loaded");
-                    } else {
-                        console.log("❌ Taddy.ads() not available");
-                    }
-                    
-                } catch (error) {
-                    console.log("❌ Taddy.pro initialization error:", error);
-                }
-            } else {
-                console.log("❌ Taddy object not available");
-            }
-        }
-        
-        // Initialize Taddy after page loads
-        window.addEventListener('load', function() {
-            setTimeout(initializeTaddy, 1000);
-        });
-        
-        // ===== GAME VARIABLES =====
-        let points = 1000;
+        // ==================== ENHANCED ADS SYSTEM ====================
+        // MAXIMUM FREQUENCY: Adexium (2 formats) + RichAds + Taddy fallback
+        let points = 1500;
         let isRolling = false;
         let isAudioOn = true;
         let currentWin = 0;
         let currentDice = 6;
+        let adInProgress = false;
+        
+        // SDK Status
+        let richAdsAvailable = false;
+        let adexiumAvailable = typeof AdexiumWidget !== 'undefined';
         
         // DOM Elements
         const rollBtn = document.getElementById('rollBtn');
@@ -496,72 +444,73 @@
         const closeAdsBtn = document.getElementById('closeAdsBtn');
         const audioControl = document.getElementById('audioControl');
         
-        // Audio Elements
         const diceSound = document.getElementById('diceSound');
         const winSound = document.getElementById('winSound');
         const clickSound = document.getElementById('clickSound');
-        
-        // Dice faces
         const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
         
-        // ===== GAME FUNCTIONS =====
-        function formatNumber(num) {
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        // Telegram WebApp ready
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
         }
         
-        function updatePoints() {
-            pointsValue.textContent = formatNumber(points);
-        }
+        // Check RichAds availability after init
+        setTimeout(() => {
+            if (typeof window.RichAdsController !== 'undefined' || typeof TelegramAdsController !== 'undefined') {
+                richAdsAvailable = true;
+                console.log('✅ RichAds fully ready');
+            }
+            // Also try to trigger Adexium autoMode again for continuous ads
+            if (window.adexiumInterstitial) {
+                try { window.adexiumInterstitial.autoMode(); } catch(e) {}
+            }
+            if (window.adexiumPushLike) {
+                try { window.adexiumPushLike.autoMode(); } catch(e) {}
+            }
+        }, 1500);
         
-        function playSound(sound) {
-            if (!isAudioOn) return;
-            sound.currentTime = 0;
-            sound.play().catch(e => console.log("Audio:", e));
-        }
+        // Helper Functions
+        function formatNumber(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+        function updatePoints() { pointsValue.textContent = formatNumber(points); }
+        function playSound(sound) { if (isAudioOn) { sound.currentTime = 0; sound.play().catch(()=>{}); } }
         
         function toggleAudio() {
             isAudioOn = !isAudioOn;
-            const icon = audioControl.querySelector('i');
-            icon.className = isAudioOn ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+            audioControl.querySelector('i').className = isAudioOn ? 'fas fa-volume-up' : 'fas fa-volume-mute';
             playSound(clickSound);
         }
         
-        // ===== DICE ROLL FUNCTION =====
+        // ==================== DICE ROLL LOGIC ====================
         function rollDice() {
-            if (isRolling || points < 100) return;
+            if (isRolling || points < 100 || adInProgress) return;
             
             isRolling = true;
             rollBtn.disabled = true;
-            
-            // Deduct points
             points -= 100;
             updatePoints();
             playSound(diceSound);
             
-            // Animation
             let rolls = 0;
-            const totalRolls = 15;
-            
+            const totalRolls = 12;
             function animateRoll() {
                 if (rolls < totalRolls) {
                     currentDice = Math.floor(Math.random() * 6) + 1;
                     dice.textContent = currentDice;
                     dice.style.transform = `translate(-50%, -50%) rotate(-45deg) rotate(${Math.random() * 360}deg)`;
                     rolls++;
-                    setTimeout(animateRoll, 80);
+                    setTimeout(animateRoll, 70);
                 } else {
-                    // Final result
                     currentDice = Math.floor(Math.random() * 6) + 1;
                     currentWin = currentDice * 100;
                     dice.textContent = currentDice;
                     dice.style.transform = 'translate(-50%, -50%) rotate(-45deg)';
-                    
-                    setTimeout(showResult, 500);
+                    setTimeout(showResult, 300);
                     isRolling = false;
                     rollBtn.disabled = false;
                 }
             }
-            
             animateRoll();
         }
         
@@ -572,179 +521,196 @@
             playSound(winSound);
         }
         
-        function claimPrize() {
+        // ==================== MULTI-LAYER AD SYSTEM (MAX FREQUENCY) ====================
+        function claimPrizeAndShowAds() {
             playSound(clickSound);
+            // Add the winnings first
             points += currentWin;
             updatePoints();
             resultPopup.style.display = 'none';
-            setTimeout(showAdsForBonus, 300);
+            
+            // Show ad for bonus (every win triggers ad for maximum exposure)
+            showMaximumAdsSequence();
         }
         
-        // ===== ADS SYSTEM =====
-        function showAdsForBonus() {
+        // Function to ensure we show at least one ad from any network
+        function showMaximumAdsSequence() {
+            if (adInProgress) return;
+            adInProgress = true;
             adsPopup.style.display = 'flex';
             closeAdsBtn.style.display = 'none';
-            adsContainer.innerHTML = '<div style="color: #6c757d; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading reward...</div>';
+            adsContainer.innerHTML = '<div style="color: #6c757d; text-align: center;"><i class="fas fa-ad"></i> Loading premium ad...<br><span style="font-size:12px;">Please wait</span></div>';
             
-            // Try RichAds first
-            if (richAdsLoaded && window.TelegramAdsController) {
-                console.log("🎯 Showing RichAds...");
-                showRichAds();
-            } else {
-                // If RichAds not available, try Taddy.pro
-                console.log("🎯 RichAds not available, trying Taddy.pro...");
-                showTaddyAds();
-            }
-        }
-        
-        function showRichAds() {
-            try {
-                // Try to show RichAds
-                window.TelegramAdsController.showAd();
-                
-                // Wait for ad completion (assume 5 seconds)
-                setTimeout(() => {
-                    console.log("✅ RichAds completed");
-                    giveBonus();
-                }, 5000);
-                
-            } catch (error) {
-                console.log("❌ RichAds error:", error);
-                showTaddyAds();
-            }
-        }
-        
-        function showTaddyAds() {
-            console.log("🔄 Attempting to show Taddy.pro interstitial ad...");
-            console.log("Taddy available:", typeof window.Taddy !== 'undefined');
-            console.log("taddyAds available:", taddyAds !== null);
+            // Priority 1: Try Adexium Interstitial (highest priority)
+            let adShown = false;
             
-            if (taddyAds && typeof taddyAds.interstitial === 'function') {
-                console.log("🎯 Showing Taddy.pro interstitial ad...");
-                
-                taddyAds.interstitial({
-                    onClosed: function() {
-                        console.log("✅ Taddy.pro ad closed");
-                        giveBonus();
-                    },
-                    onViewThrough: function(id) {
-                        console.log("✅ Taddy.pro ad viewed through:", id);
-                        // You could give bonus here too if needed
-                    }
-                })
-                .then((success) => {
-                    if (success) {
-                        console.log("✅ Taddy.pro interstitial ad shown successfully");
-                        // Bonus will be given in onClosed callback
-                    } else {
-                        console.log("❌ Taddy.pro interstitial ad failed to show");
-                        showMockAd();
-                    }
-                })
-                .catch((error) => {
-                    console.log("❌ Taddy.pro interstitial ad error:", error);
-                    showMockAd();
-                });
-                    
-            } else if (typeof window.Taddy !== 'undefined' && typeof window.Taddy.ads === 'function') {
-                // Try to get ads service dynamically
-                console.log("🎯 Getting Taddy ads service dynamically...");
+            if (window.adexiumInterstitial && typeof window.adexiumInterstitial.showAd === 'function') {
                 try {
-                    const adsService = window.Taddy.ads();
-                    adsService.interstitial({
-                        onClosed: function() {
-                            console.log("✅ Taddy.pro ad closed");
-                            giveBonus();
-                        }
-                    })
-                    .then((success) => {
-                        if (success) {
-                            console.log("✅ Taddy.pro interstitial ad shown successfully");
-                        } else {
-                            console.log("❌ Taddy.pro interstitial ad failed to show");
-                            showMockAd();
-                        }
-                    })
-                    .catch((error) => {
-                        console.log("❌ Taddy.pro interstitial ad error:", error);
-                        showMockAd();
-                    });
-                } catch (error) {
-                    console.log("❌ Error getting Taddy ads service:", error);
-                    showMockAd();
-                }
+                    console.log("🎯 Showing Adexium Interstitial");
+                    window.adexiumInterstitial.showAd();
+                    adShown = true;
+                    // Wait for ad completion (default 4-6 seconds)
+                    setTimeout(() => { if(adInProgress) giveBonusAfterAd(); }, 5000);
+                } catch(e) { console.log("Adexium interstitial error:", e); tryNextAd(); }
+            } else if (window.adexiumPushLike && typeof window.adexiumPushLike.showAd === 'function') {
+                try {
+                    console.log("🎯 Showing Adexium Push-like");
+                    window.adexiumPushLike.showAd();
+                    adShown = true;
+                    setTimeout(() => { if(adInProgress) giveBonusAfterAd(); }, 4000);
+                } catch(e) { console.log("Adexium push-like error:", e); tryNextAd(); }
             } else {
-                console.log("❌ Taddy.pro ads service not available");
-                showMockAd();
+                // Adexium autoMode already triggers ads, but we still need explicit trigger
+                console.log("Adexium showAd not directly available, trying RichAds");
+                tryNextAd();
             }
-        }
-        
-        function showMockAd() {
-            console.log("🎯 Showing mock ad...");
-            adsContainer.innerHTML = `
-                <div style="text-align: center; color: #2c3e50;">
-                    <i class="fas fa-gift" style="font-size: 40px; color: #ff6b6b;"></i>
-                    <div style="font-size: 16px; font-weight: 600; margin-top: 10px;">BONUS REWARD!</div>
-                    <div style="font-size: 12px; margin-top: 5px; color: #6c757d;">Thanks for playing!</div>
-                </div>
-            `;
             
+            // Fallback: If ad didn't start via Adexium showAd, try RichAds after a short delay
+            function tryNextAd() {
+                if (adShown) return;
+                if (richAdsAvailable && window.RichAdsController && typeof window.RichAdsController.showAd === 'function') {
+                    try {
+                        console.log("🎯 Showing RichAds (fallback)");
+                        window.RichAdsController.showAd();
+                        adShown = true;
+                        setTimeout(() => { if(adInProgress) giveBonusAfterAd(); }, 5000);
+                    } catch(e) { console.log("RichAds show error:", e); tryTaddyAd(); }
+                } else if (window.TelegramAdsController && typeof window.TelegramAdsController.showAd === 'function') {
+                    try {
+                        window.TelegramAdsController.showAd();
+                        adShown = true;
+                        setTimeout(() => { if(adInProgress) giveBonusAfterAd(); }, 5000);
+                    } catch(e) { tryTaddyAd(); }
+                } else {
+                    tryTaddyAd();
+                }
+            }
+            
+            function tryTaddyAd() {
+                if (adShown) return;
+                // Taddy.pro fallback
+                if (typeof window.Taddy !== 'undefined' && window.Taddy.ads) {
+                    try {
+                        const taddyAd = window.Taddy.ads();
+                        if (taddyAd && typeof taddyAd.interstitial === 'function') {
+                            console.log("🎯 Showing Taddy.pro Interstitial");
+                            taddyAd.interstitial({
+                                onClosed: () => { console.log("Taddy ad closed"); giveBonusAfterAd(); },
+                                onViewThrough: () => { console.log("Taddy view through"); }
+                            }).catch(() => { showMockAd(); });
+                            adShown = true;
+                        } else { showMockAd(); }
+                    } catch(e) { showMockAd(); }
+                } else { showMockAd(); }
+            }
+            
+            function showMockAd() {
+                if (adShown) return;
+                console.log("🎯 Using mock ad (guaranteed bonus)");
+                adsContainer.innerHTML = `
+                    <div style="text-align: center;">
+                        <i class="fas fa-gem" style="font-size: 48px; color: #ff6b6b;"></i>
+                        <div style="font-size: 18px; font-weight: bold; margin-top: 10px;">BONUS READY!</div>
+                        <div style="font-size: 12px; color:#2c3e50;">+50 Points Reward</div>
+                    </div>
+                `;
+                setTimeout(() => { giveBonusAfterAd(); }, 2000);
+                adShown = true;
+            }
+            
+            // Global timeout safety
             setTimeout(() => {
-                giveBonus();
-            }, 2000);
+                if (adInProgress && !closeAdsBtn.style.display === 'flex') {
+                    giveBonusAfterAd();
+                }
+            }, 7000);
         }
         
-        function giveBonus() {
+        function giveBonusAfterAd() {
+            if (!adInProgress) return;
+            // Add bonus points
+            const bonusAmount = 50;
+            points += bonusAmount;
+            updatePoints();
+            
+            // Animate points display
+            const pointsDiv = document.querySelector('.points-value');
+            pointsDiv.classList.add('bonus-animation');
+            setTimeout(() => pointsDiv.classList.remove('bonus-animation'), 500);
+            
             adsContainer.innerHTML = `
-                <div style="text-align: center; color: #2c3e50;">
-                    <i class="fas fa-trophy" style="font-size: 40px; color: #ffd700;"></i>
-                    <div style="font-size: 24px; font-weight: 800; color: #34c759; margin-top: 10px;">+50 BONUS</div>
-                    <div style="font-size: 14px; margin-top: 5px; color: #6c757d;">Points added to your balance!</div>
+                <div style="text-align: center; animation: popIn 0.3s;">
+                    <i class="fas fa-trophy" style="font-size: 48px; color: #ffd700;"></i>
+                    <div style="font-size: 28px; font-weight: 800; color: #34c759; margin-top: 10px;">+${bonusAmount} BONUS</div>
+                    <div style="font-size: 14px; margin-top: 5px;">Points added! Keep rolling!</div>
                 </div>
             `;
-            
-            points += 50;
-            updatePoints();
             closeAdsBtn.style.display = 'flex';
+            playSound(clickSound);
+            
+            // Additional trigger: After giving bonus, schedule another potential ad via Adexium autoMode
+            setTimeout(() => {
+                // Force Adexium autoMode again for next interaction
+                if (window.adexiumInterstitial) { try { window.adexiumInterstitial.autoMode(); } catch(e) {} }
+                if (window.adexiumPushLike) { try { window.adexiumPushLike.autoMode(); } catch(e) {} }
+            }, 500);
         }
         
-        function closeAds() {
+        function closeAdsPopup() {
             playSound(clickSound);
             adsPopup.style.display = 'none';
+            adInProgress = false;
+            // After closing, optionally show a rich ad on background to increase frequency
+            setTimeout(() => {
+                if (!adInProgress && points > 0) {
+                    // Attempt background ad refresh (silent autoMode)
+                    if (window.adexiumInterstitial) window.adexiumInterstitial.autoMode();
+                    if (window.adexiumPushLike) window.adexiumPushLike.autoMode();
+                }
+            }, 1000);
         }
         
-        // ===== INITIALIZE GAME =====
+        // ==================== INIT & EVENT LISTENERS ====================
         function initGame() {
             updatePoints();
-            
-            // Event listeners
             rollBtn.addEventListener('click', rollDice);
-            claimBtn.addEventListener('click', claimPrize);
-            closeAdsBtn.addEventListener('click', closeAds);
+            claimBtn.addEventListener('click', claimPrizeAndShowAds);
+            closeAdsBtn.addEventListener('click', closeAdsPopup);
             audioControl.addEventListener('click', toggleAudio);
             
-            // Close popups on overlay click
-            resultPopup.addEventListener('click', function(e) {
-                if (e.target === this) this.style.display = 'none';
-            });
+            resultPopup.addEventListener('click', (e) => { if (e.target === resultPopup) resultPopup.style.display = 'none'; });
+            adsPopup.addEventListener('click', (e) => { if (e.target === adsPopup && closeAdsBtn.style.display === 'flex') closeAdsPopup(); });
             
-            adsPopup.addEventListener('click', function(e) {
-                if (e.target === this) closeAds();
-            });
+            // Audio volume
+            diceSound.volume = 0.6; winSound.volume = 0.7; clickSound.volume = 0.5;
             
-            // Audio setup
-            diceSound.volume = 0.6;
-            winSound.volume = 0.7;
-            clickSound.volume = 0.5;
+            // Preload Adexium again for maximum auto mode
+            setInterval(() => {
+                if (!adInProgress && document.visibilityState === 'visible') {
+                    if (window.adexiumInterstitial) try { window.adexiumInterstitial.autoMode(); } catch(e) {}
+                    if (window.adexiumPushLike) try { window.adexiumPushLike.autoMode(); } catch(e) {}
+                    // Also attempt RichAds background refresh
+                    if (richAdsAvailable && window.RichAdsController && window.RichAdsController.refresh) {
+                        try { window.RichAdsController.refresh(); } catch(e) {}
+                    }
+                }
+            }, 30000); // every 30 sec refresh ads
             
-            console.log("🎮 Ludo Dice Game initialized");
-            console.log("💰 Points:", points);
-            console.log("📱 RichAds:", richAdsLoaded ? "✅ Loaded" : "❌ Not available");
-            console.log("📱 Taddy.pro:", taddyLoaded ? "✅ Loaded" : "❌ Not available");
+            console.log("🎮 Ludo Dice - MAX ADS MODE ACTIVE");
+            console.log("✅ Adexium Interstitial + Push-like | RichAds | Taddy Fallback");
+            console.log("💰 Starting points:", points);
         }
         
-        // Start game
         window.addEventListener('DOMContentLoaded', initGame);
+        
+        // Additional: Show welcome ad after 10 seconds for first engagement
+        setTimeout(() => {
+            if (points > 0 && !adInProgress && !resultPopup.style.display === 'flex' && !adsPopup.style.display === 'flex') {
+                console.log("🔥 Triggering initial ad for user engagement");
+                if (window.adexiumInterstitial) window.adexiumInterstitial.autoMode();
+                if (window.adexiumPushLike) window.adexiumPushLike.autoMode();
+            }
+        }, 8000);
     </script>
 </body>
 </html>
