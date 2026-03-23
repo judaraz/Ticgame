@@ -3,45 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ludo Dice - Win Rewards | Max Ads</title>
+    <title>Ludo Dice - Win Rewards</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Telegram WebApp -->
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
     
-    <!-- ========== ADEXIUM ADS (MAX FREQUENCY - ATTEMPTS EVERY SECOND) ========== -->
+    <!-- ========== ADEXIUM ADS ========== -->
     <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
     <script type="text/javascript">
-        // Adexium Widgets - Configure both formats for maximum fill rate
+        // Initialize Adexium widgets with proper showAd method
         window.adexiumInterstitial = null;
         window.adexiumPushLike = null;
+        window.adexiumReady = false;
         
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof AdexiumWidget !== 'undefined') {
                 try {
-                    // Interstitial Format (full-screen)
+                    // Create Interstitial Ad Widget
                     window.adexiumInterstitial = new AdexiumWidget({
                         wid: 'f2c903be-ac1d-4f6b-b0c7-8a281363517e', 
                         adFormat: 'interstitial'
                     });
-                    window.adexiumInterstitial.autoMode();
-                    console.log('✅ Adexium Interstitial initialized');
+                    console.log('✅ Adexium Interstitial widget created');
                     
-                    // Push-like Format
+                    // Create Push-like Ad Widget  
                     window.adexiumPushLike = new AdexiumWidget({
                         wid: '30015b9a-df1e-4895-be7b-c5bc1b148fcf', 
                         adFormat: 'push-like'
                     });
-                    window.adexiumPushLike.autoMode();
-                    console.log('✅ Adexium Push-like initialized');
-                } catch(e) { console.log('Adexium init error:', e); }
+                    console.log('✅ Adexium Push-like widget created');
+                    
+                    window.adexiumReady = true;
+                    
+                    // Optional: Initialize/load ads
+                    if (window.adexiumInterstitial.init) window.adexiumInterstitial.init();
+                    if (window.adexiumPushLike.init) window.adexiumPushLike.init();
+                    
+                } catch(e) { 
+                    console.error('Adexium creation error:', e); 
+                    window.adexiumReady = false;
+                }
             } else {
-                console.warn('⚠️ AdexiumWidget not loaded');
+                console.warn('⚠️ AdexiumWidget not loaded - check network and script URL');
             }
         });
+        
+        // Function to show Adexium Interstitial ad
+        window.showAdexiumInterstitial = function() {
+            return new Promise((resolve) => {
+                if (!window.adexiumInterstitial) {
+                    console.log('❌ Adexium Interstitial not available');
+                    resolve(false);
+                    return;
+                }
+                
+                try {
+                    console.log('🎯 Attempting to show Adexium Interstitial ad...');
+                    
+                    // Method 1: showAd() if available
+                    if (typeof window.adexiumInterstitial.showAd === 'function') {
+                        window.adexiumInterstitial.showAd();
+                        console.log('✅ Adexium Interstitial showAd() called');
+                        // Assume ad shows for 3-5 seconds
+                        setTimeout(() => resolve(true), 4000);
+                        return;
+                    }
+                    
+                    // Method 2: display() if available
+                    if (typeof window.adexiumInterstitial.display === 'function') {
+                        window.adexiumInterstitial.display();
+                        console.log('✅ Adexium Interstitial display() called');
+                        setTimeout(() => resolve(true), 4000);
+                        return;
+                    }
+                    
+                    // Method 3: autoMode() as fallback
+                    if (typeof window.adexiumInterstitial.autoMode === 'function') {
+                        window.adexiumInterstitial.autoMode();
+                        console.log('✅ Adexium Interstitial autoMode() called');
+                        setTimeout(() => resolve(true), 4000);
+                        return;
+                    }
+                    
+                    console.log('❌ No Adexium show method available');
+                    resolve(false);
+                    
+                } catch(e) {
+                    console.error('Adexium Interstitial error:', e);
+                    resolve(false);
+                }
+            });
+        };
+        
+        // Function to show Adexium Push-like ad
+        window.showAdexiumPushLike = function() {
+            return new Promise((resolve) => {
+                if (!window.adexiumPushLike) {
+                    console.log('❌ Adexium Push-like not available');
+                    resolve(false);
+                    return;
+                }
+                
+                try {
+                    console.log('🎯 Attempting to show Adexium Push-like ad...');
+                    
+                    if (typeof window.adexiumPushLike.showAd === 'function') {
+                        window.adexiumPushLike.showAd();
+                        console.log('✅ Adexium Push-like showAd() called');
+                        setTimeout(() => resolve(true), 3000);
+                        return;
+                    }
+                    
+                    if (typeof window.adexiumPushLike.display === 'function') {
+                        window.adexiumPushLike.display();
+                        console.log('✅ Adexium Push-like display() called');
+                        setTimeout(() => resolve(true), 3000);
+                        return;
+                    }
+                    
+                    if (typeof window.adexiumPushLike.autoMode === 'function') {
+                        window.adexiumPushLike.autoMode();
+                        console.log('✅ Adexium Push-like autoMode() called');
+                        setTimeout(() => resolve(true), 3000);
+                        return;
+                    }
+                    
+                    console.log('❌ No Adexium Push-like show method available');
+                    resolve(false);
+                    
+                } catch(e) {
+                    console.error('Adexium Push-like error:', e);
+                    resolve(false);
+                }
+            });
+        };
+        
+        // Try both Adexium formats
+        window.showAdexiumAd = async function() {
+            console.log('🎯 Trying Adexium ads...');
+            
+            // Try Interstitial first (more valuable)
+            const interstitialShown = await window.showAdexiumInterstitial();
+            if (interstitialShown) {
+                console.log('✅ Adexium Interstitial ad completed');
+                return true;
+            }
+            
+            // Try Push-like as fallback
+            const pushLikeShown = await window.showAdexiumPushLike();
+            if (pushLikeShown) {
+                console.log('✅ Adexium Push-like ad completed');
+                return true;
+            }
+            
+            console.log('❌ No Adexium ad could be shown');
+            return false;
+        };
     </script>
     
-    <!-- ========== RICHADS (MAX FREQUENCY - ATTEMPTS EVERY SECOND) ========== -->
+    <!-- ========== RICHADS ========== -->
     <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
     <script>
         window.RichAdsController = null;
@@ -56,16 +177,38 @@
                         appId: "6673",
                     });
                     window.richAdsReady = true;
-                    console.log('✅ RichAds initialized successfully');
+                    console.log('✅ RichAds initialized');
                 } catch(e) { console.log('RichAds init error:', e); }
-            } else {
-                console.warn('⚠️ TelegramAdsController not defined');
             }
         });
+        
+        window.showRichAd = function() {
+            return new Promise((resolve) => {
+                if (!window.richAdsReady || !window.RichAdsController) {
+                    console.log('❌ RichAds not ready');
+                    resolve(false);
+                    return;
+                }
+                
+                try {
+                    console.log('🎯 Attempting to show RichAd...');
+                    if (typeof window.RichAdsController.showAd === 'function') {
+                        window.RichAdsController.showAd();
+                        console.log('✅ RichAds showAd() called');
+                        setTimeout(() => resolve(true), 4000);
+                    } else {
+                        resolve(false);
+                    }
+                } catch(e) {
+                    console.error('RichAds error:', e);
+                    resolve(false);
+                }
+            });
+        };
     </script>
     
-    <!-- ========== TADDY.PRO (DEFAULT FALLBACK - ALWAYS AVAILABLE) ========== -->
-    <script src="https://sdk.taddy.pro/web/taddy.min.js?1317" data-pub-id="c9cdd59664e9f51f7ddf938ac2d2f008"></script>
+    <!-- ========== TADDY.PRO (Default Fallback) ========== -->
+    <script src="https://sdk.taddy.pro/web/taddy.min.js?1317" data-pub-id="17b2ff52715e04074695b5c0f4dcf435"></script>
     
     <style>
         :root {
@@ -73,7 +216,6 @@
             --telegram-dark: #18222d;
             --gold: #ffd700;
             --success: #34c759;
-            --danger: #ff3b30;
         }
         
         * {
@@ -82,7 +224,6 @@
             box-sizing: border-box;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
-            user-select: none;
         }
         
         body {
@@ -202,7 +343,6 @@
             font-weight: 900;
             color: #2c3e50;
             z-index: 10;
-            transition: transform 0.1s ease;
         }
         
         .controls {
@@ -231,7 +371,7 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            transition: transform 0.1s ease;
+            transition: transform 0.1s;
         }
         .roll-btn:active { transform: scale(0.98); }
         .roll-btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -327,17 +467,18 @@
             line-height: 1.5;
         }
         
-        .ad-badge {
+        .ad-status {
             position: fixed;
             top: 10px;
             right: 10px;
-            background: rgba(0,0,0,0.6);
-            padding: 4px 8px;
+            background: rgba(0,0,0,0.8);
+            padding: 4px 12px;
             border-radius: 20px;
             font-size: 10px;
             font-family: monospace;
             z-index: 99;
             pointer-events: none;
+            color: #4ecdc4;
         }
         
         @media (max-width: 480px) {
@@ -345,7 +486,6 @@
             .dice { width: 50px; height: 50px; font-size: 20px; }
             .game-title { font-size: 24px; }
             .points-value { font-size: 36px; }
-            .roll-btn { padding: 16px; font-size: 16px; }
         }
         
         .bonus-animation {
@@ -359,12 +499,12 @@
     </style>
 </head>
 <body>
-    <div class="ad-badge" id="adStatus">🔄 Ads: Ready</div>
+    <div class="ad-status" id="adStatus">🎬 Adexium Ready</div>
     
     <div class="container">
         <div class="game-header">
             <h1 class="game-title">🎲 LUDO DICE ROLL</h1>
-            <p class="game-subtitle">Roll dice, win points, watch ads for massive bonuses!</p>
+            <p class="game-subtitle">Roll dice, win points, watch ads for bonuses!</p>
         </div>
         
         <div class="points-container">
@@ -385,12 +525,12 @@
             <button class="roll-btn" id="rollBtn">
                 <i class="fas fa-dice"></i> ROLL DICE - 100 POINTS
             </button>
-            <div class="cost-info">🎁 Win multiplier: 1x-6x | After win, watch AD for +50 BONUS!</div>
+            <div class="cost-info">🎁 Win = Dice × 100 | After win, ad gives +50 BONUS!</div>
         </div>
         
         <div class="instructions">
-            <p><strong>How to play:</strong> Roll dice (cost 100 points). Win = dice number × 100 points. After each win, claim prize and watch an ad to get +50 bonus points!</p>
-            <p><strong>🔥 MAX ADS MODE:</strong> Adexium & RichAds attempt every second | Taddy.pro always available as default</p>
+            <p><strong>How to play:</strong> Roll dice (cost 100 points). Win = dice number × 100 points.</p>
+            <p><strong>📺 Ad Order:</strong> Adexium (Interstitial → Push-like) → RichAds → Taddy.pro (default)</p>
         </div>
     </div>
     
@@ -401,7 +541,7 @@
             <div class="dice-result" id="resultDice">⚅</div>
             <div class="win-info" id="winAmount">600 POINTS</div>
             <button class="popup-btn" id="claimBtn">
-                <i class="fas fa-gift"></i> CLAIM & WATCH AD FOR BONUS
+                <i class="fas fa-gift"></i> CLAIM & WATCH AD
             </button>
         </div>
     </div>
@@ -409,14 +549,14 @@
     <!-- Ads Bonus Popup -->
     <div class="popup-overlay" id="adsPopup">
         <div class="popup">
-            <h2 class="popup-title">🎁 EXTRA REWARD</h2>
+            <h2 class="popup-title">🎁 WATCH AD FOR BONUS</h2>
             <div class="ads-content" id="adsContainer">
                 <div style="color: #6c757d; text-align: center;">
                     <i class="fas fa-spinner fa-spin"></i> Loading ad...
                 </div>
             </div>
             <button class="popup-btn" id="closeAdsBtn" style="background: var(--telegram-blue); display: none;">
-                <i class="fas fa-check-circle"></i> COLLECT BONUS (+50 POINTS)
+                <i class="fas fa-check-circle"></i> COLLECT +50 BONUS
             </button>
         </div>
     </div>
@@ -425,28 +565,18 @@
         <i class="fas fa-volume-up"></i>
     </div>
 
-    <!-- Audio Elements -->
     <audio id="diceSound" src="https://assets.mixkit.co/sfx/preview/mixkit-dice-roll-1978.mp3" preload="auto"></audio>
     <audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" preload="auto"></audio>
     <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" preload="auto"></audio>
 
     <script>
-        // ==================== MAXIMUM FREQUENCY ADS SYSTEM ====================
-        // Adexium and RichAds attempt to show EVERY SECOND
-        // Taddy.pro is the DEFAULT fallback that ALWAYS works
-        
+        // ==================== GAME VARIABLES ====================
         let points = 2000;
         let isRolling = false;
         let isAudioOn = true;
         let currentWin = 0;
         let currentDice = 6;
         let adInProgress = false;
-        let adAttemptInterval = null;
-        let lastAdAttempt = 0;
-        
-        // SDK Status
-        let adexiumAvailable = typeof AdexiumWidget !== 'undefined';
-        let richAdsAvailable = false;
         
         // DOM Elements
         const rollBtn = document.getElementById('rollBtn');
@@ -460,37 +590,25 @@
         const adsContainer = document.getElementById('adsContainer');
         const closeAdsBtn = document.getElementById('closeAdsBtn');
         const audioControl = document.getElementById('audioControl');
-        const adStatusSpan = document.getElementById('adStatus');
+        const adStatus = document.getElementById('adStatus');
         
         const diceSound = document.getElementById('diceSound');
         const winSound = document.getElementById('winSound');
         const clickSound = document.getElementById('clickSound');
         const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
         
-        // Telegram WebApp ready
+        // Telegram WebApp
         if (window.Telegram && window.Telegram.WebApp) {
             const tg = window.Telegram.WebApp;
             tg.ready();
             tg.expand();
         }
         
-        // Check RichAds availability
-        setTimeout(() => {
-            if (typeof window.RichAdsController !== 'undefined' || typeof TelegramAdsController !== 'undefined') {
-                richAdsAvailable = true;
-                console.log('✅ RichAds fully ready');
-                updateAdStatus('RichAds Ready');
-            } else {
-                console.log('⚠️ RichAds not available, using Taddy.pro as default');
-                updateAdStatus('Taddy.pro Default');
-            }
-        }, 1000);
-        
-        function updateAdStatus(msg) {
-            if (adStatusSpan) adStatusSpan.textContent = `📺 ${msg}`;
+        function updateStatus(text) {
+            if (adStatus) adStatus.textContent = text;
+            console.log(text);
         }
         
-        // Helper Functions
         function formatNumber(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
         function updatePoints() { pointsValue.textContent = formatNumber(points); }
         function playSound(sound) { if (isAudioOn) { sound.currentTime = 0; sound.play().catch(()=>{}); } }
@@ -501,7 +619,7 @@
             playSound(clickSound);
         }
         
-        // ==================== DICE ROLL LOGIC ====================
+        // ==================== DICE ROLL ====================
         function rollDice() {
             if (isRolling || points < 100 || adInProgress) return;
             
@@ -540,196 +658,101 @@
             playSound(winSound);
         }
         
-        // ==================== MAX FREQUENCY AD SYSTEM ====================
-        // Function to attempt showing ad from any network (Adexium first, then RichAds, then Taddy)
-        function attemptShowAd(callback) {
-            let attempted = false;
-            const now = Date.now();
-            if (now - lastAdAttempt < 800) return false; // throttle to avoid spam, but still high frequency
-            lastAdAttempt = now;
-            
-            console.log("🔁 Attempting ad...");
-            updateAdStatus('Attempting...');
-            
-            // PRIORITY 1: Adexium Interstitial
-            if (window.adexiumInterstitial && typeof window.adexiumInterstitial.showAd === 'function' && !attempted) {
-                try {
-                    console.log("🎯 [Adexium] Attempting interstitial ad");
-                    window.adexiumInterstitial.showAd();
-                    attempted = true;
-                    if (callback) setTimeout(callback, 4000);
-                    updateAdStatus('Adexium Ad');
-                    return true;
-                } catch(e) { console.log("Adexium interstitial error:", e); }
-            }
-            
-            // PRIORITY 2: Adexium Push-like
-            if (window.adexiumPushLike && typeof window.adexiumPushLike.showAd === 'function' && !attempted) {
-                try {
-                    console.log("🎯 [Adexium] Attempting push-like ad");
-                    window.adexiumPushLike.showAd();
-                    attempted = true;
-                    if (callback) setTimeout(callback, 3500);
-                    updateAdStatus('Adexium Push');
-                    return true;
-                } catch(e) { console.log("Adexium push-like error:", e); }
-            }
-            
-            // PRIORITY 3: RichAds
-            if (richAdsAvailable && window.RichAdsController && typeof window.RichAdsController.showAd === 'function' && !attempted) {
-                try {
-                    console.log("🎯 [RichAds] Attempting ad");
-                    window.RichAdsController.showAd();
-                    attempted = true;
-                    if (callback) setTimeout(callback, 4500);
-                    updateAdStatus('RichAds');
-                    return true;
-                } catch(e) { console.log("RichAds error:", e); }
-            }
-            
-            // Check alternative RichAds controller
-            if (typeof TelegramAdsController !== 'undefined' && !attempted) {
-                try {
-                    const altController = new TelegramAdsController();
-                    if (altController && altController.showAd) {
-                        altController.showAd();
-                        attempted = true;
-                        if (callback) setTimeout(callback, 4500);
-                        updateAdStatus('RichAds Alt');
-                        return true;
+        // ==================== TADDY.PRO AD (DEFAULT) ====================
+        function showTaddyAd() {
+            return new Promise((resolve) => {
+                updateStatus('📺 Taddy.pro ad...');
+                console.log('🎯 Showing Taddy.pro ad (default)');
+                
+                if (typeof window.Taddy !== 'undefined' && window.Taddy.ads) {
+                    try {
+                        const taddyAd = window.Taddy.ads();
+                        if (taddyAd && typeof taddyAd.interstitial === 'function') {
+                            taddyAd.interstitial({
+                                onClosed: () => {
+                                    console.log('✅ Taddy.pro ad completed');
+                                    updateStatus('✅ Ad complete! +50 bonus');
+                                    resolve(true);
+                                },
+                                onViewThrough: () => {
+                                    console.log('✅ Taddy.pro ad viewed');
+                                }
+                            }).catch((err) => {
+                                console.log('Taddy.pro error:', err);
+                                resolve(true);
+                            });
+                        } else {
+                            resolve(true);
+                        }
+                    } catch(e) {
+                        console.error('Taddy.pro error:', e);
+                        resolve(true);
                     }
-                } catch(e) {}
-            }
+                } else {
+                    console.log('Taddy.pro not available, using mock');
+                    setTimeout(() => resolve(true), 2000);
+                }
+            });
+        }
+        
+        // ==================== MAIN AD SEQUENCE ====================
+        async function showAdSequence() {
+            updateStatus('🎬 Trying Adexium...');
             
-            // DEFAULT: Taddy.pro (always works as fallback)
-            if (!attempted) {
-                showTaddyDefaultAd(callback);
+            // STEP 1: Try Adexium (both formats)
+            const adexiumShown = await window.showAdexiumAd();
+            if (adexiumShown) {
+                updateStatus('✅ Adexium ad shown!');
                 return true;
             }
             
-            return false;
-        }
-        
-        // Taddy.pro as DEFAULT - always available
-        function showTaddyDefaultAd(callback) {
-            console.log("🎯 [Taddy.pro DEFAULT] Showing interstitial ad");
-            updateAdStatus('Taddy.pro Ad');
-            
-            if (typeof window.Taddy !== 'undefined' && window.Taddy.ads) {
-                try {
-                    const taddyAd = window.Taddy.ads();
-                    if (taddyAd && typeof taddyAd.interstitial === 'function') {
-                        taddyAd.interstitial({
-                            onClosed: () => {
-                                console.log("✅ Taddy.pro ad closed");
-                                if (callback) callback();
-                            },
-                            onViewThrough: () => {
-                                console.log("✅ Taddy.pro ad viewed");
-                            }
-                        }).catch((err) => {
-                            console.log("Taddy interstitial error, using mock:", err);
-                            mockAdCallback(callback);
-                        });
-                    } else {
-                        mockAdCallback(callback);
-                    }
-                } catch(e) {
-                    console.log("Taddy error:", e);
-                    mockAdCallback(callback);
-                }
-            } else {
-                console.log("Taddy not available, using mock");
-                mockAdCallback(callback);
+            // STEP 2: Try RichAds
+            updateStatus('📺 Trying RichAds...');
+            const richShown = await window.showRichAd();
+            if (richShown) {
+                updateStatus('✅ RichAds ad shown!');
+                return true;
             }
-        }
-        
-        function mockAdCallback(callback) {
-            console.log("🎯 Using mock ad (guaranteed)");
-            updateAdStatus('Mock Ad');
-            setTimeout(() => {
-                if (callback) callback();
-            }, 1500);
-        }
-        
-        // ==================== BACKGROUND AD LOOP (EVERY SECOND) ====================
-        // This makes Adexium and RichAds attempt to show ads continuously
-        function startBackgroundAdLoop() {
-            if (adAttemptInterval) clearInterval(adAttemptInterval);
             
-            adAttemptInterval = setInterval(() => {
-                // Don't show ads if game is in progress or popup is open
-                const isPopupOpen = resultPopup.style.display === 'flex' || adsPopup.style.display === 'flex';
-                const isGameActive = isRolling;
-                
-                if (!adInProgress && !isPopupOpen && !isGameActive && points > 0) {
-                    // Silent attempt - don't block UI, just trigger ad networks
-                    // This ensures Adexium and RichAds get maximum exposure
-                    if (window.adexiumInterstitial && typeof window.adexiumInterstitial.autoMode === 'function') {
-                        try { window.adexiumInterstitial.autoMode(); } catch(e) {}
-                    }
-                    if (window.adexiumPushLike && typeof window.adexiumPushLike.autoMode === 'function') {
-                        try { window.adexiumPushLike.autoMode(); } catch(e) {}
-                    }
-                    
-                    // Also try RichAds auto refresh
-                    if (richAdsAvailable && window.RichAdsController && window.RichAdsController.refresh) {
-                        try { window.RichAdsController.refresh(); } catch(e) {}
-                    }
-                    
-                    console.log("🔄 Background ad refresh triggered (every second)");
-                    updateAdStatus('Auto-refresh');
-                }
-            }, 1000); // EVERY SECOND - MAXIMUM FREQUENCY
-            
-            console.log("🚀 Background ad loop started - attempting every 1 second");
+            // STEP 3: Taddy.pro as default
+            updateStatus('📺 Using Taddy.pro...');
+            await showTaddyAd();
+            return true;
         }
         
-        // ==================== CLAIM PRIZE WITH AD ====================
+        // ==================== CLAIM PRIZE ====================
         function claimPrizeAndShowAds() {
             playSound(clickSound);
+            
             // Add winnings
             points += currentWin;
             updatePoints();
             resultPopup.style.display = 'none';
             
-            // Show ad for bonus
-            showAdWithBonus();
-        }
-        
-        function showAdWithBonus() {
-            if (adInProgress) return;
+            // Show ad popup
             adInProgress = true;
             adsPopup.style.display = 'flex';
             closeAdsBtn.style.display = 'none';
-            adsContainer.innerHTML = '<div style="color: #6c757d; text-align: center;"><i class="fas fa-ad"></i> Loading premium ad...<br><span style="font-size:12px;">From Adexium/RichAds/Taddy</span></div>';
+            adsContainer.innerHTML = '<div style="color: #6c757d; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading ad...<br><span style="font-size:12px;">Adexium → RichAds → Taddy</span></div>';
             
-            // Attempt to show ad from any network
-            attemptShowAd(() => {
+            // Run ad sequence
+            showAdSequence().then(() => {
                 giveBonusAfterAd();
             });
-            
-            // Safety timeout
-            setTimeout(() => {
-                if (adInProgress && closeAdsBtn.style.display !== 'flex') {
-                    giveBonusAfterAd();
-                }
-            }, 8000);
         }
         
         function giveBonusAfterAd() {
-            if (!adInProgress) return;
-            
             const bonusAmount = 50;
             points += bonusAmount;
             updatePoints();
             
+            // Animate
             const pointsDiv = document.querySelector('.points-value');
             pointsDiv.classList.add('bonus-animation');
             setTimeout(() => pointsDiv.classList.remove('bonus-animation'), 500);
             
             adsContainer.innerHTML = `
-                <div style="text-align: center; animation: popIn 0.3s;">
+                <div style="text-align: center;">
                     <i class="fas fa-trophy" style="font-size: 48px; color: #ffd700;"></i>
                     <div style="font-size: 28px; font-weight: 800; color: #34c759; margin-top: 10px;">+${bonusAmount} BONUS</div>
                     <div style="font-size: 14px; margin-top: 5px;">Points added! Keep rolling!</div>
@@ -737,18 +760,14 @@
             `;
             closeAdsBtn.style.display = 'flex';
             playSound(clickSound);
-            
-            // Re-trigger ad networks after bonus
-            setTimeout(() => {
-                if (window.adexiumInterstitial) try { window.adexiumInterstitial.autoMode(); } catch(e) {}
-                if (window.adexiumPushLike) try { window.adexiumPushLike.autoMode(); } catch(e) {}
-            }, 500);
+            updateStatus('🎉 Bonus collected!');
         }
         
         function closeAdsPopup() {
             playSound(clickSound);
             adsPopup.style.display = 'none';
             adInProgress = false;
+            updateStatus('🎮 Ready to play');
         }
         
         // ==================== INIT ====================
@@ -762,21 +781,15 @@
             resultPopup.addEventListener('click', (e) => { if (e.target === resultPopup) resultPopup.style.display = 'none'; });
             adsPopup.addEventListener('click', (e) => { if (e.target === adsPopup && closeAdsBtn.style.display === 'flex') closeAdsPopup(); });
             
-            diceSound.volume = 0.6; winSound.volume = 0.7; clickSound.volume = 0.5;
+            diceSound.volume = 0.6;
+            winSound.volume = 0.7;
+            clickSound.volume = 0.5;
             
-            // Start the background ad loop - attempts EVERY SECOND
-            startBackgroundAdLoop();
-            
-            // Initial ad network activation
-            setTimeout(() => {
-                if (window.adexiumInterstitial) window.adexiumInterstitial.autoMode();
-                if (window.adexiumPushLike) window.adexiumPushLike.autoMode();
-            }, 2000);
-            
-            console.log("🎮 Ludo Dice - MAX ADS FREQUENCY MODE");
-            console.log("✅ Adexium Interstitial + Push-like | RichAds | Taddy.pro DEFAULT");
-            console.log("⏱️ Ad attempts every 1 second (background)");
-            console.log("💰 Starting points:", points);
+            console.log('🎮 Game initialized');
+            console.log('✅ Adexium ready:', window.adexiumReady);
+            console.log('✅ RichAds ready:', window.richAdsReady);
+            console.log('💰 Starting points:', points);
+            updateStatus('🎲 Roll dice to play!');
         }
         
         window.addEventListener('DOMContentLoaded', initGame);
