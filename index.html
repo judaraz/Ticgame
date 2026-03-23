@@ -2,915 +2,783 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <title>Red vs Blue | Multiplier Madness | Telegram Mini App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ludo Dice - Win Rewards</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Telegram WebApp -->
+    <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+    
+    <!-- ========== ADEXIUM ADS ========== -->
+    <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
+    <script type="text/javascript">
+        // Initialize Adexium widgets
+        window.adexiumInterstitial = null;
+        window.adexiumPushLike = null;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof AdexiumWidget !== 'undefined') {
+                try {
+                    // Interstitial Ad (full-screen)
+                    window.adexiumInterstitial = new AdexiumWidget({
+                        wid: 'f2c903be-ac1d-4f6b-b0c7-8a281363517e', 
+                        adFormat: 'interstitial'
+                    });
+                    console.log('✅ Adexium Interstitial created');
+                    
+                    // Push-like Ad
+                    window.adexiumPushLike = new AdexiumWidget({
+                        wid: '30015b9a-df1e-4895-be7b-c5bc1b148fcf', 
+                        adFormat: 'push-like'
+                    });
+                    console.log('✅ Adexium Push-like created');
+                    
+                    // Start autoMode for both
+                    if (window.adexiumInterstitial.autoMode) {
+                        window.adexiumInterstitial.autoMode();
+                        console.log('✅ Adexium Interstitial autoMode started');
+                    }
+                    if (window.adexiumPushLike.autoMode) {
+                        window.adexiumPushLike.autoMode();
+                        console.log('✅ Adexium Push-like autoMode started');
+                    }
+                } catch(e) { console.error('Adexium init error:', e); }
+            } else {
+                console.warn('⚠️ AdexiumWidget not loaded - check network');
+            }
+        });
+        
+        // Function to manually trigger Adexium ads
+        window.triggerAdexiumAd = function(format) {
+            if (format === 'interstitial' && window.adexiumInterstitial) {
+                try {
+                    if (window.adexiumInterstitial.showAd) {
+                        window.adexiumInterstitial.showAd();
+                        console.log('🎯 Adexium Interstitial shown manually');
+                        return true;
+                    } else if (window.adexiumInterstitial.autoMode) {
+                        window.adexiumInterstitial.autoMode();
+                        console.log('🎯 Adexium Interstitial autoMode triggered');
+                        return true;
+                    }
+                } catch(e) { console.error('Adexium interstitial trigger error:', e); }
+            }
+            if (format === 'push-like' && window.adexiumPushLike) {
+                try {
+                    if (window.adexiumPushLike.showAd) {
+                        window.adexiumPushLike.showAd();
+                        console.log('🎯 Adexium Push-like shown manually');
+                        return true;
+                    } else if (window.adexiumPushLike.autoMode) {
+                        window.adexiumPushLike.autoMode();
+                        console.log('🎯 Adexium Push-like autoMode triggered');
+                        return true;
+                    }
+                } catch(e) { console.error('Adexium push-like trigger error:', e); }
+            }
+            return false;
+        };
+    </script>
+    
+    <!-- ========== RICHADS ========== -->
+    <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+    <script>
+        window.RichAdsController = null;
+        window.richAdsReady = false;
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof TelegramAdsController !== 'undefined') {
+                try {
+                    window.RichAdsController = new TelegramAdsController();
+                    window.RichAdsController.initialize({
+                        pubId: "1005581",
+                        appId: "6673",
+                    });
+                    window.richAdsReady = true;
+                    console.log('✅ RichAds initialized');
+                } catch(e) { console.log('RichAds init error:', e); }
+            }
+        });
+        
+        window.triggerRichAd = function() {
+            if (window.richAdsReady && window.RichAdsController) {
+                try {
+                    if (window.RichAdsController.showAd) {
+                        window.RichAdsController.showAd();
+                        console.log('🎯 RichAds shown');
+                        return true;
+                    }
+                } catch(e) { console.error('RichAds error:', e); }
+            }
+            return false;
+        };
+    </script>
+    
+    <!-- ========== TADDY.PRO (Default Fallback) ========== -->
+    <script src="https://sdk.taddy.pro/web/taddy.min.js?1317" data-pub-id="17b2ff52715e04074695b5c0f4dcf435"></script>
+    
     <style>
-        * {
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            box-sizing: border-box;
+        :root {
+            --telegram-blue: #3390ec;
+            --telegram-dark: #18222d;
+            --gold: #ffd700;
+            --success: #34c759;
         }
-
-        body {
+        
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--telegram-dark);
+            color: white;
             min-height: 100vh;
-            background: linear-gradient(135deg, #0a0f1a 0%, #020408 100%);
+            padding: 16px;
             display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .game-header {
+            width: 100%;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .game-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--gold);
+            margin-bottom: 4px;
+        }
+        
+        .game-subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .points-container {
+            width: 100%;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            border: 2px solid var(--gold);
+        }
+        
+        .points-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 8px;
+        }
+        
+        .points-value {
+            font-size: 40px;
+            font-weight: 900;
+            color: var(--gold);
+        }
+        
+        .ludo-board {
+            width: 280px;
+            height: 280px;
+            background: white;
+            border-radius: 16px;
+            border: 6px solid #2c3e50;
+            position: relative;
+            transform: rotate(45deg);
+            margin: 16px 0;
+            overflow: hidden;
+        }
+        
+        .quadrant {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+        }
+        .quadrant-1 { top: 0; left: 0; background: #ff6b6b; border-bottom-right-radius: 100%; }
+        .quadrant-2 { top: 0; right: 0; background: #4ecdc4; border-bottom-left-radius: 100%; }
+        .quadrant-3 { bottom: 0; left: 0; background: #ffd93d; border-top-right-radius: 100%; }
+        .quadrant-4 { bottom: 0; right: 0; background: #6c5ce7; border-top-left-radius: 100%; }
+        
+        .board-center {
+            position: absolute;
+            width: 40%;
+            height: 40%;
+            background: white;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 3px solid #2c3e50;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .board-center span { transform: rotate(-45deg); font-weight: 800; color: #2c3e50; }
+        
+        .dice {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 10px;
+            border: 4px solid #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 900;
+            color: #2c3e50;
+            z-index: 10;
+        }
+        
+        .controls {
+            width: 100%;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .roll-btn {
+            width: 100%;
+            background: var(--telegram-blue);
+            color: white;
+            border: none;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .roll-btn:active { transform: scale(0.98); }
+        .roll-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .cost-info { font-size: 14px; color: rgba(255, 255, 255, 0.7); }
+        
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
             justify-content: center;
             align-items: center;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Orbitron', 'Impact', monospace;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            z-index: 1000;
+            padding: 16px;
         }
-
-        .game-wrapper {
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
-            border-radius: clamp(1rem, 5vw, 3rem);
-            padding: clamp(0.8rem, 3vw, 1.2rem);
-            box-shadow: 0 25px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,80,80,0.4);
+        
+        .popup {
+            background: white;
+            border-radius: 16px;
             width: 100%;
-            max-width: 800px;
-            margin: auto;
-        }
-
-        canvas {
-            display: block;
-            margin: 0 auto;
-            border-radius: 50%;
-            box-shadow: 0 0 0 5px #fff, 0 15px 35px rgba(0,0,0,0.7), inset 0 0 30px rgba(0,0,0,0.5);
-            cursor: none;
-            background: #010101;
-            width: 100%;
-            height: auto;
-            aspect-ratio: 1 / 1;
-            max-width: min(90vw, 90vh);
-        }
-
-        .info-panel {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: clamp(0.5rem, 2vw, 1rem);
-            gap: clamp(0.5rem, 2vw, 1rem);
-            flex-wrap: wrap;
-            background: #0b0f16cc;
-            backdrop-filter: blur(8px);
-            padding: clamp(0.4rem, 2vw, 0.6rem) clamp(0.8rem, 3vw, 1.5rem);
-            border-radius: clamp(1.5rem, 5vw, 3rem);
-            border-bottom: 2px solid #ff4d4d;
-        }
-
-        .team-stats {
-            display: flex;
-            gap: clamp(0.8rem, 3vw, 2rem);
-            background: #00000066;
-            padding: clamp(0.2rem, 1.5vw, 0.3rem) clamp(0.8rem, 3vw, 1.2rem);
-            border-radius: clamp(1rem, 4vw, 2rem);
-            flex-wrap: wrap;
-        }
-
-        .stat {
-            display: flex;
-            align-items: baseline;
-            gap: clamp(4px, 1.5vw, 8px);
-            font-weight: bold;
-            font-size: clamp(0.9rem, 3.5vw, 1.3rem);
-            font-family: monospace;
-        }
-
-        .red-stat { color: #ff6666; text-shadow: 0 0 3px #ff0000; }
-        .blue-stat { color: #66aaff; text-shadow: 0 0 3px #0088ff; }
-        .stat-label { font-size: clamp(0.6rem, 2.5vw, 0.75rem); text-transform: uppercase; letter-spacing: 2px; color: #bbb; }
-        .stat-value { font-size: clamp(1.2rem, 5vw, 1.9rem); font-weight: 900; background: #000000aa; padding: 0 clamp(8px, 3vw, 12px); border-radius: clamp(1rem, 4vw, 2rem); min-width: clamp(40px, 12vw, 65px); text-align: center; }
-
-        .winner-msg {
-            background: gold;
-            color: #1a1a2e;
-            padding: clamp(0.4rem, 2vw, 0.5rem) clamp(0.8rem, 3vw, 1.5rem);
-            border-radius: clamp(1.5rem, 5vw, 3rem);
-            font-weight: bold;
-            font-size: clamp(0.9rem, 3.5vw, 1.2rem);
+            max-width: 320px;
+            padding: 24px;
             text-align: center;
-            margin-top: clamp(0.5rem, 2vw, 1rem);
+            animation: popIn 0.3s;
         }
-
-        button {
-            background: #2c2f3a;
-            border: none;
-            font-family: inherit;
-            font-weight: bold;
-            padding: clamp(0.4rem, 2vw, 0.5rem) clamp(0.8rem, 3vw, 1.2rem);
-            border-radius: clamp(1rem, 4vw, 2rem);
+        
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .popup-title { font-size: 22px; color: #2c3e50; margin-bottom: 16px; font-weight: 700; }
+        .dice-result { font-size: 60px; margin: 16px 0; }
+        .win-info { font-size: 36px; font-weight: 800; color: var(--success); margin: 16px 0; }
+        .popup-btn {
+            width: 100%;
+            background: var(--success);
             color: white;
+            border: none;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: clamp(0.8rem, 3vw, 1rem);
-            transition: all 0.1s;
-            box-shadow: 0 3px 0 #15161c;
-            -webkit-tap-highlight-color: transparent;
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        button:active { transform: translateY(2px); box-shadow: 0 1px 0 #15161c; }
-        .reset-btn { background: #8a2a2a; box-shadow: 0 3px 0 #4a1010; }
-        .speed-hint { font-size: clamp(0.6rem, 2.5vw, 0.7rem); background: #2a2a33; padding: clamp(0.2rem, 1.5vw, 0.2rem) clamp(0.5rem, 2vw, 0.8rem); border-radius: clamp(1rem, 4vw, 2rem); color: #ffaa66; font-family: monospace; white-space: nowrap; }
-
-        .multiplier-badge {
-            background: linear-gradient(135deg, #ffaa33, #ff6633);
-            padding: clamp(0.2rem, 1.5vw, 0.3rem) clamp(0.6rem, 2.5vw, 1rem);
-            border-radius: clamp(1rem, 4vw, 2rem);
-            font-weight: bold;
-            font-size: clamp(0.9rem, 3.5vw, 1.1rem);
-            color: #fff;
-            text-shadow: 0 0 3px black;
-            animation: pulse 1s infinite;
-            white-space: nowrap;
+        
+        .ads-content {
+            min-height: 180px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.9; }
-        }
-
-        .game-footer {
-            text-align: center;
-            margin-top: clamp(0.5rem, 2vw, 1rem);
-            font-size: clamp(0.55rem, 2vw, 0.7rem);
-            color: #aaa;
-            font-family: monospace;
-            padding: 0 clamp(0.5rem, 2vw, 1rem);
-        }
-
-        .ad-notification {
+        
+        .audio-control {
             position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.9);
-            color: #ffaa33;
-            padding: 8px 16px;
+            bottom: 16px;
+            right: 16px;
+            width: 48px;
+            height: 48px;
+            background: var(--telegram-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            border: 2px solid white;
+        }
+        
+        .instructions {
+            width: 100%;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-top: 8px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.5;
+        }
+        
+        .status-bar {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 4px 10px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 10px;
             font-family: monospace;
-            z-index: 2000;
+            z-index: 99;
             pointer-events: none;
-            animation: fadeOut 2s ease forwards;
         }
-
-        @keyframes fadeOut {
-            0% { opacity: 1; }
-            70% { opacity: 1; }
-            100% { opacity: 0; visibility: hidden; }
+        
+        @media (max-width: 480px) {
+            .ludo-board { width: 250px; height: 250px; }
+            .dice { width: 50px; height: 50px; font-size: 20px; }
+            .game-title { font-size: 24px; }
+            .points-value { font-size: 36px; }
         }
-
-        @media (max-width: 600px) {
-            .info-panel {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .team-stats {
-                justify-content: center;
-            }
-            .multiplier-badge, .speed-hint {
-                text-align: center;
-            }
+        
+        .bonus-animation {
+            animation: pulse 0.5s ease;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
     </style>
-    <!-- Taddy.pro SDK - PRELOADED for immediate ads -->
-    <script src="https://sdk.taddy.pro/web/taddy.min.js" data-pub-id="c9cdd59664e9f51f7ddf938ac2d2f008"></script>
 </head>
 <body>
-<div>
-    <div class="game-wrapper">
-        <div class="info-panel">
-            <div class="team-stats">
-                <div class="stat">
-                    <span class="stat-label red-stat">🔴 RED LINES</span>
-                    <span class="stat-value" id="redLinesCounter">0</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label blue-stat">🔵 BLUE LINES</span>
-                    <span class="stat-value" id="blueLinesCounter">0</span>
-                </div>
-            </div>
-            <div style="display: flex; gap: clamp(6px, 2vw, 10px); align-items: center; flex-wrap: wrap; justify-content: center;">
-                <div class="multiplier-badge" id="multiplierDisplay">x1</div>
-                <div class="speed-hint" id="speedStatus">⚡ normal</div>
-                <button class="reset-btn" id="resetGameBtn">⟳ RESTART</button>
-            </div>
+    <div class="status-bar" id="statusBar">🔄 Loading ads...</div>
+    
+    <div class="container">
+        <div class="game-header">
+            <h1 class="game-title">🎲 LUDO DICE ROLL</h1>
+            <p class="game-subtitle">Roll dice, win points, watch ads for bonuses!</p>
         </div>
-
-        <canvas id="gameCanvas" width="750" height="750"></canvas>
-
-        <div id="winnerDisplay" class="winner-msg" style="display: none;"></div>
-        <div class="game-footer">
-            🎯 Each wall touch → LINE attached | Base speed DOUBLED!<br>
-            ⚡ 2x,3x,4x,5x powerups | At 10,20,30,40 lines → AD plays! | First to 50 LINES wins!
+        
+        <div class="points-container">
+            <div class="points-label">YOUR POINTS</div>
+            <div class="points-value" id="pointsValue">2,000</div>
+        </div>
+        
+        <div class="ludo-board">
+            <div class="quadrant quadrant-1"></div>
+            <div class="quadrant quadrant-2"></div>
+            <div class="quadrant quadrant-3"></div>
+            <div class="quadrant quadrant-4"></div>
+            <div class="board-center"><span>LUDO</span></div>
+            <div class="dice" id="dice">6</div>
+        </div>
+        
+        <div class="controls">
+            <button class="roll-btn" id="rollBtn">
+                <i class="fas fa-dice"></i> ROLL DICE - 100 POINTS
+            </button>
+            <div class="cost-info">🎁 Win = Dice × 100 | After win, watch ad for +50 BONUS!</div>
+        </div>
+        
+        <div class="instructions">
+            <p><strong>How to play:</strong> Roll dice (cost 100 points). Win = dice number × 100 points. After each win, an ad will play to give you +50 bonus points!</p>
+            <p><strong>📺 Ads:</strong> Adexium + RichAds + Taddy.pro (automatic)</p>
         </div>
     </div>
-</div>
+    
+    <!-- Result Popup -->
+    <div class="popup-overlay" id="resultPopup">
+        <div class="popup">
+            <h2 class="popup-title">🎉 YOU WON!</h2>
+            <div class="dice-result" id="resultDice">⚅</div>
+            <div class="win-info" id="winAmount">600 POINTS</div>
+            <button class="popup-btn" id="claimBtn">
+                <i class="fas fa-gift"></i> CLAIM & WATCH AD
+            </button>
+        </div>
+    </div>
+    
+    <!-- Ads Bonus Popup -->
+    <div class="popup-overlay" id="adsPopup">
+        <div class="popup">
+            <h2 class="popup-title">🎁 WATCH AD FOR BONUS</h2>
+            <div class="ads-content" id="adsContainer">
+                <div style="color: #6c757d; text-align: center;">
+                    <i class="fas fa-spinner fa-spin"></i> Loading ad...
+                </div>
+            </div>
+            <button class="popup-btn" id="closeAdsBtn" style="background: var(--telegram-blue); display: none;">
+                <i class="fas fa-check-circle"></i> COLLECT +50 BONUS
+            </button>
+        </div>
+    </div>
+    
+    <div class="audio-control" id="audioControl">
+        <i class="fas fa-volume-up"></i>
+    </div>
 
-<script>
-    (function(){
-        // ----- TELEGRAM INTEGRATION -----
-        let tg = null;
-        try {
-            if (window.Telegram && window.Telegram.WebApp) {
-                tg = window.Telegram.WebApp;
-                tg.ready();
-                tg.expand();
-                tg.enableClosingConfirmation();
-                const themeParams = tg.themeParams;
-                if (themeParams) {
-                    document.body.style.background = themeParams.bg_color || '#020408';
-                }
-            }
-        } catch(e) {
-            console.warn('Telegram WebApp not available', e);
+    <audio id="diceSound" src="https://assets.mixkit.co/sfx/preview/mixkit-dice-roll-1978.mp3" preload="auto"></audio>
+    <audio id="winSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" preload="auto"></audio>
+    <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" preload="auto"></audio>
+
+    <script>
+        // ==================== GAME VARIABLES ====================
+        let points = 2000;
+        let isRolling = false;
+        let isAudioOn = true;
+        let currentWin = 0;
+        let currentDice = 6;
+        let adInProgress = false;
+        
+        // DOM Elements
+        const rollBtn = document.getElementById('rollBtn');
+        const pointsValue = document.getElementById('pointsValue');
+        const dice = document.getElementById('dice');
+        const resultPopup = document.getElementById('resultPopup');
+        const resultDice = document.getElementById('resultDice');
+        const winAmount = document.getElementById('winAmount');
+        const claimBtn = document.getElementById('claimBtn');
+        const adsPopup = document.getElementById('adsPopup');
+        const adsContainer = document.getElementById('adsContainer');
+        const closeAdsBtn = document.getElementById('closeAdsBtn');
+        const audioControl = document.getElementById('audioControl');
+        const statusBar = document.getElementById('statusBar');
+        
+        const diceSound = document.getElementById('diceSound');
+        const winSound = document.getElementById('winSound');
+        const clickSound = document.getElementById('clickSound');
+        const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+        
+        // Telegram WebApp
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
         }
         
-        // ----- TADDY.PRO ADS INTEGRATION - PRELOADED -----
-        let taddySDK = null;
-        let adReady = false;
-        let isShowingAd = false;
-        let adQueue = [];
-        
-        // Preload Taddy SDK immediately
-        if (typeof Taddy !== 'undefined') {
-            taddySDK = Taddy;
-            taddySDK.init({
-                onReady: function() {
-                    console.log('✅ Taddy.pro ads READY');
-                    adReady = true;
-                    // Process any queued ad requests
-                    processAdQueue();
-                },
-                onError: function(err) {
-                    console.warn('Taddy ad init error:', err);
-                    adReady = false;
-                }
-            });
-        } else {
-            console.warn('Taddy SDK not loaded');
-            // Retry after short delay
-            setTimeout(() => {
-                if (typeof Taddy !== 'undefined') {
-                    taddySDK = Taddy;
-                    taddySDK.init({
-                        onReady: () => { adReady = true; processAdQueue(); },
-                        onError: (e) => console.warn(e)
-                    });
-                }
-            }, 500);
+        function updateStatus(text) {
+            if (statusBar) statusBar.textContent = text;
+            console.log(text);
         }
         
-        function processAdQueue() {
-            while(adQueue.length > 0 && !isShowingAd) {
-                const callback = adQueue.shift();
-                callback();
-            }
+        function formatNumber(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+        function updatePoints() { pointsValue.textContent = formatNumber(points); }
+        function playSound(sound) { if (isAudioOn) { sound.currentTime = 0; sound.play().catch(()=>{}); } }
+        
+        function toggleAudio() {
+            isAudioOn = !isAudioOn;
+            audioControl.querySelector('i').className = isAudioOn ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+            playSound(clickSound);
         }
         
-        function showAdNotification(message) {
-            const notif = document.createElement('div');
-            notif.className = 'ad-notification';
-            notif.innerText = message || '📺 Loading ad...';
-            document.body.appendChild(notif);
-            setTimeout(() => notif.remove(), 2500);
-        }
-        
-        // Main ad show function with queue system
-        function showTaddyAd(adType, onComplete) {
-            if (!adReady || !taddySDK) {
-                console.log('Ad not ready, skipping');
-                if (onComplete) setTimeout(onComplete, 100);
-                return;
-            }
+        // ==================== DICE ROLL ====================
+        function rollDice() {
+            if (isRolling || points < 100 || adInProgress) return;
             
-            if (isShowingAd) {
-                adQueue.push(() => showTaddyAd(adType, onComplete));
-                return;
-            }
+            isRolling = true;
+            rollBtn.disabled = true;
+            points -= 100;
+            updatePoints();
+            playSound(diceSound);
             
-            isShowingAd = true;
-            showAdNotification(adType === 'rewarded' ? '🎁 Watch ad for rewards!' : '📺 Ad playing...');
-            
-            // Pause game while ad plays
-            const wasActive = gameActive;
-            if (wasActive) {
-                gameActive = false;
-                if (animationId) cancelAnimationFrame(animationId);
-            }
-            
-            try {
-                taddySDK.showAd({
-                    type: adType,
-                    onClose: function() {
-                        console.log('Ad closed:', adType);
-                        isShowingAd = false;
-                        // Resume game
-                        if (wasActive && !winner) {
-                            gameActive = true;
-                            animationId = requestAnimationFrame(gameLoop);
-                        }
-                        if (onComplete) onComplete();
-                        processAdQueue();
-                    },
-                    onError: function(err) {
-                        console.warn('Ad error:', err);
-                        isShowingAd = false;
-                        if (wasActive && !winner) {
-                            gameActive = true;
-                            animationId = requestAnimationFrame(gameLoop);
-                        }
-                        if (onComplete) onComplete();
-                        processAdQueue();
-                    }
-                });
-            } catch(e) {
-                console.warn('Ad show exception:', e);
-                isShowingAd = false;
-                if (wasActive && !winner) {
-                    gameActive = true;
-                    animationId = requestAnimationFrame(gameLoop);
-                }
-                if (onComplete) onComplete();
-                processAdQueue();
-            }
-        }
-        
-        // Track milestone ads shown to prevent duplicate ads at same milestone
-        let redMilestonesShown = { 10: false, 20: false, 30: false, 40: false };
-        let blueMilestonesShown = { 10: false, 20: false, 30: false, 40: false };
-        
-        // Check and show milestone ad when lines reach 10,20,30,40
-        function checkMilestoneAd(ball, colorType) {
-            const milestone = ball.linesCount;
-            const milestones = [10, 20, 30, 40];
-            
-            if (milestones.includes(milestone)) {
-                const milestoneKey = milestone;
-                const alreadyShown = colorType === 'red' ? redMilestonesShown[milestoneKey] : blueMilestonesShown[milestoneKey];
-                
-                if (!alreadyShown && !isShowingAd) {
-                    // Mark as shown
-                    if (colorType === 'red') {
-                        redMilestonesShown[milestoneKey] = true;
-                    } else {
-                        blueMilestonesShown[milestoneKey] = true;
-                    }
-                    
-                    // Pause game briefly before ad
-                    const wasActive = gameActive;
-                    if (wasActive && !winner) {
-                        gameActive = false;
-                        if (animationId) cancelAnimationFrame(animationId);
-                    }
-                    
-                    showAdNotification(`🎯 ${colorType.toUpperCase()} reached ${milestone} LINES!`);
-                    
-                    // Show interstitial ad at milestone
-                    showTaddyAd('interstitial', () => {
-                        // Resume game after ad
-                        if (wasActive && !winner) {
-                            gameActive = true;
-                            animationId = requestAnimationFrame(gameLoop);
-                        }
-                    });
-                }
-            }
-        }
-        
-        // ----- CANVAS -----
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        function resizeCanvas() {
-            const size = Math.min(window.innerWidth - 40, window.innerHeight - 200, 750);
-            canvas.style.width = `${size}px`;
-            canvas.style.height = `${size}px`;
-            canvas.width = 750;
-            canvas.height = 750;
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        
-        // arena
-        const centerX = 375;
-        const centerY = 375;
-        const radius = 363;
-        
-        // LINE SYSTEM
-        let redLines = [];
-        let blueLines = [];
-        
-        // BASE SPEED DOUBLED (original vx/vy were ~2.5, now ~5.0 for faster gameplay)
-        let redBall = {
-            x: centerX - 85,
-            y: centerY - 15,
-            vx: 5.2,
-            vy: -3.8,
-            color: '#ff4444',
-            glow: '#ff7777',
-            radius: 14,
-            speedMultiplier: 1.0,
-            speedTimer: 0,
-            hasBoost: false,
-            linesCount: 0,
-            currentMultiplier: 1
-        };
-        
-        let blueBall = {
-            x: centerX + 85,
-            y: centerY + 20,
-            vx: -4.8,
-            vy: 3.6,
-            color: '#4488ff',
-            glow: '#88aaff',
-            radius: 14,
-            speedMultiplier: 1.0,
-            speedTimer: 0,
-            hasBoost: false,
-            linesCount: 0,
-            currentMultiplier: 1
-        };
-        
-        let multiplierPowerup = {
-            active: false,
-            x: 0, y: 0,
-            radius: 14,
-            timer: 0,
-            value: 2
-        };
-        
-        let gameActive = true;
-        let winner = null;
-        let animationId = null;
-        
-        // DOM elements
-        const redLinesSpan = document.getElementById('redLinesCounter');
-        const blueLinesSpan = document.getElementById('blueLinesCounter');
-        const winnerDiv = document.getElementById('winnerDisplay');
-        const resetBtn = document.getElementById('resetGameBtn');
-        const speedStatusSpan = document.getElementById('speedStatus');
-        const multiplierDisplay = document.getElementById('multiplierDisplay');
-        
-        function updateUI() {
-            redLinesSpan.innerText = redBall.linesCount;
-            blueLinesSpan.innerText = blueBall.linesCount;
-            
-            if(redBall.hasBoost) {
-                speedStatusSpan.innerHTML = `🔴 ${redBall.currentMultiplier}x BOOST!`;
-                speedStatusSpan.style.color = '#ffaa66';
-                speedStatusSpan.style.background = '#441111';
-                multiplierDisplay.innerHTML = `x${redBall.currentMultiplier}`;
-                multiplierDisplay.style.background = 'linear-gradient(135deg, #ff6633, #ff3333)';
-            } else if(blueBall.hasBoost) {
-                speedStatusSpan.innerHTML = `🔵 ${blueBall.currentMultiplier}x BOOST!`;
-                speedStatusSpan.style.color = '#aaffdd';
-                speedStatusSpan.style.background = '#112244';
-                multiplierDisplay.innerHTML = `x${blueBall.currentMultiplier}`;
-                multiplierDisplay.style.background = 'linear-gradient(135deg, #33aaff, #2266cc)';
-            } else {
-                speedStatusSpan.innerHTML = '⚡ double speed';
-                speedStatusSpan.style.color = '#ffaa66';
-                speedStatusSpan.style.background = '#2a2a33';
-                multiplierDisplay.innerHTML = 'x1';
-                multiplierDisplay.style.background = 'linear-gradient(135deg, #ffaa33, #ff6633)';
-            }
-        }
-        
-        function createFloatingText(x, y, text, color) {
-            const rect = canvas.getBoundingClientRect();
-            const div = document.createElement('div');
-            div.innerText = text;
-            div.style.position = 'fixed';
-            div.style.left = (rect.left + x * (rect.width / 750)) + 'px';
-            div.style.top = (rect.top + y * (rect.height / 750) - 20) + 'px';
-            div.style.color = color;
-            div.style.fontWeight = 'bold';
-            div.style.fontSize = 'clamp(12px, 4vw, 18px)';
-            div.style.fontFamily = 'monospace';
-            div.style.textShadow = '0 0 3px black';
-            div.style.pointerEvents = 'none';
-            div.style.zIndex = '1000';
-            div.style.transition = 'transform 0.5s ease-out, opacity 0.5s';
-            document.body.appendChild(div);
-            requestAnimationFrame(() => {
-                div.style.transform = 'translateY(-32px)';
-                div.style.opacity = '0';
-            });
-            setTimeout(() => div.remove(), 500);
-        }
-        
-        function addAttachedLine(ball, wallContactX, wallContactY, colorType, multiplierValue) {
-            if (!gameActive) return;
-            
-            const linesToAdd = multiplierValue;
-            const oldCount = ball.linesCount;
-            
-            for (let i = 0; i < linesToAdd; i++) {
-                const anchorX = wallContactX + (Math.cos(Date.now() + i) * 0.8);
-                const anchorY = wallContactY + (Math.sin(Date.now() + i) * 0.8);
-                
-                const lineObj = {
-                    ball: ball,
-                    anchorX: anchorX,
-                    anchorY: anchorY,
-                    color: colorType === 'red' ? '#ff6666' : '#66aaff',
-                    width: 2.5
-                };
-                
-                if (colorType === 'red') {
-                    redLines.push(lineObj);
+            let rolls = 0;
+            const totalRolls = 12;
+            function animateRoll() {
+                if (rolls < totalRolls) {
+                    currentDice = Math.floor(Math.random() * 6) + 1;
+                    dice.textContent = currentDice;
+                    dice.style.transform = `translate(-50%, -50%) rotate(-45deg) rotate(${Math.random() * 360}deg)`;
+                    rolls++;
+                    setTimeout(animateRoll, 70);
                 } else {
-                    blueLines.push(lineObj);
+                    currentDice = Math.floor(Math.random() * 6) + 1;
+                    currentWin = currentDice * 100;
+                    dice.textContent = currentDice;
+                    dice.style.transform = 'translate(-50%, -50%) rotate(-45deg)';
+                    setTimeout(showResult, 300);
+                    isRolling = false;
+                    rollBtn.disabled = false;
                 }
-                if (colorType === 'red' && redLines.length > 250) redLines.shift();
-                if (colorType === 'blue' && blueLines.length > 250) blueLines.shift();
             }
-            
-            ball.linesCount += linesToAdd;
-            
-            createFloatingText(ball.x, ball.y, `+${linesToAdd} LINES! (${multiplierValue}x)`, colorType === 'red' ? '#ff8888' : '#88aaff');
-            updateUI();
-            
-            // Check milestone ad AFTER updating line count
-            checkMilestoneAd(ball, colorType);
-            
-            checkWinner();
+            animateRoll();
         }
         
-        function checkWinner() {
-            if (!gameActive) return true;
-            if (redBall.linesCount >= 50) {
-                gameActive = false;
-                winner = 'red';
-                winnerDiv.style.display = 'block';
-                winnerDiv.innerHTML = '🏆🔴 RED VICTORY! FIRST TO 50 LINES! 🔴🏆<br>🔥 MULTIPLIER MADNESS 🔥';
-                winnerDiv.style.background = '#ff4d4ddd';
-                if (animationId) cancelAnimationFrame(animationId);
-                draw();
-                // Show rewarded ad on win
-                showTaddyAd('rewarded', () => {});
-                if (tg) tg.HapticFeedback.notificationOccurred('success');
-                return true;
-            } else if (blueBall.linesCount >= 50) {
-                gameActive = false;
-                winner = 'blue';
-                winnerDiv.style.display = 'block';
-                winnerDiv.innerHTML = '🏆🔵 BLUE VICTORY! FIRST TO 50 LINES! 🔵🏆<br>💪 MULTIPLIER DOMINATION 💪';
-                winnerDiv.style.background = '#3388ffdd';
-                if (animationId) cancelAnimationFrame(animationId);
-                draw();
-                showTaddyAd('rewarded', () => {});
-                if (tg) tg.HapticFeedback.notificationOccurred('success');
-                return true;
+        function showResult() {
+            resultDice.textContent = diceFaces[currentDice - 1];
+            winAmount.textContent = formatNumber(currentWin) + ' POINTS';
+            resultPopup.style.display = 'flex';
+            playSound(winSound);
+        }
+        
+        // ==================== AD SYSTEM - FIXED FOR ADEXIUM ====================
+        // This function triggers Adexium ads correctly using autoMode refresh
+        function triggerAdexiumAd() {
+            let triggered = false;
+            
+            // Try interstitial
+            if (window.adexiumInterstitial) {
+                try {
+                    // autoMode is the main method - call it to show ads
+                    if (typeof window.adexiumInterstitial.autoMode === 'function') {
+                        window.adexiumInterstitial.autoMode();
+                        triggered = true;
+                        updateStatus('Adexium Interstitial triggered');
+                        console.log('✅ Adexium Interstitial autoMode called');
+                    }
+                    // Also try showAd if available
+                    if (typeof window.adexiumInterstitial.showAd === 'function') {
+                        window.adexiumInterstitial.showAd();
+                        triggered = true;
+                        console.log('✅ Adexium Interstitial showAd called');
+                    }
+                } catch(e) { console.error('Adexium interstitial trigger:', e); }
+            }
+            
+            // Try push-like
+            if (window.adexiumPushLike) {
+                try {
+                    if (typeof window.adexiumPushLike.autoMode === 'function') {
+                        window.adexiumPushLike.autoMode();
+                        triggered = true;
+                        console.log('✅ Adexium Push-like autoMode called');
+                    }
+                    if (typeof window.adexiumPushLike.showAd === 'function') {
+                        window.adexiumPushLike.showAd();
+                        triggered = true;
+                        console.log('✅ Adexium Push-like showAd called');
+                    }
+                } catch(e) { console.error('Adexium push-like trigger:', e); }
+            }
+            
+            return triggered;
+        }
+        
+        // Trigger RichAds
+        function triggerRichAd() {
+            if (window.richAdsReady && window.RichAdsController) {
+                try {
+                    if (typeof window.RichAdsController.showAd === 'function') {
+                        window.RichAdsController.showAd();
+                        updateStatus('RichAds triggered');
+                        console.log('✅ RichAds showAd called');
+                        return true;
+                    }
+                } catch(e) { console.error('RichAds trigger:', e); }
             }
             return false;
         }
         
-        function spawnMultiplierPowerup() {
-            if (multiplierPowerup.active) return;
-            let angle = Math.random() * Math.PI * 2;
-            let r = Math.random() * (radius - 45) + 30;
-            let px = centerX + Math.cos(angle) * r;
-            let py = centerY + Math.sin(angle) * r;
-            multiplierPowerup.x = px;
-            multiplierPowerup.y = py;
-            multiplierPowerup.active = true;
-            multiplierPowerup.timer = 280;
-            const multipliers = [2, 3, 4, 5];
-            multiplierPowerup.value = multipliers[Math.floor(Math.random() * multipliers.length)];
-        }
-        
-        function applyMultiplierBoost(ball, multiplierValue) {
-            if (!gameActive) return;
-            ball.speedMultiplier = multiplierValue;
-            ball.currentMultiplier = multiplierValue;
-            ball.hasBoost = true;
-            ball.speedTimer = 300;
-            updateUI();
-            createFloatingText(ball.x, ball.y, `⚡ ${multiplierValue}x SPEED! 5s`, '#ffdd77');
-            if (tg) tg.HapticFeedback.impactOccurred('light');
-        }
-        
-        function updateBoosts() {
-            if (redBall.hasBoost) {
-                redBall.speedTimer--;
-                if (redBall.speedTimer <= 0) {
-                    redBall.speedMultiplier = 1.0;
-                    redBall.hasBoost = false;
-                    redBall.currentMultiplier = 1;
-                }
-            }
-            if (blueBall.hasBoost) {
-                blueBall.speedTimer--;
-                if (blueBall.speedTimer <= 0) {
-                    blueBall.speedMultiplier = 1.0;
-                    blueBall.hasBoost = false;
-                    blueBall.currentMultiplier = 1;
-                }
-            }
-            updateUI();
-        }
-        
-        function updatePowerup() {
-            if (!gameActive) return;
-            if (multiplierPowerup.active) {
-                multiplierPowerup.timer--;
-                if (multiplierPowerup.timer <= 0) {
-                    multiplierPowerup.active = false;
-                    return;
-                }
-                const dxR = redBall.x - multiplierPowerup.x;
-                const dyR = redBall.y - multiplierPowerup.y;
-                if (Math.hypot(dxR, dyR) < redBall.radius + multiplierPowerup.radius) {
-                    applyMultiplierBoost(redBall, multiplierPowerup.value);
-                    multiplierPowerup.active = false;
-                    createFloatingText(multiplierPowerup.x, multiplierPowerup.y, `${multiplierPowerup.value}x POWER!`, '#ffaa44');
-                    return;
-                }
-                const dxB = blueBall.x - multiplierPowerup.x;
-                const dyB = blueBall.y - multiplierPowerup.y;
-                if (Math.hypot(dxB, dyB) < blueBall.radius + multiplierPowerup.radius) {
-                    applyMultiplierBoost(blueBall, multiplierPowerup.value);
-                    multiplierPowerup.active = false;
-                    createFloatingText(multiplierPowerup.x, multiplierPowerup.y, `${multiplierPowerup.value}x POWER!`, '#ffaa44');
-                    return;
+        // Taddy.pro as default (always works)
+        function triggerTaddyAd(callback) {
+            updateStatus('Taddy.pro ad loading...');
+            console.log('🎯 Triggering Taddy.pro ad');
+            
+            if (typeof window.Taddy !== 'undefined' && window.Taddy.ads) {
+                try {
+                    const taddyAd = window.Taddy.ads();
+                    if (taddyAd && typeof taddyAd.interstitial === 'function') {
+                        taddyAd.interstitial({
+                            onClosed: () => {
+                                console.log('✅ Taddy.pro ad completed');
+                                updateStatus('Ad completed! +50 bonus');
+                                if (callback) callback(true);
+                            },
+                            onViewThrough: () => {
+                                console.log('✅ Taddy.pro ad viewed');
+                            }
+                        }).catch((err) => {
+                            console.log('Taddy.pro error:', err);
+                            if (callback) callback(true);
+                        });
+                        return true;
+                    }
+                } catch(e) {
+                    console.error('Taddy.pro error:', e);
+                    if (callback) callback(true);
                 }
             } else {
-                if (Math.random() < 0.015 && gameActive) spawnMultiplierPowerup();
+                console.log('Taddy.pro not available, using mock');
+                if (callback) callback(true);
             }
+            return false;
         }
         
-        function handleBoundaryAndAttachLine(ball, colorTag) {
-            let dx = ball.x - centerX;
-            let dy = ball.y - centerY;
-            let dist = Math.hypot(dx, dy);
-            if (dist + ball.radius >= radius) {
-                let nx = dx / dist;
-                let ny = dy / dist;
-                let overlap = (dist + ball.radius) - radius;
-                ball.x -= nx * overlap;
-                ball.y -= ny * overlap;
-                
-                let vdotn = ball.vx * nx + ball.vy * ny;
-                ball.vx = ball.vx - 2 * vdotn * nx;
-                ball.vy = ball.vy - 2 * vdotn * ny;
-                
-                let contactX = centerX + nx * (radius);
-                let contactY = centerY + ny * (radius);
-                
-                let multiplierValue = ball.hasBoost ? ball.currentMultiplier : 1;
-                
-                addAttachedLine(ball, contactX, contactY, colorTag, multiplierValue);
-                createFloatingText(ball.x, ball.y, `🧵 ${multiplierValue}x TETHER`, colorTag === 'red' ? '#ff9999' : '#99bbff');
-                
-                let newDist = Math.hypot(ball.x - centerX, ball.y - centerY);
-                if (newDist + ball.radius > radius) {
-                    let fixDx = ball.x - centerX;
-                    let fixDy = ball.y - centerY;
-                    let fixDist = Math.hypot(fixDx, fixDy);
-                    let fixNx = fixDx/fixDist;
-                    let fixNy = fixDy/fixDist;
-                    ball.x = centerX + fixNx * (radius - ball.radius - 0.3);
-                    ball.y = centerY + fixNy * (radius - ball.radius - 0.3);
-                }
+        // Main ad trigger - tries Adexium first, then RichAds, then Taddy
+        function showAdWithBonus(callback) {
+            updateStatus('Attempting to show ad...');
+            
+            // FIRST: Try Adexium (both formats)
+            const adexiumTriggered = triggerAdexiumAd();
+            
+            if (adexiumTriggered) {
+                updateStatus('Adexium ad triggered - waiting...');
+                // Wait for Adexium to complete (autoMode handles timing)
+                setTimeout(() => {
+                    if (callback) callback(true);
+                }, 4000);
+                return true;
             }
+            
+            // SECOND: Try RichAds
+            const richTriggered = triggerRichAd();
+            if (richTriggered) {
+                updateStatus('RichAds ad triggered - waiting...');
+                setTimeout(() => {
+                    if (callback) callback(true);
+                }, 4000);
+                return true;
+            }
+            
+            // THIRD: Taddy.pro as default
+            updateStatus('Using Taddy.pro ad...');
+            triggerTaddyAd(callback);
+            return true;
         }
         
-        function handleBallCollision(b1, b2) {
-            let dx = b2.x - b1.x;
-            let dy = b2.y - b1.y;
-            let dist = Math.hypot(dx, dy);
-            let minDist = b1.radius + b2.radius;
-            if (dist < minDist) {
-                let angle = Math.atan2(dy, dx);
-                let sin = Math.sin(angle);
-                let cos = Math.cos(angle);
-                let vx1 = b1.vx * cos + b1.vy * sin;
-                let vy1 = b1.vy * cos - b1.vx * sin;
-                let vx2 = b2.vx * cos + b2.vy * sin;
-                let vy2 = b2.vy * cos - b2.vx * sin;
-                let temp = vx1;
-                vx1 = vx2;
-                vx2 = temp;
-                b1.vx = vx1 * cos - vy1 * sin;
-                b1.vy = vy1 * cos + vx1 * sin;
-                b2.vx = vx2 * cos - vy2 * sin;
-                b2.vy = vy2 * cos + vx2 * sin;
-                let overlap = minDist - dist;
-                let corrX = dx / dist * overlap * 0.5;
-                let corrY = dy / dist * overlap * 0.5;
-                b1.x -= corrX;
-                b1.y -= corrY;
-                b2.x += corrX;
-                b2.y += corrY;
-                createFloatingText((b1.x+b2.x)/2, (b1.y+b2.y)/2, '💥 BOUNCE', '#ffcc99');
-                if (tg) tg.HapticFeedback.impactOccurred('soft');
-            }
+        // ==================== CLAIM PRIZE ====================
+        function claimPrizeAndShowAds() {
+            playSound(clickSound);
+            
+            // Add winnings
+            points += currentWin;
+            updatePoints();
+            resultPopup.style.display = 'none';
+            
+            // Show ad for bonus
+            showAdWithBonus((success) => {
+                giveBonusAfterAd();
+            });
         }
         
-        function updatePositions() {
-            let redSpd = redBall.speedMultiplier;
-            let blueSpd = blueBall.speedMultiplier;
-            redBall.x += redBall.vx * redSpd;
-            redBall.y += redBall.vy * redSpd;
-            blueBall.x += blueBall.vx * blueSpd;
-            blueBall.y += blueBall.vy * blueSpd;
+        function giveBonusAfterAd() {
+            const bonusAmount = 50;
+            points += bonusAmount;
+            updatePoints();
             
-            handleBoundaryAndAttachLine(redBall, 'red');
-            handleBoundaryAndAttachLine(blueBall, 'blue');
-            handleBallCollision(redBall, blueBall);
+            // Animate
+            const pointsDiv = document.querySelector('.points-value');
+            pointsDiv.classList.add('bonus-animation');
+            setTimeout(() => pointsDiv.classList.remove('bonus-animation'), 500);
             
-            function clampInside(ball) {
-                let dxc = ball.x - centerX;
-                let dyc = ball.y - centerY;
-                let d = Math.hypot(dxc, dyc);
-                if (d + ball.radius > radius) {
-                    let ang = Math.atan2(dyc, dxc);
-                    ball.x = centerX + Math.cos(ang) * (radius - ball.radius);
-                    ball.y = centerY + Math.sin(ang) * (radius - ball.radius);
-                }
-            }
-            clampInside(redBall);
-            clampInside(blueBall);
+            adsContainer.innerHTML = `
+                <div style="text-align: center;">
+                    <i class="fas fa-trophy" style="font-size: 48px; color: #ffd700;"></i>
+                    <div style="font-size: 28px; font-weight: 800; color: #34c759; margin-top: 10px;">+${bonusAmount} BONUS</div>
+                    <div style="font-size: 14px; margin-top: 5px;">Points added! Keep rolling!</div>
+                </div>
+            `;
+            closeAdsBtn.style.display = 'flex';
+            playSound(clickSound);
+            updateStatus('Bonus collected!');
         }
         
-        function draw() {
-            if (!ctx) return;
-            ctx.clearRect(0, 0, 750, 750);
-            
-            // White circle wall
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, Math.PI*2);
-            ctx.strokeStyle = '#FFFFFF';
-            ctx.lineWidth = 4;
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius-2, 0, Math.PI*2);
-            ctx.strokeStyle = '#EEEEEE';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius-1, 0, Math.PI*2);
-            ctx.fillStyle = '#03060cee';
-            ctx.fill();
-            
-            // Draw lines
-            for (let line of redLines) {
-                if (!line.ball) continue;
-                ctx.beginPath();
-                ctx.moveTo(line.ball.x, line.ball.y);
-                ctx.lineTo(line.anchorX, line.anchorY);
-                ctx.strokeStyle = line.color;
-                ctx.lineWidth = 2.2;
-                ctx.shadowBlur = 5;
-                ctx.shadowColor = '#ff6666';
-                ctx.stroke();
-            }
-            for (let line of blueLines) {
-                if (!line.ball) continue;
-                ctx.beginPath();
-                ctx.moveTo(line.ball.x, line.ball.y);
-                ctx.lineTo(line.anchorX, line.anchorY);
-                ctx.strokeStyle = line.color;
-                ctx.lineWidth = 2.2;
-                ctx.shadowBlur = 5;
-                ctx.shadowColor = '#4488ff';
-                ctx.stroke();
-            }
-            ctx.shadowBlur = 0;
-            
-            // Powerup
-            if(multiplierPowerup.active) {
-                ctx.beginPath();
-                ctx.arc(multiplierPowerup.x, multiplierPowerup.y, multiplierPowerup.radius, 0, Math.PI*2);
-                ctx.fillStyle = '#ffaa33';
-                ctx.shadowBlur = 12;
-                ctx.fill();
-                ctx.fillStyle = '#000000';
-                ctx.font = 'bold 18px monospace';
-                ctx.fillText(`${multiplierPowerup.value}x`, multiplierPowerup.x-12, multiplierPowerup.y+7);
-                ctx.fillStyle = 'white';
-                ctx.fillText(`${multiplierPowerup.value}x`, multiplierPowerup.x-11.5, multiplierPowerup.y+6.5);
-                ctx.shadowBlur = 0;
-            }
-            
-            // Balls
-            ctx.shadowBlur = 12;
-            ctx.shadowColor = redBall.glow;
-            ctx.beginPath();
-            ctx.arc(redBall.x, redBall.y, redBall.radius, 0, Math.PI*2);
-            ctx.fillStyle = redBall.color;
-            ctx.fill();
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 20px "Segoe UI"';
-            ctx.fillText('🔴', redBall.x-10, redBall.y+8);
-            
-            ctx.shadowColor = blueBall.glow;
-            ctx.beginPath();
-            ctx.arc(blueBall.x, blueBall.y, blueBall.radius, 0, Math.PI*2);
-            ctx.fillStyle = blueBall.color;
-            ctx.fill();
-            ctx.fillText('🔵', blueBall.x-10, blueBall.y+8);
-            
-            ctx.shadowBlur = 0;
-            ctx.font = 'bold 12px monospace';
-            ctx.fillStyle = '#ffbb99';
-            ctx.fillText(`${redBall.linesCount} lines`, redBall.x-22, redBall.y-14);
-            ctx.fillStyle = '#aaddff';
-            ctx.fillText(`${blueBall.linesCount} lines`, blueBall.x-22, blueBall.y-14);
-            
-            if(redBall.hasBoost) {
-                ctx.font = 'bold 16px monospace';
-                ctx.fillStyle = '#ffaa55';
-                ctx.fillText(`${redBall.currentMultiplier}x`, redBall.x-28, redBall.y-18);
-            }
-            if(blueBall.hasBoost) {
-                ctx.fillStyle = '#ffaa55';
-                ctx.fillText(`${blueBall.currentMultiplier}x`, blueBall.x-28, blueBall.y-18);
-            }
+        function closeAdsPopup() {
+            playSound(clickSound);
+            adsPopup.style.display = 'none';
+            adInProgress = false;
+            updateStatus('Ready to play');
         }
         
-        function gameLoop() {
-            if (!gameActive && winner) {
-                draw();
-                requestAnimationFrame(gameLoop);
-                return;
-            }
-            if (!gameActive && !winner && isShowingAd) {
-                draw();
-                requestAnimationFrame(gameLoop);
-                return;
-            }
-            if (!gameActive) {
-                draw();
-                requestAnimationFrame(gameLoop);
-                return;
-            }
-            updateBoosts();
-            updatePowerup();
-            updatePositions();
-            draw();
-            checkWinner();
-            animationId = requestAnimationFrame(gameLoop);
+        function showAdsPopup() {
+            adInProgress = true;
+            adsPopup.style.display = 'flex';
+            closeAdsBtn.style.display = 'none';
+            adsContainer.innerHTML = '<div style="color: #6c757d; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading ad...<br><span style="font-size:12px;">Adexium | RichAds | Taddy</span></div>';
         }
         
-        function fullReset() {
-            if (animationId) cancelAnimationFrame(animationId);
-            redLines = [];
-            blueLines = [];
-            redBall = {
-                x: centerX - 85,
-                y: centerY - 15,
-                vx: 5.2,
-                vy: -3.8,
-                color: '#ff4444',
-                glow: '#ff7777',
-                radius: 14,
-                speedMultiplier: 1.0,
-                speedTimer: 0,
-                hasBoost: false,
-                linesCount: 0,
-                currentMultiplier: 1
-            };
-            blueBall = {
-                x: centerX + 85,
-                y: centerY + 20,
-                vx: -4.8,
-                vy: 3.6,
-                color: '#4488ff',
-                glow: '#88aaff',
-                radius: 14,
-                speedMultiplier: 1.0,
-                speedTimer: 0,
-                hasBoost: false,
-                linesCount: 0,
-                currentMultiplier: 1
-            };
-            multiplierPowerup.active = false;
-            gameActive = true;
-            winner = null;
-            winnerDiv.style.display = 'none';
+        // Override showAdWithBonus to show popup
+        const originalShowAd = showAdWithBonus;
+        window.showAdWithBonus = function(callback) {
+            showAdsPopup();
+            originalShowAd(callback);
+        };
+        showAdWithBonus = function(callback) {
+            showAdsPopup();
+            originalShowAd(callback);
+        };
+        
+        // ==================== INIT ====================
+        function initGame() {
+            updatePoints();
+            rollBtn.addEventListener('click', rollDice);
+            claimBtn.addEventListener('click', claimPrizeAndShowAds);
+            closeAdsBtn.addEventListener('click', closeAdsPopup);
+            audioControl.addEventListener('click', toggleAudio);
             
-            // Reset milestone trackers
-            redMilestonesShown = { 10: false, 20: false, 30: false, 40: false };
-            blueMilestonesShown = { 10: false, 20: false, 30: false, 40: false };
+            resultPopup.addEventListener('click', (e) => { if (e.target === resultPopup) resultPopup.style.display = 'none'; });
+            adsPopup.addEventListener('click', (e) => { if (e.target === adsPopup && closeAdsBtn.style.display === 'flex') closeAdsPopup(); });
             
-            updateUI();
-            animationId = requestAnimationFrame(gameLoop);
-            if (tg) tg.HapticFeedback.impactOccurred('medium');
+            diceSound.volume = 0.6;
+            winSound.volume = 0.7;
+            clickSound.volume = 0.5;
+            
+            // Initial ad network warm-up
+            setTimeout(() => {
+                triggerAdexiumAd();
+                updateStatus('Adexium ready | Taddy default');
+            }, 2000);
+            
+            console.log('🎮 Game initialized');
+            console.log('✅ Adexium ads will trigger via autoMode');
+            console.log('✅ RichAds available:', window.richAdsReady);
+            console.log('💰 Starting points:', points);
+            updateStatus('Ready! Roll dice to play');
         }
         
-        resetBtn.addEventListener('click', fullReset);
-        fullReset();
-        
-        setInterval(() => {
-            if(gameActive && !multiplierPowerup.active && Math.random() < 0.45) spawnMultiplierPowerup();
-        }, 3200);
-    })();
-</script>
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
 </body>
 </html>
