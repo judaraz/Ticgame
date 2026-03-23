@@ -175,10 +175,8 @@
             }
         }
     </style>
-    <!-- Taddy.pro SDK -->
+    <!-- Taddy.pro SDK - PRELOADED for immediate ads -->
     <script src="https://sdk.taddy.pro/web/taddy.min.js" data-pub-id="c9cdd59664e9f51f7ddf938ac2d2f008"></script>
-    <!-- Telegram Web App SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 <div>
@@ -205,8 +203,8 @@
 
         <div id="winnerDisplay" class="winner-msg" style="display: none;"></div>
         <div class="game-footer">
-            🎯 Each wall touch → LINE attached + points multiplied by current multiplier!<br>
-            ⚡ 2x, 3x, 4x, 5x powerups appear randomly → collect for 5 sec boost | First to 50 LINES wins!
+            🎯 Each wall touch → LINE attached | Base speed DOUBLED!<br>
+            ⚡ 2x,3x,4x,5x powerups | At 10,20,30,40 lines → AD plays! | First to 50 LINES wins!
         </div>
     </div>
 </div>
@@ -221,7 +219,6 @@
                 tg.ready();
                 tg.expand();
                 tg.enableClosingConfirmation();
-                
                 const themeParams = tg.themeParams;
                 if (themeParams) {
                     document.body.style.background = themeParams.bg_color || '#020408';
@@ -231,83 +228,163 @@
             console.warn('Telegram WebApp not available', e);
         }
         
-        // ----- TADDY.PRO ADS INTEGRATION -----
+        // ----- TADDY.PRO ADS INTEGRATION - PRELOADED -----
         let taddySDK = null;
         let adReady = false;
-        let adCooldown = false;
-        let pendingAdCallback = null;
+        let isShowingAd = false;
+        let adQueue = [];
         
+        // Preload Taddy SDK immediately
         if (typeof Taddy !== 'undefined') {
             taddySDK = Taddy;
             taddySDK.init({
                 onReady: function() {
-                    console.log('Taddy.pro ads ready');
+                    console.log('✅ Taddy.pro ads READY');
                     adReady = true;
+                    // Process any queued ad requests
+                    processAdQueue();
                 },
                 onError: function(err) {
-                    console.warn('Taddy ad error:', err);
+                    console.warn('Taddy ad init error:', err);
+                    adReady = false;
                 }
             });
+        } else {
+            console.warn('Taddy SDK not loaded');
+            // Retry after short delay
+            setTimeout(() => {
+                if (typeof Taddy !== 'undefined') {
+                    taddySDK = Taddy;
+                    taddySDK.init({
+                        onReady: () => { adReady = true; processAdQueue(); },
+                        onError: (e) => console.warn(e)
+                    });
+                }
+            }, 500);
         }
         
-        // Show ad notification
+        function processAdQueue() {
+            while(adQueue.length > 0 && !isShowingAd) {
+                const callback = adQueue.shift();
+                callback();
+            }
+        }
+        
         function showAdNotification(message) {
             const notif = document.createElement('div');
             notif.className = 'ad-notification';
-            notif.innerText = message || '📺 Showing ad...';
+            notif.innerText = message || '📺 Loading ad...';
             document.body.appendChild(notif);
-            setTimeout(() => notif.remove(), 2000);
+            setTimeout(() => notif.remove(), 2500);
         }
         
-        // Function to show ad during gameplay (random)
-        function showRandomAd() {
-            if (!adReady || !taddySDK || adCooldown) return;
-            // 12% chance to show ad during gameplay, but not too frequent
-            if (Math.random() < 0.12 && gameActive && !winner && redBall.linesCount > 5 && blueBall.linesCount > 5) {
-                adCooldown = true;
-                showAdNotification('⚡ Random ad incoming!');
-                try {
-                    taddySDK.showAd({
-                        type: 'interstitial',
-                        onClose: function() {
-                            console.log('Random ad closed');
-                            setTimeout(() => { adCooldown = false; }, 3000);
+        // Main ad show function with queue system
+        function showTaddyAd(adType, onComplete) {
+            if (!adReady || !taddySDK) {
+                console.log('Ad not ready, skipping');
+                if (onComplete) setTimeout(onComplete, 100);
+                return;
+            }
+            
+            if (isShowingAd) {
+                adQueue.push(() => showTaddyAd(adType, onComplete));
+                return;
+            }
+            
+            isShowingAd = true;
+            showAdNotification(adType === 'rewarded' ? '🎁 Watch ad for rewards!' : '📺 Ad playing...');
+            
+            // Pause game while ad plays
+            const wasActive = gameActive;
+            if (wasActive) {
+                gameActive = false;
+                if (animationId) cancelAnimationFrame(animationId);
+            }
+            
+            try {
+                taddySDK.showAd({
+                    type: adType,
+                    onClose: function() {
+                        console.log('Ad closed:', adType);
+                        isShowingAd = false;
+                        // Resume game
+                        if (wasActive && !winner) {
+                            gameActive = true;
+                            animationId = requestAnimationFrame(gameLoop);
+                        }
+                        if (onComplete) onComplete();
+                        processAdQueue();
+                    },
+                    onError: function(err) {
+                        console.warn('Ad error:', err);
+                        isShowingAd = false;
+                        if (wasActive && !winner) {
+                            gameActive = true;
+                            animationId = requestAnimationFrame(gameLoop);
+                        }
+                        if (onComplete) onComplete();
+                        processAdQueue();
+                    }
+                });
+            } catch(e) {
+                console.warn('Ad show exception:', e);
+                isShowingAd = false;
+                if (wasActive && !winner) {
+                    gameActive = true;
+                    animationId = requestAnimationFrame(gameLoop);
+                }
+                if (onComplete) onComplete();
+                processAdQueue();
+            }
+        }
+        
+        // Track milestone ads shown to prevent duplicate ads at same milestone
+        let redMilestonesShown = { 10: false, 20: false, 30: false, 40: false };
+        let blueMilestonesShown = { 10: false, 20: false, 30: false, 40: false };
+        
+        // Check and show milestone ad when lines reach 10,20,30,40
+        function checkMilestoneAd(ball, colorType) {
+            const milestone = ball.linesCount;
+            const milestones = [10, 20, 30, 40];
+            
+            if (milestones.includes(milestone)) {
+                const milestoneKey = milestone;
+                const alreadyShown = colorType === 'red' ? redMilestonesShown[milestoneKey] : blueMilestonesShown[milestoneKey];
+                
+                if (!alreadyShown && !isShowingAd) {
+                    // Mark as shown
+                    if (colorType === 'red') {
+                        redMilestonesShown[milestoneKey] = true;
+                    } else {
+                        blueMilestonesShown[milestoneKey] = true;
+                    }
+                    
+                    // Pause game briefly before ad
+                    const wasActive = gameActive;
+                    if (wasActive && !winner) {
+                        gameActive = false;
+                        if (animationId) cancelAnimationFrame(animationId);
+                    }
+                    
+                    showAdNotification(`🎯 ${colorType.toUpperCase()} reached ${milestone} LINES!`);
+                    
+                    // Show interstitial ad at milestone
+                    showTaddyAd('interstitial', () => {
+                        // Resume game after ad
+                        if (wasActive && !winner) {
+                            gameActive = true;
+                            animationId = requestAnimationFrame(gameLoop);
                         }
                     });
-                } catch(e) { 
-                    console.warn(e);
-                    adCooldown = false;
                 }
             }
         }
         
-        // Function to show ad when game finishes
-        function showEndGameAd(callback) {
-            if (!adReady || !taddySDK) {
-                if (callback) callback();
-                return;
-            }
-            showAdNotification('🏆 Game finished! Watch ad to continue');
-            try {
-                taddySDK.showAd({
-                    type: 'rewarded',
-                    onClose: function() {
-                        console.log('End game ad closed');
-                        if (callback) callback();
-                    }
-                });
-            } catch(e) { 
-                console.warn(e);
-                if (callback) callback();
-            }
-        }
-        
-        // ----- CANVAS with responsive sizing -----
+        // ----- CANVAS -----
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
         function resizeCanvas() {
-            const container = canvas.parentElement;
             const size = Math.min(window.innerWidth - 40, window.innerHeight - 200, 750);
             canvas.style.width = `${size}px`;
             canvas.style.height = `${size}px`;
@@ -317,7 +394,7 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         
-        // arena: perfect circle boundary
+        // arena
         const centerX = 375;
         const centerY = 375;
         const radius = 363;
@@ -326,12 +403,12 @@
         let redLines = [];
         let blueLines = [];
         
-        // ball objects
+        // BASE SPEED DOUBLED (original vx/vy were ~2.5, now ~5.0 for faster gameplay)
         let redBall = {
             x: centerX - 85,
             y: centerY - 15,
-            vx: 2.5,
-            vy: -1.9,
+            vx: 5.2,
+            vy: -3.8,
             color: '#ff4444',
             glow: '#ff7777',
             radius: 14,
@@ -345,8 +422,8 @@
         let blueBall = {
             x: centerX + 85,
             y: centerY + 20,
-            vx: -2.3,
-            vy: 1.8,
+            vx: -4.8,
+            vy: 3.6,
             color: '#4488ff',
             glow: '#88aaff',
             radius: 14,
@@ -368,7 +445,6 @@
         let gameActive = true;
         let winner = null;
         let animationId = null;
-        let frameCounter = 0;
         
         // DOM elements
         const redLinesSpan = document.getElementById('redLinesCounter');
@@ -395,7 +471,7 @@
                 multiplierDisplay.innerHTML = `x${blueBall.currentMultiplier}`;
                 multiplierDisplay.style.background = 'linear-gradient(135deg, #33aaff, #2266cc)';
             } else {
-                speedStatusSpan.innerHTML = '⚡ normal';
+                speedStatusSpan.innerHTML = '⚡ double speed';
                 speedStatusSpan.style.color = '#ffaa66';
                 speedStatusSpan.style.background = '#2a2a33';
                 multiplierDisplay.innerHTML = 'x1';
@@ -430,6 +506,7 @@
             if (!gameActive) return;
             
             const linesToAdd = multiplierValue;
+            const oldCount = ball.linesCount;
             
             for (let i = 0; i < linesToAdd; i++) {
                 const anchorX = wallContactX + (Math.cos(Date.now() + i) * 0.8);
@@ -452,18 +529,15 @@
                 if (colorType === 'blue' && blueLines.length > 250) blueLines.shift();
             }
             
-            if (colorType === 'red') {
-                redBall.linesCount += linesToAdd;
-            } else {
-                blueBall.linesCount += linesToAdd;
-            }
+            ball.linesCount += linesToAdd;
             
             createFloatingText(ball.x, ball.y, `+${linesToAdd} LINES! (${multiplierValue}x)`, colorType === 'red' ? '#ff8888' : '#88aaff');
             updateUI();
-            checkWinner();
             
-            // Random ad trigger during gameplay
-            showRandomAd();
+            // Check milestone ad AFTER updating line count
+            checkMilestoneAd(ball, colorType);
+            
+            checkWinner();
         }
         
         function checkWinner() {
@@ -476,10 +550,8 @@
                 winnerDiv.style.background = '#ff4d4ddd';
                 if (animationId) cancelAnimationFrame(animationId);
                 draw();
-                // Show ad when game finishes - with callback to allow reset after
-                showEndGameAd(function() {
-                    console.log('End game ad completed, ready for restart');
-                });
+                // Show rewarded ad on win
+                showTaddyAd('rewarded', () => {});
                 if (tg) tg.HapticFeedback.notificationOccurred('success');
                 return true;
             } else if (blueBall.linesCount >= 50) {
@@ -490,9 +562,7 @@
                 winnerDiv.style.background = '#3388ffdd';
                 if (animationId) cancelAnimationFrame(animationId);
                 draw();
-                showEndGameAd(function() {
-                    console.log('End game ad completed');
-                });
+                showTaddyAd('rewarded', () => {});
                 if (tg) tg.HapticFeedback.notificationOccurred('success');
                 return true;
             }
@@ -569,7 +639,7 @@
                     return;
                 }
             } else {
-                if (Math.random() < 0.012 && gameActive) spawnMultiplierPowerup();
+                if (Math.random() < 0.015 && gameActive) spawnMultiplierPowerup();
             }
         }
         
@@ -767,6 +837,12 @@
         function gameLoop() {
             if (!gameActive && winner) {
                 draw();
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+            if (!gameActive && !winner && isShowingAd) {
+                draw();
+                requestAnimationFrame(gameLoop);
                 return;
             }
             if (!gameActive) {
@@ -778,10 +854,7 @@
             updatePowerup();
             updatePositions();
             draw();
-            if(checkWinner()) {
-                updateUI();
-                return;
-            }
+            checkWinner();
             animationId = requestAnimationFrame(gameLoop);
         }
         
@@ -792,8 +865,8 @@
             redBall = {
                 x: centerX - 85,
                 y: centerY - 15,
-                vx: 2.5,
-                vy: -1.9,
+                vx: 5.2,
+                vy: -3.8,
                 color: '#ff4444',
                 glow: '#ff7777',
                 radius: 14,
@@ -806,8 +879,8 @@
             blueBall = {
                 x: centerX + 85,
                 y: centerY + 20,
-                vx: -2.3,
-                vy: 1.8,
+                vx: -4.8,
+                vy: 3.6,
                 color: '#4488ff',
                 glow: '#88aaff',
                 radius: 14,
@@ -821,6 +894,11 @@
             gameActive = true;
             winner = null;
             winnerDiv.style.display = 'none';
+            
+            // Reset milestone trackers
+            redMilestonesShown = { 10: false, 20: false, 30: false, 40: false };
+            blueMilestonesShown = { 10: false, 20: false, 30: false, 40: false };
+            
             updateUI();
             animationId = requestAnimationFrame(gameLoop);
             if (tg) tg.HapticFeedback.impactOccurred('medium');
@@ -830,8 +908,8 @@
         fullReset();
         
         setInterval(() => {
-            if(gameActive && !multiplierPowerup.active && Math.random() < 0.4) spawnMultiplierPowerup();
-        }, 3500);
+            if(gameActive && !multiplierPowerup.active && Math.random() < 0.45) spawnMultiplierPowerup();
+        }, 3200);
     })();
 </script>
 </body>
