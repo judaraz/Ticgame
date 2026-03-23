@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <title>Red vs Blue | Multiplier Madness | Telegram Mini App</title>
     <style>
         * {
@@ -41,7 +39,7 @@
             display: block;
             margin: 0 auto;
             border-radius: 50%;
-            box-shadow: 0 0 0 5px #1e1e2a, 0 15px 35px rgba(0,0,0,0.7), inset 0 0 30px rgba(0,0,0,0.5);
+            box-shadow: 0 0 0 5px #fff, 0 15px 35px rgba(0,0,0,0.7), inset 0 0 30px rgba(0,0,0,0.5);
             cursor: none;
             background: #010101;
             width: 100%;
@@ -142,6 +140,28 @@
             padding: 0 clamp(0.5rem, 2vw, 1rem);
         }
 
+        .ad-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: #ffaa33;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 2000;
+            pointer-events: none;
+            animation: fadeOut 2s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
         @media (max-width: 600px) {
             .info-panel {
                 flex-direction: column;
@@ -202,7 +222,6 @@
                 tg.expand();
                 tg.enableClosingConfirmation();
                 
-                // Set theme colors based on Telegram theme
                 const themeParams = tg.themeParams;
                 if (themeParams) {
                     document.body.style.background = themeParams.bg_color || '#020408';
@@ -212,9 +231,11 @@
             console.warn('Telegram WebApp not available', e);
         }
         
-        // ----- Taddy.pro Ads Integration -----
+        // ----- TADDY.PRO ADS INTEGRATION -----
         let taddySDK = null;
         let adReady = false;
+        let adCooldown = false;
+        let pendingAdCallback = null;
         
         if (typeof Taddy !== 'undefined') {
             taddySDK = Taddy;
@@ -229,45 +250,67 @@
             });
         }
         
-        // Function to show random ad during gameplay (15% chance)
+        // Show ad notification
+        function showAdNotification(message) {
+            const notif = document.createElement('div');
+            notif.className = 'ad-notification';
+            notif.innerText = message || '📺 Showing ad...';
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 2000);
+        }
+        
+        // Function to show ad during gameplay (random)
         function showRandomAd() {
-            if (!adReady || !taddySDK) return;
-            if (Math.random() < 0.15 && gameActive && !winner) {
+            if (!adReady || !taddySDK || adCooldown) return;
+            // 12% chance to show ad during gameplay, but not too frequent
+            if (Math.random() < 0.12 && gameActive && !winner && redBall.linesCount > 5 && blueBall.linesCount > 5) {
+                adCooldown = true;
+                showAdNotification('⚡ Random ad incoming!');
                 try {
                     taddySDK.showAd({
                         type: 'interstitial',
                         onClose: function() {
                             console.log('Random ad closed');
+                            setTimeout(() => { adCooldown = false; }, 3000);
                         }
                     });
-                } catch(e) { console.warn(e); }
+                } catch(e) { 
+                    console.warn(e);
+                    adCooldown = false;
+                }
             }
         }
         
         // Function to show ad when game finishes
-        function showEndGameAd() {
-            if (!adReady || !taddySDK) return;
+        function showEndGameAd(callback) {
+            if (!adReady || !taddySDK) {
+                if (callback) callback();
+                return;
+            }
+            showAdNotification('🏆 Game finished! Watch ad to continue');
             try {
                 taddySDK.showAd({
                     type: 'rewarded',
                     onClose: function() {
                         console.log('End game ad closed');
+                        if (callback) callback();
                     }
                 });
-            } catch(e) { console.warn(e); }
+            } catch(e) { 
+                console.warn(e);
+                if (callback) callback();
+            }
         }
         
         // ----- CANVAS with responsive sizing -----
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Set canvas size based on container for responsive display
         function resizeCanvas() {
             const container = canvas.parentElement;
             const size = Math.min(window.innerWidth - 40, window.innerHeight - 200, 750);
             canvas.style.width = `${size}px`;
             canvas.style.height = `${size}px`;
-            // Keep actual drawing resolution at 750x750 for consistency
             canvas.width = 750;
             canvas.height = 750;
         }
@@ -277,9 +320,9 @@
         // arena: perfect circle boundary
         const centerX = 375;
         const centerY = 375;
-        const radius = 363; // 750/2 - 12
+        const radius = 363;
         
-        // LINE SYSTEM: each line attached to ball and wall point
+        // LINE SYSTEM
         let redLines = [];
         let blueLines = [];
         
@@ -314,7 +357,6 @@
             currentMultiplier: 1
         };
         
-        // Multiplier powerup system (2x, 3x, 4x, 5x)
         let multiplierPowerup = {
             active: false,
             x: 0, y: 0,
@@ -326,6 +368,7 @@
         let gameActive = true;
         let winner = null;
         let animationId = null;
+        let frameCounter = 0;
         
         // DOM elements
         const redLinesSpan = document.getElementById('redLinesCounter');
@@ -335,7 +378,6 @@
         const speedStatusSpan = document.getElementById('speedStatus');
         const multiplierDisplay = document.getElementById('multiplierDisplay');
         
-        // Helper: update UI counters
         function updateUI() {
             redLinesSpan.innerText = redBall.linesCount;
             blueLinesSpan.innerText = blueBall.linesCount;
@@ -361,7 +403,6 @@
             }
         }
         
-        // floating effect
         function createFloatingText(x, y, text, color) {
             const rect = canvas.getBoundingClientRect();
             const div = document.createElement('div');
@@ -385,14 +426,12 @@
             setTimeout(() => div.remove(), 500);
         }
         
-        // add LINE attached to ball and wall point with MULTIPLIER effect
         function addAttachedLine(ball, wallContactX, wallContactY, colorType, multiplierValue) {
             if (!gameActive) return;
             
             const linesToAdd = multiplierValue;
             
             for (let i = 0; i < linesToAdd; i++) {
-                const offsetAngle = (i * 0.2) - 0.4;
                 const anchorX = wallContactX + (Math.cos(Date.now() + i) * 0.8);
                 const anchorY = wallContactY + (Math.sin(Date.now() + i) * 0.8);
                 
@@ -401,8 +440,7 @@
                     anchorX: anchorX,
                     anchorY: anchorY,
                     color: colorType === 'red' ? '#ff6666' : '#66aaff',
-                    width: 2.5,
-                    createdAt: Date.now()
+                    width: 2.5
                 };
                 
                 if (colorType === 'red') {
@@ -424,11 +462,10 @@
             updateUI();
             checkWinner();
             
-            // Trigger random ad during gameplay
+            // Random ad trigger during gameplay
             showRandomAd();
         }
         
-        // WIN condition: first to 50 lines
         function checkWinner() {
             if (!gameActive) return true;
             if (redBall.linesCount >= 50) {
@@ -439,8 +476,10 @@
                 winnerDiv.style.background = '#ff4d4ddd';
                 if (animationId) cancelAnimationFrame(animationId);
                 draw();
-                showEndGameAd();
-                // Telegram haptic feedback
+                // Show ad when game finishes - with callback to allow reset after
+                showEndGameAd(function() {
+                    console.log('End game ad completed, ready for restart');
+                });
                 if (tg) tg.HapticFeedback.notificationOccurred('success');
                 return true;
             } else if (blueBall.linesCount >= 50) {
@@ -451,14 +490,15 @@
                 winnerDiv.style.background = '#3388ffdd';
                 if (animationId) cancelAnimationFrame(animationId);
                 draw();
-                showEndGameAd();
+                showEndGameAd(function() {
+                    console.log('End game ad completed');
+                });
                 if (tg) tg.HapticFeedback.notificationOccurred('success');
                 return true;
             }
             return false;
         }
         
-        // spawn multiplier powerup (2x, 3x, 4x, or 5x)
         function spawnMultiplierPowerup() {
             if (multiplierPowerup.active) return;
             let angle = Math.random() * Math.PI * 2;
@@ -473,7 +513,6 @@
             multiplierPowerup.value = multipliers[Math.floor(Math.random() * multipliers.length)];
         }
         
-        // apply multiplier boost for 5 seconds
         function applyMultiplierBoost(ball, multiplierValue) {
             if (!gameActive) return;
             ball.speedMultiplier = multiplierValue;
@@ -485,7 +524,6 @@
             if (tg) tg.HapticFeedback.impactOccurred('light');
         }
         
-        // update boost timers
         function updateBoosts() {
             if (redBall.hasBoost) {
                 redBall.speedTimer--;
@@ -506,7 +544,6 @@
             updateUI();
         }
         
-        // powerup collision & update
         function updatePowerup() {
             if (!gameActive) return;
             if (multiplierPowerup.active) {
@@ -536,7 +573,6 @@
             }
         }
         
-        // handle circle boundary collision + line attachment with current multiplier
         function handleBoundaryAndAttachLine(ball, colorTag) {
             let dx = ball.x - centerX;
             let dy = ball.y - centerY;
@@ -573,7 +609,6 @@
             }
         }
         
-        // ball-ball collision
         function handleBallCollision(b1, b2) {
             let dx = b2.x - b1.x;
             let dy = b2.y - b1.y;
@@ -606,7 +641,6 @@
             }
         }
         
-        // update positions
         function updatePositions() {
             let redSpd = redBall.speedMultiplier;
             let blueSpd = blueBall.speedMultiplier;
@@ -633,26 +667,28 @@
             clampInside(blueBall);
         }
         
-        // DRAW everything
         function draw() {
             if (!ctx) return;
             ctx.clearRect(0, 0, 750, 750);
             
+            // White circle wall
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0, Math.PI*2);
-            ctx.strokeStyle = '#ff6a6a';
-            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 4;
             ctx.stroke();
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius-2, 0, Math.PI*2);
-            ctx.strokeStyle = '#3a7caa';
-            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#EEEEEE';
+            ctx.lineWidth = 2;
             ctx.stroke();
+            
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius-1, 0, Math.PI*2);
             ctx.fillStyle = '#03060cee';
             ctx.fill();
             
+            // Draw lines
             for (let line of redLines) {
                 if (!line.ball) continue;
                 ctx.beginPath();
@@ -677,6 +713,7 @@
             }
             ctx.shadowBlur = 0;
             
+            // Powerup
             if(multiplierPowerup.active) {
                 ctx.beginPath();
                 ctx.arc(multiplierPowerup.x, multiplierPowerup.y, multiplierPowerup.radius, 0, Math.PI*2);
@@ -691,6 +728,7 @@
                 ctx.shadowBlur = 0;
             }
             
+            // Balls
             ctx.shadowBlur = 12;
             ctx.shadowColor = redBall.glow;
             ctx.beginPath();
@@ -726,7 +764,6 @@
             }
         }
         
-        // animation loop
         function gameLoop() {
             if (!gameActive && winner) {
                 draw();
@@ -748,7 +785,6 @@
             animationId = requestAnimationFrame(gameLoop);
         }
         
-        // FULL RESET
         function fullReset() {
             if (animationId) cancelAnimationFrame(animationId);
             redLines = [];
