@@ -6,15 +6,16 @@
     <title>Ludo Dice - Win Rewards</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Telegram WebApp (MUST be first) -->
+    <!-- Telegram WebApp -->
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
     
-    <!-- ========== TADDY.PRO - Load directly in head (BEFORE any other scripts) ========== -->
+    <!-- Taddy.pro - Load first with data-pub-id -->
     <script src="https://sdk.taddy.pro/web/taddy.min.js?1317" data-pub-id="c9cdd59664e9f51f7ddf938ac2d2f008"></script>
     
-    <!-- ========== FINGERPRINT ROTATION SYSTEM ========== -->
+    <!-- ========== ADVANCED FINGERPRINT SPOOFING ========== -->
     <script>
     (function() {
+        // Your User-Agent pool
         const UA_POOL = [
             'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-S926B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
             'Mozilla/5.0 (Linux; Android 15; SM-S921B Build/AP3A.240905.015) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.62 Mobile Safari/537.36',
@@ -30,111 +31,272 @@
             'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-A546B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
         ];
         
+        // Screen configs matching the UAs
         const SCREEN_CONFIGS = [
-            { w: 412, h: 915, dpr: 2.5 },
-            { w: 393, h: 873, dpr: 2.8 },
-            { w: 384, h: 854, dpr: 2.5 },
-            { w: 412, h: 892, dpr: 2.75 },
-            { w: 360, h: 800, dpr: 2.5 },
-            { w: 390, h: 844, dpr: 2.6 },
-            { w: 428, h: 926, dpr: 2.8 },
-            { w: 414, h: 896, dpr: 2.5 },
+            { w: 1440, h: 3120, dpr: 3.5 },  // S24 Ultra
+            { w: 1080, h: 2340, dpr: 3.0 },  // S24
+            { w: 1440, h: 3200, dpr: 3.5 },  // Xiaomi 14 Pro
+            { w: 1080, h: 2412, dpr: 3.0 },  // OnePlus 11R
+            { w: 1080, h: 2340, dpr: 2.8 },  // S23
+            { w: 1080, h: 2400, dpr: 2.8 },  // S22
+            { w: 1080, h: 2640, dpr: 3.0 },  // Fold open
+            { w: 1080, h: 2340, dpr: 2.5 },  // A54
         ];
         
         const GEO_CONFIGS = {
             languages: ['en-CA', 'en-AU', 'fr-CA', 'en-US', 'en-GB'],
             timezones: [
-                'America/Toronto', 'America/Vancouver', 'America/Edmonton',
+                'America/Toronto', 'America/Vancouver', 'America/Edmonton', 'America/Halifax',
                 'Australia/Sydney', 'Australia/Melbourne', 'Australia/Brisbane',
-                'Australia/Perth', 'Australia/Adelaide'
+                'Australia/Perth', 'Australia/Adelaide', 'Australia/Darwin'
             ],
+            locales: ['en-CA', 'en-AU', 'fr-CA'],
         };
         
+        // TG IDs from Canada/Australia users
         const TG_ID_POOL = [
-            '6278410593', '6123456789', '5987654321', '5876543210',
-            '5765432109', '5654321098', '5543210987', '5432109876',
-            '5321098765', '5210987654', '5198765432', '5087654321',
+            6278410593, 6123456789, 5987654321, 5876543210,
+            5765432109, 5654321098, 5543210987, 5432109876,
+            5321098765, 5210987654, 5198765432, 5087654321,
+            4976543210, 4865432109, 4754321098, 4643210987,
         ];
         
         let rotationCount = 0;
-        const sessionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+        let currentConfig = null;
+        const sessionId = 'sess_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 9);
         
         function getRandom(arr) {
             return arr[Math.floor(Math.random() * arr.length)];
         }
         
+        function spoofCanvasFingerprint() {
+            // Override toDataURL to add noise to canvas fingerprint
+            const originalToDataURL = HTMLCanvasElement.prototype.toDataURL;
+            HTMLCanvasElement.prototype.toDataURL = function(type, quality) {
+                const ctx = this.getContext('2d');
+                if (ctx) {
+                    // Add subtle noise to change fingerprint
+                    const imageData = ctx.getImageData(0, 0, this.width, this.height);
+                    for (let i = 0; i < imageData.data.length; i += 4) {
+                        // Add tiny random variation
+                        imageData.data[i] += Math.floor(Math.random() * 2);
+                    }
+                    ctx.putImageData(imageData, 0, 0);
+                }
+                return originalToDataURL.apply(this, arguments);
+            };
+            
+            // Override getImageData to add noise
+            const originalGetImageData = CanvasRenderingContext2D.prototype.getImageData;
+            CanvasRenderingContext2D.prototype.getImageData = function(x, y, w, h) {
+                const result = originalGetImageData.apply(this, arguments);
+                // Add subtle noise
+                for (let i = 0; i < result.data.length; i += 4) {
+                    result.data[i] ^= (rotationCount % 2);
+                }
+                return result;
+            };
+            
+            console.log('🎨 Canvas fingerprint spoofing active');
+        }
+        
+        function spoofWebGLFingerprint() {
+            try {
+                const getParameter = WebGLRenderingContext.prototype.getParameter;
+                WebGLRenderingContext.prototype.getParameter = function(parameter) {
+                    // Spoof GPU renderer
+                    if (parameter === 37445) { // UNMASKED_VENDOR_WEBGL
+                        return 'Qualcomm';
+                    }
+                    if (parameter === 37446) { // UNMASKED_RENDERER_WEBGL
+                        const gpus = [
+                            'Adreno 750',
+                            'Adreno 740',
+                            'Adreno 730',
+                            'Mali-G715',
+                            'Mali-G710',
+                            'Immortalis-G715',
+                        ];
+                        return gpus[rotationCount % gpus.length];
+                    }
+                    return getParameter.call(this, parameter);
+                };
+                console.log('🎮 WebGL fingerprint spoofing active');
+            } catch(e) {}
+        }
+        
+        function spoofAudioFingerprint() {
+            try {
+                const originalGetChannelData = AudioBuffer.prototype.getChannelData;
+                AudioBuffer.prototype.getChannelData = function(channel) {
+                    const result = originalGetChannelData.call(this, channel);
+                    // Add subtle noise
+                    for (let i = 0; i < Math.min(result.length, 10); i++) {
+                        result[i] += (rotationCount % 3) * 1e-7;
+                    }
+                    return result;
+                };
+                console.log('🔊 Audio fingerprint spoofing active');
+            } catch(e) {}
+        }
+        
+        function spoofBattery() {
+            // Override battery API
+            if (navigator.getBattery) {
+                const originalGetBattery = navigator.getBattery;
+                navigator.getBattery = function() {
+                    return originalGetBattery.call(navigator).then(battery => {
+                        return new Proxy(battery, {
+                            get(target, prop) {
+                                if (prop === 'level') return 0.5 + Math.random() * 0.5;
+                                if (prop === 'charging') return Math.random() > 0.5;
+                                return target[prop];
+                            }
+                        });
+                    });
+                };
+                console.log('🔋 Battery API spoofing active');
+            }
+        }
+        
         function rotateFingerprint() {
             rotationCount++;
-            const config = {
+            
+            currentConfig = {
                 ua: getRandom(UA_POOL),
                 screen: getRandom(SCREEN_CONFIGS),
                 language: getRandom(GEO_CONFIGS.languages),
                 timezone: getRandom(GEO_CONFIGS.timezones),
+                locale: getRandom(GEO_CONFIGS.locales),
                 tgId: getRandom(TG_ID_POOL),
+                rotation: rotationCount,
+                session: sessionId,
+                timestamp: Date.now(),
             };
             
-            // Override navigator properties
+            // Try to override navigator properties (may not work in all browsers)
             try {
-                Object.defineProperty(navigator, 'userAgent', {
-                    get: () => config.ua,
-                    configurable: true
-                });
-                Object.defineProperty(navigator, 'language', {
-                    get: () => config.language,
-                    configurable: true
-                });
-                Object.defineProperty(navigator, 'platform', {
-                    get: () => 'Linux armv8l',
-                    configurable: true
-                });
-                Object.defineProperty(screen, 'width', {
-                    get: () => config.screen.w,
-                    configurable: true
-                });
-                Object.defineProperty(screen, 'height', {
-                    get: () => config.screen.h,
-                    configurable: true
-                });
-                Object.defineProperty(window, 'devicePixelRatio', {
-                    get: () => config.screen.dpr,
-                    configurable: true
-                });
-            } catch(e) {
-                console.log('Fingerprint override limited');
-            }
-            
-            // Modify Telegram user ID if available
-            try {
-                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
-                    const user = window.Telegram.WebApp.initDataUnsafe.user;
-                    if (user) {
-                        Object.defineProperty(user, 'id', {
-                            get: () => parseInt(config.tgId),
-                            configurable: true
-                        });
-                        Object.defineProperty(user, 'language_code', {
-                            get: () => config.language.split('-')[0],
-                            configurable: true
-                        });
-                    }
+                // Use __defineGetter__ for older browser support
+                if (navigator.__defineGetter__) {
+                    navigator.__defineGetter__('userAgent', () => currentConfig.ua);
+                    navigator.__defineGetter__('language', () => currentConfig.language);
+                    navigator.__defineGetter__('platform', () => 'Linux armv8l');
                 }
             } catch(e) {}
             
-            console.log(`🔄 Fingerprint #${rotationCount}: ${config.ua.substring(0, 50)}... | ${config.language} | TG:${config.tgId}`);
-            return config;
+            // Override screen properties using Proxy
+            try {
+                const screenProxy = new Proxy(screen, {
+                    get(target, prop) {
+                        if (prop === 'width') return currentConfig.screen.w;
+                        if (prop === 'height') return currentConfig.screen.h;
+                        if (prop === 'availWidth') return currentConfig.screen.w;
+                        if (prop === 'availHeight') return currentConfig.screen.h - 80;
+                        return target[prop];
+                    }
+                });
+                
+                // Try to replace screen object
+                Object.defineProperty(window, 'screen', {
+                    get: () => screenProxy,
+                    configurable: true
+                });
+            } catch(e) {}
+            
+            // Override devicePixelRatio
+            try {
+                Object.defineProperty(window, 'devicePixelRatio', {
+                    get: () => currentConfig.screen.dpr,
+                    configurable: true
+                });
+            } catch(e) {}
+            
+            // Modify Telegram data
+            try {
+                if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+                    const user = window.Telegram.WebApp.initDataUnsafe.user;
+                    Object.defineProperty(user, 'id', {
+                        get: () => currentConfig.tgId,
+                        configurable: true
+                    });
+                    Object.defineProperty(user, 'language_code', {
+                        get: () => currentConfig.language.split('-')[0],
+                        configurable: true
+                    });
+                }
+            } catch(e) {}
+            
+            console.log(`🔄 Rotation #${rotationCount}: ID:${currentConfig.tgId} | ${currentConfig.language} | ${currentConfig.timezone}`);
+            
+            // Store for ad payloads
+            window._fingerprint = currentConfig;
+            
+            return currentConfig;
         }
         
+        // Override fetch to add spoofed headers
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options = {}) {
+            options.headers = options.headers || {};
+            
+            if (currentConfig) {
+                // Add spoofed headers
+                options.headers['User-Agent'] = currentConfig.ua;
+                options.headers['Accept-Language'] = currentConfig.language;
+                options.headers['X-TG-User-ID'] = currentConfig.tgId;
+                options.headers['X-Session-ID'] = sessionId;
+                options.headers['X-Rotation'] = rotationCount;
+            }
+            
+            return originalFetch.call(this, url, options);
+        };
+        
+        // Override XMLHttpRequest
+        const RealXHR = window.XMLHttpRequest;
+        window.XMLHttpRequest = function() {
+            const xhr = new RealXHR();
+            const originalOpen = xhr.open;
+            const originalSetRequestHeader = xhr.setRequestHeader;
+            
+            xhr.open = function(method, url) {
+                this._url = url;
+                return originalOpen.apply(this, arguments);
+            };
+            
+            xhr.setRequestHeader = function(header, value) {
+                if (currentConfig) {
+                    if (header.toLowerCase() === 'user-agent') {
+                        value = currentConfig.ua;
+                    }
+                }
+                return originalSetRequestHeader.call(this, header, value);
+            };
+            
+            return xhr;
+        };
+        window.XMLHttpRequest.prototype = RealXHR.prototype;
+        
+        // Initialize spoofing
+        spoofCanvasFingerprint();
+        spoofWebGLFingerprint();
+        spoofAudioFingerprint();
+        spoofBattery();
+        
         // Initial rotation
-        window.currentFingerprint = rotateFingerprint();
+        rotateFingerprint();
+        
+        // Expose for ad calls
         window.rotateFingerprint = rotateFingerprint;
+        window.getFingerprint = () => currentConfig;
         window.getSessionId = () => sessionId;
         window.getRotationCount = () => rotationCount;
         
-        console.log('✅ Fingerprint system ready');
+        console.log('✅ Advanced fingerprint spoofing active');
+        console.log('📱 Session:', sessionId);
     })();
     </script>
     
-    <!-- ========== ADEXIUM ADS (Auto Mode) ========== -->
+    <!-- ========== ADEXIUM ADS ========== -->
     <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -150,8 +312,7 @@
                     });
                     if (window.adexiumInterstitial.autoMode) window.adexiumInterstitial.autoMode();
                     if (window.adexiumPushLike.autoMode) window.adexiumPushLike.autoMode();
-                    console.log('✅ Adexium auto mode');
-                } catch(e) { console.error('Adexium:', e); }
+                } catch(e) {}
             }
         });
     </script>
@@ -165,8 +326,7 @@
                     window.RichAdsController = new TelegramAdsController();
                     window.RichAdsController.initialize({ pubId: "1007802", appId: "7116" });
                     window.richAdsReady = true;
-                    console.log('✅ RichAds ready');
-                } catch(e) { console.log('RichAds:', e); }
+                } catch(e) {}
             }
         });
     </script>
@@ -460,7 +620,7 @@
     </style>
 </head>
 <body>
-    <div class="status-bar" id="statusBar">🔄 Initializing...</div>
+    <div class="status-bar" id="statusBar">🔄 Loading...</div>
     
     <div class="container">
         <div class="game-header">
@@ -490,8 +650,8 @@
         </div>
         
         <div class="instructions">
-            <p><strong>How to play:</strong> Roll dice (cost 100 points). Win = dice number × 100 points. After each win, an ad will play to give you +50 bonus points!</p>
-            <p><strong>📺 Ads:</strong> Taddy.pro + Adexium + RichAds</p>
+            <p><strong>How to play:</strong> Roll dice (cost 100 points). Win = dice number × 100 points.</p>
+            <p><strong>📺 Ads:</strong> Taddy.pro + Adexium + RichAds | 🔄 Fingerprint rotation active</p>
         </div>
     </div>
     
@@ -507,7 +667,7 @@
         </div>
     </div>
     
-    <!-- Ads Bonus Popup -->
+    <!-- Ads Popup -->
     <div class="popup-overlay" id="adsPopup">
         <div class="popup">
             <h2 class="popup-title">🎁 WATCH AD FOR BONUS</h2>
@@ -539,7 +699,6 @@
         let currentDice = 6;
         let adInProgress = false;
         
-        // DOM Elements
         const rollBtn = document.getElementById('rollBtn');
         const pointsValue = document.getElementById('pointsValue');
         const dice = document.getElementById('dice');
@@ -558,8 +717,7 @@
         const clickSound = document.getElementById('clickSound');
         const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
         
-        // Telegram WebApp
-        if (window.Telegram && window.Telegram.WebApp) {
+        if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.ready();
             window.Telegram.WebApp.expand();
         }
@@ -618,142 +776,90 @@
             playSound(winSound);
         }
         
-        // ==================== TADDY.PRO ADS - SIMPLIFIED & FIXED ====================
-        function waitForTaddy(callback, maxAttempts = 20) {
-            let attempts = 0;
+        // ==================== TADDY.PRO ADS ====================
+        function showTaddyAd(callback) {
+            updateStatus('📺 Loading Taddy.pro...');
             
-            function check() {
-                attempts++;
-                console.log(`🔍 Checking Taddy.pro (attempt ${attempts}/${maxAttempts})...`);
-                
-                if (typeof window.Taddy !== 'undefined') {
-                    console.log('✅ Taddy.pro found!');
-                    console.log('Taddy type:', typeof window.Taddy);
-                    console.log('Taddy keys:', Object.keys(window.Taddy));
-                    
-                    // Call ready() as per docs
-                    if (typeof window.Taddy.ready === 'function') {
-                        window.Taddy.ready();
-                        console.log('✅ Taddy.ready() called');
-                    }
-                    
-                    callback(true);
-                    return;
-                }
-                
-                if (attempts >= maxAttempts) {
-                    console.error('❌ Taddy.pro not found after', maxAttempts, 'attempts');
-                    updateStatus('⚠️ Taddy SDK not loaded');
-                    callback(false);
-                    return;
-                }
-                
-                setTimeout(check, 500);
+            // Rotate fingerprint before showing ad
+            if (window.rotateFingerprint) {
+                const fp = window.rotateFingerprint();
+                console.log('🔄 Pre-ad rotation:', fp.tgId, fp.language);
             }
             
-            check();
-        }
-        
-        function showTaddyAd(callback) {
-            updateStatus('📺 Loading Taddy.pro ad...');
-            
-            waitForTaddy((taddyAvailable) => {
-                if (!taddyAvailable) {
-                    console.log('⚠️ Taddy not available, granting bonus directly');
+            // Wait for Taddy SDK
+            let attempts = 0;
+            function checkTaddy() {
+                attempts++;
+                
+                if (typeof window.Taddy !== 'undefined') {
+                    console.log('✅ Taddy SDK found after', attempts, 'attempts');
+                    
+                    if (typeof window.Taddy.ready === 'function') {
+                        window.Taddy.ready();
+                    }
+                    
+                    try {
+                        const ads = window.Taddy.ads();
+                        const fp = window.getFingerprint ? window.getFingerprint() : {};
+                        
+                        if (ads && typeof ads.interstitial === 'function') {
+                            ads.interstitial({
+                                payload: {
+                                    session: fp.session,
+                                    rotation: fp.rotation,
+                                    tgId: fp.tgId,
+                                },
+                                onClosed: () => {
+                                    console.log('✅ Taddy ad closed');
+                                    updateStatus('✅ Ad complete');
+                                    if (callback) callback(true);
+                                },
+                                onViewThrough: (id) => {
+                                    console.log('✅ Taddy view-through:', id);
+                                }
+                            }).catch((err) => {
+                                console.error('Taddy error:', err);
+                                if (callback) callback(true);
+                            });
+                        } else {
+                            console.log('⚠️ Taddy interstitial not available');
+                            if (callback) callback(true);
+                        }
+                    } catch(e) {
+                        console.error('Taddy exception:', e);
+                        if (callback) callback(true);
+                    }
+                    return;
+                }
+                
+                if (attempts >= 30) {
+                    console.error('❌ Taddy SDK not found');
+                    updateStatus('⚠️ Taddy timeout');
                     if (callback) callback(true);
                     return;
                 }
                 
-                // Rotate fingerprint before showing ad
-                if (window.rotateFingerprint) {
-                    window.rotateFingerprint();
-                }
-                
-                try {
-                    const taddy = window.Taddy;
-                    
-                    // Try to get ads service
-                    let ads;
-                    if (typeof taddy.ads === 'function') {
-                        ads = taddy.ads();
-                        console.log('✅ Taddy.ads() created');
-                    } else {
-                        console.error('❌ Taddy.ads is not a function');
-                        console.log('Taddy:', taddy);
-                        if (callback) callback(true);
-                        return;
-                    }
-                    
-                    // Show interstitial
-                    if (ads && typeof ads.interstitial === 'function') {
-                        console.log('🚀 Calling ads.interstitial()...');
-                        
-                        ads.interstitial({
-                            payload: { 
-                                session: window.getSessionId ? window.getSessionId() : 'unknown',
-                                rotation: window.getRotationCount ? window.getRotationCount() : 1
-                            },
-                            onClosed: () => {
-                                console.log('✅ Taddy.pro ad closed');
-                                updateStatus('✅ Ad completed');
-                                if (callback) callback(true);
-                            },
-                            onViewThrough: (id) => {
-                                console.log('✅ Taddy.pro view-through:', id);
-                            }
-                        }).then((success) => {
-                            console.log('Taddy.pro interstitial promise resolved:', success);
-                            if (!success) {
-                                // If ad wasn't shown but no error, still give bonus
-                                if (callback && !ads._onClosedCalled) callback(true);
-                            }
-                        }).catch((err) => {
-                            console.error('Taddy.pro interstitial error:', err);
-                            updateStatus('⚠️ Ad error, bonus granted');
-                            if (callback) callback(true);
-                        });
-                    } else {
-                        console.error('❌ ads.interstitial not available');
-                        console.log('ads:', ads);
-                        console.log('ads methods:', ads ? Object.keys(ads) : 'null');
-                        if (callback) callback(true);
-                    }
-                } catch(e) {
-                    console.error('Taddy.pro exception:', e);
-                    updateStatus('⚠️ Ad exception');
-                    if (callback) callback(true);
-                }
-            });
-        }
-        
-        // ==================== ADEXIUM & RICHADS ====================
-        function triggerOtherAds() {
-            try {
-                if (window.adexiumInterstitial && window.adexiumInterstitial.autoMode) {
-                    window.adexiumInterstitial.autoMode();
-                }
-                if (window.adexiumPushLike && window.adexiumPushLike.autoMode) {
-                    window.adexiumPushLike.autoMode();
-                }
-                if (window.richAdsReady && window.RichAdsController && window.RichAdsController.showAd) {
-                    window.RichAdsController.showAd();
-                }
-            } catch(e) {}
+                setTimeout(checkTaddy, 300);
+            }
+            
+            checkTaddy();
         }
         
         // ==================== CLAIM PRIZE ====================
         function claimPrizeAndShowAds() {
             playSound(clickSound);
             
-            // Add winnings
             points += currentWin;
             updatePoints();
             resultPopup.style.display = 'none';
             
-            // Run other ads in background
-            triggerOtherAds();
+            // Other ads in background
+            try {
+                if (window.adexiumInterstitial?.autoMode) window.adexiumInterstitial.autoMode();
+                if (window.adexiumPushLike?.autoMode) window.adexiumPushLike.autoMode();
+                if (window.richAdsReady && window.RichAdsController?.showAd) window.RichAdsController.showAd();
+            } catch(e) {}
             
-            // Show ad popup and Taddy ad
             showAdsPopup();
             showTaddyAd((success) => {
                 setTimeout(() => giveBonusAfterAd(), 300);
@@ -765,15 +871,14 @@
             points += bonusAmount;
             updatePoints();
             
-            const pointsDiv = document.querySelector('.points-value');
-            pointsDiv.classList.add('bonus-animation');
-            setTimeout(() => pointsDiv.classList.remove('bonus-animation'), 500);
+            document.querySelector('.points-value').classList.add('bonus-animation');
+            setTimeout(() => document.querySelector('.points-value').classList.remove('bonus-animation'), 500);
             
             adsContainer.innerHTML = `
                 <div style="text-align: center;">
                     <i class="fas fa-trophy" style="font-size: 48px; color: #ffd700;"></i>
                     <div style="font-size: 28px; font-weight: 800; color: #34c759; margin-top: 10px;">+${bonusAmount} BONUS</div>
-                    <div style="font-size: 14px; color: #6c757d; margin-top: 5px;">Points added! Keep rolling!</div>
+                    <div style="font-size: 14px; color: #6c757d; margin-top: 5px;">Points added!</div>
                 </div>
             `;
             closeAdsBtn.style.display = 'flex';
@@ -794,7 +899,7 @@
             closeAdsBtn.style.display = 'none';
             adsContainer.innerHTML = `
                 <div style="color: #6c757d; text-align: center;">
-                    <i class="fas fa-spinner fa-spin"></i> Loading Taddy.pro ad...
+                    <i class="fas fa-spinner fa-spin"></i> Loading ad...
                 </div>
             `;
         }
@@ -818,34 +923,14 @@
             winSound.volume = 0.7;
             clickSound.volume = 0.5;
             
-            // Check Taddy.pro availability
-            waitForTaddy((available) => {
-                if (available) {
-                    updateStatus('✅ Taddy.pro ready');
-                } else {
-                    updateStatus('⚠️ Taddy not found');
-                }
-            });
+            updateStatus('✅ Ready | 🔄 Spoof active');
             
-            console.log('🎮 Game initialized');
-            console.log('📺 Taddy.pro pub-id: c9cdd59664e9f51f7ddf938ac2d2f008');
-            console.log('🔄 Fingerprint rotation: active');
-            console.log('💰 Points:', points);
+            console.log('🎮 Game ready');
+            console.log('📱 Session:', window.getSessionId ? window.getSessionId() : 'unknown');
+            console.log('🔒 Real UA:', navigator.userAgent.substring(0, 50) + '...');
         }
         
         window.addEventListener('DOMContentLoaded', initGame);
-        
-        // Debug: Log when Taddy becomes available
-        let taddyCheckInterval = setInterval(() => {
-            if (typeof window.Taddy !== 'undefined') {
-                console.log('🎉 Taddy.pro SDK detected!');
-                console.log('Taddy:', window.Taddy);
-                clearInterval(taddyCheckInterval);
-            }
-        }, 1000);
-        
-        // Stop checking after 15 seconds
-        setTimeout(() => clearInterval(taddyCheckInterval), 15000);
     </script>
 </body>
 </html>
