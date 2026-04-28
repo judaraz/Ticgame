@@ -6,34 +6,33 @@
     <title>Ludo Dice - Win Rewards</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Telegram WebApp -->
+    <!-- Telegram WebApp (MUST be before Taddy) -->
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+    
+    <!-- ========== TADDY.PRO (after Telegram script) ========== -->
+    <script src="https://sdk.taddy.pro/web/taddy.min.js?1317" data-pub-id="c9cdd59664e9f51f7ddf938ac2d2f008"></script>
     
     <!-- ========== ADEXIUM ADS ========== -->
     <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
     <script type="text/javascript">
-        // Initialize Adexium widgets
         window.adexiumInterstitial = null;
         window.adexiumPushLike = null;
         
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof AdexiumWidget !== 'undefined') {
                 try {
-                    // Interstitial Ad (full-screen)
                     window.adexiumInterstitial = new AdexiumWidget({
                         wid: 'f2c903be-ac1d-4f6b-b0c7-8a281363517e', 
                         adFormat: 'interstitial'
                     });
                     console.log('✅ Adexium Interstitial created');
                     
-                    // Push-like Ad
                     window.adexiumPushLike = new AdexiumWidget({
                         wid: '30015b9a-df1e-4895-be7b-c5bc1b148fcf', 
                         adFormat: 'push-like'
                     });
                     console.log('✅ Adexium Push-like created');
                     
-                    // Start autoMode for both
                     if (window.adexiumInterstitial.autoMode) {
                         window.adexiumInterstitial.autoMode();
                         console.log('✅ Adexium Interstitial autoMode started');
@@ -43,33 +42,8 @@
                         console.log('✅ Adexium Push-like autoMode started');
                     }
                 } catch(e) { console.error('Adexium init error:', e); }
-            } else {
-                console.warn('⚠️ AdexiumWidget not loaded - check network');
             }
         });
-        
-        // Function to manually trigger Adexium ads
-        window.triggerAdexiumAd = function(format) {
-            if (format === 'interstitial' && window.adexiumInterstitial) {
-                try {
-                    if (window.adexiumInterstitial.autoMode) {
-                        window.adexiumInterstitial.autoMode();
-                        console.log('🎯 Adexium Interstitial autoMode triggered');
-                        return true;
-                    }
-                } catch(e) { console.error('Adexium interstitial trigger error:', e); }
-            }
-            if (format === 'push-like' && window.adexiumPushLike) {
-                try {
-                    if (window.adexiumPushLike.autoMode) {
-                        window.adexiumPushLike.autoMode();
-                        console.log('🎯 Adexium Push-like autoMode triggered');
-                        return true;
-                    }
-                } catch(e) { console.error('Adexium push-like trigger error:', e); }
-            }
-            return false;
-        };
     </script>
     
     <!-- ========== RICHADS ========== -->
@@ -91,23 +65,7 @@
                 } catch(e) { console.log('RichAds init error:', e); }
             }
         });
-        
-        window.triggerRichAd = function() {
-            if (window.richAdsReady && window.RichAdsController) {
-                try {
-                    if (window.RichAdsController.showAd) {
-                        window.RichAdsController.showAd();
-                        console.log('🎯 RichAds shown');
-                        return true;
-                    }
-                } catch(e) { console.error('RichAds error:', e); }
-            }
-            return false;
-        };
     </script>
-    
-    <!-- ========== TADDY.PRO (Your pub-id) ========== -->
-    <script src="https://sdk.taddy.pro/web/taddy.min.js" data-pub-id="c9cdd59664e9f51f7ddf938ac2d2f008"></script>
     
     <style>
         :root {
@@ -393,6 +351,19 @@
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
+        
+        .taddy-ad-container {
+            width: 100%;
+            min-height: 250px;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -427,7 +398,7 @@
         
         <div class="instructions">
             <p><strong>How to play:</strong> Roll dice (cost 100 points). Win = dice number × 100 points. After each win, an ad will play to give you +50 bonus points!</p>
-            <p><strong>📺 Ads:</strong> Adexium + RichAds (auto) + Taddy.pro</p>
+            <p><strong>📺 Ads:</strong> Taddy.pro (interstitial) + Adexium + RichAds (auto mode)</p>
         </div>
     </div>
     
@@ -448,8 +419,10 @@
         <div class="popup">
             <h2 class="popup-title">🎁 WATCH AD FOR BONUS</h2>
             <div class="ads-content" id="adsContainer">
-                <div style="color: #6c757d; text-align: center;">
-                    <i class="fas fa-spinner fa-spin"></i> Loading ad...
+                <div class="taddy-ad-container" id="taddyAdContainer">
+                    <div style="color: #6c757d; text-align: center;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading Taddy.pro ad...
+                    </div>
                 </div>
             </div>
             <button class="popup-btn" id="closeAdsBtn" style="background: var(--telegram-blue); display: none;">
@@ -474,6 +447,7 @@
         let currentWin = 0;
         let currentDice = 6;
         let adInProgress = false;
+        let taddyReady = false;
         
         // DOM Elements
         const rollBtn = document.getElementById('rollBtn');
@@ -485,6 +459,7 @@
         const claimBtn = document.getElementById('claimBtn');
         const adsPopup = document.getElementById('adsPopup');
         const adsContainer = document.getElementById('adsContainer');
+        const taddyAdContainer = document.getElementById('taddyAdContainer');
         const closeAdsBtn = document.getElementById('closeAdsBtn');
         const audioControl = document.getElementById('audioControl');
         const statusBar = document.getElementById('statusBar');
@@ -555,110 +530,109 @@
             playSound(winSound);
         }
         
-        // ==================== AD SYSTEM ====================
-        // Taddy.pro (your pub-id) - Primary ad network
-        function triggerTaddyAd(callback) {
-            updateStatus('📺 Taddy.pro ad loading...');
-            console.log('🎯 Triggering Taddy.pro ad with pub-id: c9cdd59664e9f51f7ddf938ac2d2f008');
-            
+        // ==================== TADDY.PRO ADS (CORRECT API) ====================
+        function initTaddy() {
+            // Check if Taddy auto-initialized via data-pub-id attribute
             if (typeof window.Taddy !== 'undefined') {
-                try {
-                    // Check if Taddy SDK is fully loaded
-                    if (typeof window.Taddy.showAd === 'function') {
-                        window.Taddy.showAd({
-                            onClose: function() {
-                                console.log('✅ Taddy.pro ad closed');
-                                updateStatus('Ad completed! +50 bonus');
-                                if (callback) callback(true);
-                            },
-                            onError: function(err) {
-                                console.log('Taddy.pro ad error:', err);
-                                updateStatus('Taddy ad skipped, bonus still awarded');
-                                if (callback) callback(true); // Still give bonus even if ad fails
-                            }
-                        });
-                        return true;
-                    } else if (typeof window.Taddy.interstitial === 'function') {
-                        window.Taddy.interstitial({
-                            onClosed: () => {
-                                console.log('✅ Taddy.pro interstitial completed');
-                                updateStatus('Ad completed! +50 bonus');
-                                if (callback) callback(true);
-                            },
-                            onError: (err) => {
-                                console.log('Taddy.pro error:', err);
-                                if (callback) callback(true);
-                            }
-                        });
-                        return true;
-                    } else {
-                        console.log('Taddy.pro SDK loaded but showAd/interstitial not available');
-                        console.log('Available Taddy methods:', Object.keys(window.Taddy));
-                        if (callback) callback(true);
-                    }
-                } catch(e) {
-                    console.error('Taddy.pro trigger error:', e);
+                console.log('✅ Taddy.pro SDK detected');
+                console.log('Taddy object:', window.Taddy);
+                
+                // If not auto-initialized, init manually
+                if (typeof window.Taddy.init === 'function' && !window.Taddy._initialized) {
+                    window.Taddy.init('c9cdd59664e9f51f7ddf938ac2d2f008');
+                    console.log('✅ Taddy.pro manual init called');
+                }
+                
+                // Call ready() to signal app is ready
+                if (typeof window.Taddy.ready === 'function') {
+                    window.Taddy.ready();
+                    console.log('✅ Taddy.pro ready() called');
+                }
+                
+                taddyReady = true;
+                updateStatus('✅ Taddy.pro ready');
+            } else {
+                console.warn('⚠️ Taddy.pro not loaded');
+            }
+        }
+        
+        function showTaddyInterstitial(callback) {
+            if (!taddyReady || typeof window.Taddy === 'undefined') {
+                console.log('❌ Taddy.pro not ready');
+                if (callback) callback(false);
+                return;
+            }
+            
+            updateStatus('📺 Taddy.pro interstitial loading...');
+            console.log('🎯 Calling Taddy.pro interstitial...');
+            
+            try {
+                const ads = window.Taddy.ads();
+                
+                if (ads && typeof ads.interstitial === 'function') {
+                    ads.interstitial({
+                        payload: { game: "ludo_dice", action: "bonus" },
+                        onClosed: () => {
+                            console.log('✅ Taddy.pro ad closed');
+                            updateStatus('✅ Taddy ad completed');
+                            if (callback) callback(true);
+                        },
+                        onViewThrough: (id) => {
+                            console.log('✅ Taddy.pro ad view-through:', id);
+                        }
+                    }).then((success) => {
+                        console.log('Taddy.pro interstitial result:', success);
+                        if (success) {
+                            updateStatus('✅ Taddy ad shown');
+                            if (callback) callback(true);
+                        } else {
+                            console.log('⚠️ Taddy.pro ad not shown');
+                            if (callback) callback(true); // Still give bonus
+                        }
+                    }).catch((err) => {
+                        console.error('Taddy.pro interstitial error:', err);
+                        if (callback) callback(true); // Still give bonus
+                    });
+                } else {
+                    console.error('❌ Taddy.pro ads.interstitial not available');
+                    console.log('Available methods:', Object.keys(window.Taddy));
                     if (callback) callback(true);
                 }
-            } else {
-                console.log('⚠️ Taddy.pro SDK not loaded');
-                updateStatus('Taddy SDK not loaded, bonus granted');
+            } catch(e) {
+                console.error('Taddy.pro error:', e);
                 if (callback) callback(true);
             }
-            return false;
         }
         
-        // Trigger Adexium ads (auto mode)
+        // ==================== ADEXIUM & RICHADS (AUTO MODE) ====================
         function triggerAdexiumAuto() {
-            let triggered = false;
-            
-            if (window.adexiumInterstitial) {
-                try {
-                    if (typeof window.adexiumInterstitial.autoMode === 'function') {
-                        window.adexiumInterstitial.autoMode();
-                        triggered = true;
-                        console.log('✅ Adexium Interstitial autoMode called');
-                    }
-                } catch(e) { console.error('Adexium autoMode error:', e); }
+            if (window.adexiumInterstitial && typeof window.adexiumInterstitial.autoMode === 'function') {
+                window.adexiumInterstitial.autoMode();
+                console.log('✅ Adexium Interstitial autoMode');
             }
-            
-            if (window.adexiumPushLike) {
-                try {
-                    if (typeof window.adexiumPushLike.autoMode === 'function') {
-                        window.adexiumPushLike.autoMode();
-                        triggered = true;
-                        console.log('✅ Adexium Push-like autoMode called');
-                    }
-                } catch(e) { console.error('Adexium push-like error:', e); }
+            if (window.adexiumPushLike && typeof window.adexiumPushLike.autoMode === 'function') {
+                window.adexiumPushLike.autoMode();
+                console.log('✅ Adexium Push-like autoMode');
             }
-            
-            return triggered;
         }
         
-        // Trigger RichAds
         function triggerRichAuto() {
-            if (window.richAdsReady && window.RichAdsController) {
-                try {
-                    if (typeof window.RichAdsController.showAd === 'function') {
-                        window.RichAdsController.showAd();
-                        console.log('✅ RichAds triggered');
-                        return true;
-                    }
-                } catch(e) { console.error('RichAds error:', e); }
+            if (window.richAdsReady && window.RichAdsController && typeof window.RichAdsController.showAd === 'function') {
+                window.RichAdsController.showAd();
+                console.log('✅ RichAds triggered');
             }
-            return false;
         }
         
-        // Main ad function - Taddy.pro primary, Adexium & RichAds in auto mode
+        // ==================== MAIN AD FLOW ====================
         function showAdWithBonus(callback) {
-            updateStatus('🎯 Showing ad...');
+            updateStatus('🎯 Showing ads...');
             
-            // Adexium & RichAds run in auto mode (background)
+            // Run Adexium & RichAds in auto mode (background)
             triggerAdexiumAuto();
             triggerRichAuto();
             
-            // Taddy.pro as the main ad (your pub-id)
-            triggerTaddyAd(callback);
+            // Show Taddy.pro interstitial as main ad
+            showTaddyInterstitial(callback);
         }
         
         // ==================== CLAIM PRIZE ====================
@@ -670,10 +644,14 @@
             updatePoints();
             resultPopup.style.display = 'none';
             
-            // Show ad for bonus
+            // Show ad popup
             showAdsPopup();
+            
+            // Show ad and then give bonus
             showAdWithBonus((success) => {
-                giveBonusAfterAd();
+                setTimeout(() => {
+                    giveBonusAfterAd();
+                }, 500);
             });
         }
         
@@ -691,7 +669,7 @@
                 <div style="text-align: center;">
                     <i class="fas fa-trophy" style="font-size: 48px; color: #ffd700;"></i>
                     <div style="font-size: 28px; font-weight: 800; color: #34c759; margin-top: 10px;">+${bonusAmount} BONUS</div>
-                    <div style="font-size: 14px; margin-top: 5px;">Points added! Keep rolling!</div>
+                    <div style="font-size: 14px; color: #6c757d; margin-top: 5px;">Points added! Keep rolling!</div>
                 </div>
             `;
             closeAdsBtn.style.display = 'flex';
@@ -703,6 +681,13 @@
             playSound(clickSound);
             adsPopup.style.display = 'none';
             adInProgress = false;
+            
+            // Reset ad container for next time
+            taddyAdContainer.innerHTML = `
+                <div style="color: #6c757d; text-align: center;">
+                    <i class="fas fa-spinner fa-spin"></i> Loading Taddy.pro ad...
+                </div>
+            `;
             updateStatus('🎮 Ready to play');
         }
         
@@ -710,10 +695,9 @@
             adInProgress = true;
             adsPopup.style.display = 'flex';
             closeAdsBtn.style.display = 'none';
-            adsContainer.innerHTML = `
+            taddyAdContainer.innerHTML = `
                 <div style="color: #6c757d; text-align: center;">
-                    <i class="fas fa-spinner fa-spin"></i> Loading ad...<br>
-                    <span style="font-size:12px;">Taddy.pro | Adexium | RichAds</span>
+                    <i class="fas fa-spinner fa-spin"></i> Loading Taddy.pro ad...
                 </div>
             `;
         }
@@ -726,38 +710,54 @@
             closeAdsBtn.addEventListener('click', closeAdsPopup);
             audioControl.addEventListener('click', toggleAudio);
             
-            resultPopup.addEventListener('click', (e) => { if (e.target === resultPopup) resultPopup.style.display = 'none'; });
-            adsPopup.addEventListener('click', (e) => { if (e.target === adsPopup && closeAdsBtn.style.display === 'flex') closeAdsPopup(); });
+            resultPopup.addEventListener('click', (e) => { 
+                if (e.target === resultPopup) resultPopup.style.display = 'none'; 
+            });
+            adsPopup.addEventListener('click', (e) => { 
+                if (e.target === adsPopup && closeAdsBtn.style.display === 'flex') closeAdsPopup(); 
+            });
             
             diceSound.volume = 0.6;
             winSound.volume = 0.7;
             clickSound.volume = 0.5;
             
-            // Warm up ad networks
+            // Initialize Taddy.pro
             setTimeout(() => {
-                triggerAdexiumAuto();
-                triggerRichAuto();
-                updateStatus('✅ Taddy.pro (pub: c9cdd5...) | Adexium | RichAds');
-            }, 2000);
+                initTaddy();
+                
+                // Warm up other ad networks
+                setTimeout(() => {
+                    triggerAdexiumAuto();
+                    triggerRichAuto();
+                }, 1000);
+                
+                updateStatus('✅ Taddy | Adexium | RichAds');
+            }, 500);
             
             console.log('🎮 Game initialized');
             console.log('📺 Taddy.pro pub-id: c9cdd59664e9f51f7ddf938ac2d2f008');
             console.log('📺 Adexium: auto mode');
-            console.log('📺 RichAds: ready:', window.richAdsReady);
             console.log('💰 Starting points:', points);
-            updateStatus('🎮 Ready! Roll dice to play');
         }
         
-        // Check Taddy.pro availability
+        // Wait for Taddy SDK to be ready
         window.addEventListener('load', () => {
+            console.log('📄 Page fully loaded');
+            
+            // Check Taddy availability after full load
             setTimeout(() => {
                 if (typeof window.Taddy !== 'undefined') {
-                    console.log('✅ Taddy.pro SDK loaded successfully');
-                    console.log('Taddy object:', window.Taddy);
+                    console.log('✅ Taddy.pro available after load');
+                    console.log('Taddy keys:', Object.keys(window.Taddy));
+                    
+                    // Force init if needed
+                    if (!taddyReady) {
+                        initTaddy();
+                    }
                 } else {
-                    console.warn('⚠️ Taddy.pro SDK not detected after load');
+                    console.warn('⚠️ Taddy.pro not available after load');
                 }
-            }, 3000);
+            }, 2000);
         });
         
         window.addEventListener('DOMContentLoaded', initGame);
