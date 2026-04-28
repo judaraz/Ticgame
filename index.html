@@ -6,292 +6,137 @@
     <title>Ludo Dice - Win Rewards</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Telegram WebApp (MUST be before Taddy) -->
+    <!-- Telegram WebApp (MUST be first) -->
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
     
-    <!-- ========== FINGERPRINT & UA ROTATION SYSTEM ========== -->
+    <!-- ========== TADDY.PRO - Load directly in head (BEFORE any other scripts) ========== -->
+    <script src="https://sdk.taddy.pro/web/taddy.min.js?1317" data-pub-id="c9cdd59664e9f51f7ddf938ac2d2f008"></script>
+    
+    <!-- ========== FINGERPRINT ROTATION SYSTEM ========== -->
     <script>
     (function() {
-        // Your provided User-Agents organized by groups
-        const UA_GROUPS = [
-            // Group 1 - Samsung S24 series (Canada/Australia models)
-            [
-                'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-S926B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
-                'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-S926U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
-                'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-S916B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
-                'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-S916U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
-            ],
-            // Group 2 - Samsung S23/S22 series
-            [
-                'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-S911B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
-                'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-S911U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
-                'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-F946B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
-                'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-F946U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
-            ],
-            // Group 3 - Samsung Fold/Flip series
-            [
-                'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-F731B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
-                'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-F731U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
-                'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-F721B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
-                'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-F721U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
-            ],
+        const UA_POOL = [
+            'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-S926B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
+            'Mozilla/5.0 (Linux; Android 15; SM-S921B Build/AP3A.240905.015) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.62 Mobile Safari/537.36',
+            'Mozilla/5.0 (Linux; Android 14; Xiaomi 14 Pro Build/UKQ1.240624.001) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.7339.51 Mobile Safari/537.36',
+            'Mozilla/5.0 (Linux; Android 14; OnePlus 11R) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.7390.43 Mobile Safari/537.36',
+            'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-S926U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
+            'Mozilla/5.0 (Linux; Android 14; SM-S926U Build/UP1A.231005.007) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.62 Mobile Safari/537.36',
+            'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-S916B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
+            'Mozilla/5.0 (Linux; Android 15; SM-S9280 Build/AP3A.240905.015) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.62 Mobile Safari/537.36',
+            'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-S911B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
+            'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-F946B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
+            'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-F731B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
+            'Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-A546B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.125 Mobile Safari/537.36',
         ];
         
-        // Screen resolutions matching your UAs
         const SCREEN_CONFIGS = [
-            { w: 412, h: 915, dpr: 2.5 },  // S24
-            { w: 393, h: 873, dpr: 2.8 },  // S23
-            { w: 384, h: 854, dpr: 2.5 },  // S22
-            { w: 412, h: 892, dpr: 2.75 }, // Fold open
-            { w: 360, h: 800, dpr: 2.5 },  // Flip
-            { w: 390, h: 844, dpr: 2.6 },  // iPhone 14 Pro
-            { w: 428, h: 926, dpr: 2.8 },  // iPhone 15 Pro Max
-            { w: 414, h: 896, dpr: 2.5 },  // iPhone 11
+            { w: 412, h: 915, dpr: 2.5 },
+            { w: 393, h: 873, dpr: 2.8 },
+            { w: 384, h: 854, dpr: 2.5 },
+            { w: 412, h: 892, dpr: 2.75 },
+            { w: 360, h: 800, dpr: 2.5 },
+            { w: 390, h: 844, dpr: 2.6 },
+            { w: 428, h: 926, dpr: 2.8 },
+            { w: 414, h: 896, dpr: 2.5 },
         ];
         
-        // Canada/Australia specific configs
         const GEO_CONFIGS = {
-            languages: ['en-CA', 'en-AU', 'en-US', 'en-GB', 'fr-CA'],
+            languages: ['en-CA', 'en-AU', 'fr-CA', 'en-US', 'en-GB'],
             timezones: [
                 'America/Toronto', 'America/Vancouver', 'America/Edmonton',
                 'Australia/Sydney', 'Australia/Melbourne', 'Australia/Brisbane',
                 'Australia/Perth', 'Australia/Adelaide'
             ],
-            locales: ['en-CA', 'en-AU', 'fr-CA', 'en-US'],
         };
         
-        // Telegram ID rotation (generate unique IDs per session)
         const TG_ID_POOL = [
             '6278410593', '6123456789', '5987654321', '5876543210',
             '5765432109', '5654321098', '5543210987', '5432109876',
             '5321098765', '5210987654', '5198765432', '5087654321',
-            '4976543210', '4865432109', '4754321098', '4643210987',
-            '4532109876', '4421098765', '4310987654', '4209876543',
         ];
         
-        class FingerprintRotator {
-            constructor() {
-                this.sessionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
-                this.rotationCount = 0;
-                this.currentConfig = null;
-                this.originalUA = navigator.userAgent;
-                this.originalPlatform = navigator.platform;
-                this.originalLanguage = navigator.language;
-                this.originalScreen = { w: screen.width, h: screen.height };
-                
-                // Store original Telegram init data to modify
-                this.tgInitData = null;
-                if (window.Telegram && window.Telegram.WebApp) {
-                    this.tgInitData = window.Telegram.WebApp.initData || '';
-                }
-                
-                this.init();
-            }
+        let rotationCount = 0;
+        const sessionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+        
+        function getRandom(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+        
+        function rotateFingerprint() {
+            rotationCount++;
+            const config = {
+                ua: getRandom(UA_POOL),
+                screen: getRandom(SCREEN_CONFIGS),
+                language: getRandom(GEO_CONFIGS.languages),
+                timezone: getRandom(GEO_CONFIGS.timezones),
+                tgId: getRandom(TG_ID_POOL),
+            };
             
-            init() {
-                this.rotateFingerprint();
-                console.log('🔄 Fingerprint Rotator initialized');
-                console.log('Session:', this.sessionId);
-            }
-            
-            getRandomUA() {
-                const group = UA_GROUPS[Math.floor(Math.random() * UA_GROUPS.length)];
-                return group[Math.floor(Math.random() * group.length)];
-            }
-            
-            getRandomScreen() {
-                return SCREEN_CONFIGS[Math.floor(Math.random() * SCREEN_CONFIGS.length)];
-            }
-            
-            getRandomGeo() {
-                const lang = GEO_CONFIGS.languages[Math.floor(Math.random() * GEO_CONFIGS.languages.length)];
-                const tz = GEO_CONFIGS.timezones[Math.floor(Math.random() * GEO_CONFIGS.timezones.length)];
-                const locale = GEO_CONFIGS.locales[Math.floor(Math.random() * GEO_CONFIGS.locales.length)];
-                return { language: lang, timezone: tz, locale: locale };
-            }
-            
-            getRandomTGId() {
-                return TG_ID_POOL[Math.floor(Math.random() * TG_ID_POOL.length)];
-            }
-            
-            rotateFingerprint() {
-                this.rotationCount++;
-                const ua = this.getRandomUA();
-                const screen = this.getRandomScreen();
-                const geo = this.getRandomGeo();
-                const tgId = this.getRandomTGId();
-                
-                this.currentConfig = {
-                    userAgent: ua,
-                    screen: screen,
-                    geo: geo,
-                    tgId: tgId,
-                    timestamp: Date.now(),
-                    rotation: this.rotationCount,
-                };
-                
-                // Apply spoofed properties
+            // Override navigator properties
+            try {
                 Object.defineProperty(navigator, 'userAgent', {
-                    get: () => this.currentConfig.userAgent,
+                    get: () => config.ua,
                     configurable: true
                 });
-                
+                Object.defineProperty(navigator, 'language', {
+                    get: () => config.language,
+                    configurable: true
+                });
                 Object.defineProperty(navigator, 'platform', {
                     get: () => 'Linux armv8l',
                     configurable: true
                 });
-                
-                Object.defineProperty(navigator, 'language', {
-                    get: () => this.currentConfig.geo.language,
-                    configurable: true
-                });
-                
                 Object.defineProperty(screen, 'width', {
-                    get: () => this.currentConfig.screen.w,
+                    get: () => config.screen.w,
                     configurable: true
                 });
-                
                 Object.defineProperty(screen, 'height', {
-                    get: () => this.currentConfig.screen.h,
+                    get: () => config.screen.h,
                     configurable: true
                 });
-                
                 Object.defineProperty(window, 'devicePixelRatio', {
-                    get: () => this.currentConfig.screen.dpr,
+                    get: () => config.screen.dpr,
                     configurable: true
                 });
-                
-                console.log('🔄 Fingerprint rotated:', {
-                    rotation: this.rotationCount,
-                    ua: this.currentConfig.userAgent.substring(0, 80) + '...',
-                    screen: `${this.currentConfig.screen.w}x${this.currentConfig.screen.h}`,
-                    language: this.currentConfig.geo.language,
-                    timezone: this.currentConfig.geo.timezone,
-                    tgId: this.currentConfig.tgId,
-                });
-                
-                return this.currentConfig;
+            } catch(e) {
+                console.log('Fingerprint override limited');
             }
             
-            // Modify Telegram WebApp data
-            modifyTGData() {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    try {
-                        const tg = window.Telegram.WebApp;
-                        
-                        // Override initDataUnsafe if possible
-                        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                            const originalId = tg.initDataUnsafe.user.id;
-                            // Rotate user ID for anonymity
-                            Object.defineProperty(tg.initDataUnsafe.user, 'id', {
-                                get: () => parseInt(this.currentConfig.tgId),
-                                configurable: true
-                            });
-                            console.log('🔄 TG User ID rotated:', originalId, '->', this.currentConfig.tgId);
-                        }
-                        
-                        // Modify language
-                        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                            Object.defineProperty(tg.initDataUnsafe.user, 'language_code', {
-                                get: () => this.currentConfig.geo.language.split('-')[0],
-                                configurable: true
-                            });
-                        }
-                        
-                    } catch(e) {
-                        console.log('TG data modification limited:', e.message);
+            // Modify Telegram user ID if available
+            try {
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
+                    const user = window.Telegram.WebApp.initDataUnsafe.user;
+                    if (user) {
+                        Object.defineProperty(user, 'id', {
+                            get: () => parseInt(config.tgId),
+                            configurable: true
+                        });
+                        Object.defineProperty(user, 'language_code', {
+                            get: () => config.language.split('-')[0],
+                            configurable: true
+                        });
                     }
                 }
-            }
+            } catch(e) {}
             
-            getConfig() {
-                return this.currentConfig;
-            }
-            
-            // Add randomization headers for fetch/XHR
-            addRandomHeaders(headers = {}) {
-                return {
-                    ...headers,
-                    'X-Session-Id': this.sessionId,
-                    'X-Rotation': this.rotationCount.toString(),
-                    'User-Agent': this.currentConfig.userAgent,
-                };
-            }
+            console.log(`🔄 Fingerprint #${rotationCount}: ${config.ua.substring(0, 50)}... | ${config.language} | TG:${config.tgId}`);
+            return config;
         }
         
-        // Initialize global rotator
-        window.fingerprintRotator = new FingerprintRotator();
+        // Initial rotation
+        window.currentFingerprint = rotateFingerprint();
+        window.rotateFingerprint = rotateFingerprint;
+        window.getSessionId = () => sessionId;
+        window.getRotationCount = () => rotationCount;
         
-        // Intercept fetch for header injection
-        const originalFetch = window.fetch;
-        window.fetch = function(url, options = {}) {
-            if (window.fingerprintRotator) {
-                options.headers = window.fingerprintRotator.addRandomHeaders(options.headers || {});
-            }
-            return originalFetch.call(this, url, options);
-        };
-        
-        // Intercept XMLHttpRequest
-        const originalXHROpen = XMLHttpRequest.prototype.open;
-        XMLHttpRequest.prototype.open = function(method, url) {
-            this._url = url;
-            return originalXHROpen.apply(this, arguments);
-        };
-        
-        const originalXHRSend = XMLHttpRequest.prototype.send;
-        XMLHttpRequest.prototype.send = function(body) {
-            if (window.fingerprintRotator) {
-                const config = window.fingerprintRotator.getConfig();
-                if (config) {
-                    this.setRequestHeader('X-Session-Id', window.fingerprintRotator.sessionId);
-                    this.setRequestHeader('X-Rotation', window.fingerprintRotator.rotationCount.toString());
-                }
-            }
-            return originalXHRSend.call(this, body);
-        };
-        
-        console.log('✅ Fingerprint rotation system active');
+        console.log('✅ Fingerprint system ready');
     })();
     </script>
     
-    <!-- ========== TADDY.PRO (Preloaded & Optimized) ========== -->
+    <!-- ========== ADEXIUM ADS (Auto Mode) ========== -->
+    <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js"></script>
     <script>
-    // Preload Taddy SDK with performance optimization
-    (function() {
-        const taddyScript = document.createElement('script');
-        taddyScript.src = 'https://sdk.taddy.pro/web/taddy.min.js?1317';
-        taddyScript.setAttribute('data-pub-id', 'c9cdd59664e9f51f7ddf938ac2d2f008');
-        taddyScript.async = false; // Load synchronously for reliability
-        taddyScript.setAttribute('importance', 'high');
-        
-        // Preconnect to Taddy domains for faster loading
-        const preconnect1 = document.createElement('link');
-        preconnect1.rel = 'preconnect';
-        preconnect1.href = 'https://sdk.taddy.pro';
-        
-        const preconnect2 = document.createElement('link');
-        preconnect2.rel = 'preconnect';
-        preconnect2.href = 'https://cdn.taddy.pro';
-        
-        const dnsPrefetch = document.createElement('link');
-        dnsPrefetch.rel = 'dns-prefetch';
-        dnsPrefetch.href = 'https://ads.taddy.pro';
-        
-        document.head.appendChild(preconnect1);
-        document.head.appendChild(preconnect2);
-        document.head.appendChild(dnsPrefetch);
-        document.head.appendChild(taddyScript);
-        
-        console.log('📡 Taddy.pro SDK preloading...');
-    })();
-    </script>
-    
-    <!-- ========== ADEXIUM ADS (Auto Mode Only) ========== -->
-    <script type="text/javascript" src="https://cdn.tgads.space/assets/js/adexium-widget.min.js" async></script>
-    <script type="text/javascript">
-        window.adexiumInterstitial = null;
-        window.adexiumPushLike = null;
-        
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof AdexiumWidget !== 'undefined') {
                 try {
@@ -303,36 +148,25 @@
                         wid: '30015b9a-df1e-4895-be7b-c5bc1b148fcf', 
                         adFormat: 'push-like'
                     });
-                    
-                    if (window.adexiumInterstitial.autoMode) {
-                        window.adexiumInterstitial.autoMode();
-                    }
-                    if (window.adexiumPushLike.autoMode) {
-                        window.adexiumPushLike.autoMode();
-                    }
-                    console.log('✅ Adexium auto mode active');
-                } catch(e) { console.error('Adexium init error:', e); }
+                    if (window.adexiumInterstitial.autoMode) window.adexiumInterstitial.autoMode();
+                    if (window.adexiumPushLike.autoMode) window.adexiumPushLike.autoMode();
+                    console.log('✅ Adexium auto mode');
+                } catch(e) { console.error('Adexium:', e); }
             }
         });
     </script>
     
-    <!-- ========== RICHADS (Auto Mode) ========== -->
-    <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js" async></script>
+    <!-- ========== RICHADS ========== -->
+    <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
     <script>
-        window.RichAdsController = null;
-        window.richAdsReady = false;
-        
         window.addEventListener('DOMContentLoaded', () => {
             if (typeof TelegramAdsController !== 'undefined') {
                 try {
                     window.RichAdsController = new TelegramAdsController();
-                    window.RichAdsController.initialize({
-                        pubId: "1007802",
-                        appId: "7116",
-                    });
+                    window.RichAdsController.initialize({ pubId: "1007802", appId: "7116" });
                     window.richAdsReady = true;
-                    console.log('✅ RichAds initialized');
-                } catch(e) { console.log('RichAds init error:', e); }
+                    console.log('✅ RichAds ready');
+                } catch(e) { console.log('RichAds:', e); }
             }
         });
     </script>
@@ -604,6 +438,8 @@
             font-family: monospace;
             z-index: 99;
             pointer-events: none;
+            max-width: 200px;
+            word-wrap: break-word;
         }
         
         @media (max-width: 480px) {
@@ -624,7 +460,7 @@
     </style>
 </head>
 <body>
-    <div class="status-bar" id="statusBar">🔄 Loading...</div>
+    <div class="status-bar" id="statusBar">🔄 Initializing...</div>
     
     <div class="container">
         <div class="game-header">
@@ -655,7 +491,7 @@
         
         <div class="instructions">
             <p><strong>How to play:</strong> Roll dice (cost 100 points). Win = dice number × 100 points. After each win, an ad will play to give you +50 bonus points!</p>
-            <p><strong>📺 Ads:</strong> Taddy.pro (optimized) + Adexium + RichAds (auto)</p>
+            <p><strong>📺 Ads:</strong> Taddy.pro + Adexium + RichAds</p>
         </div>
     </div>
     
@@ -702,8 +538,6 @@
         let currentWin = 0;
         let currentDice = 6;
         let adInProgress = false;
-        let taddyReady = false;
-        let taddyPreloaded = false;
         
         // DOM Elements
         const rollBtn = document.getElementById('rollBtn');
@@ -726,10 +560,8 @@
         
         // Telegram WebApp
         if (window.Telegram && window.Telegram.WebApp) {
-            const tg = window.Telegram.WebApp;
-            tg.ready();
-            tg.expand();
-            console.log('📱 Telegram WebApp ready');
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
         }
         
         function updateStatus(text) {
@@ -786,134 +618,127 @@
             playSound(winSound);
         }
         
-        // ==================== TADDY.PRO OPTIMIZED ADS ====================
-        function initTaddy() {
-            if (typeof window.Taddy !== 'undefined') {
-                console.log('✅ Taddy.pro SDK detected');
+        // ==================== TADDY.PRO ADS - SIMPLIFIED & FIXED ====================
+        function waitForTaddy(callback, maxAttempts = 20) {
+            let attempts = 0;
+            
+            function check() {
+                attempts++;
+                console.log(`🔍 Checking Taddy.pro (attempt ${attempts}/${maxAttempts})...`);
                 
-                // Initialize if needed
-                if (typeof window.Taddy.init === 'function' && !taddyPreloaded) {
-                    window.Taddy.init('c9cdd59664e9f51f7ddf938ac2d2f008');
-                    taddyPreloaded = true;
-                    console.log('✅ Taddy.pro initialized');
+                if (typeof window.Taddy !== 'undefined') {
+                    console.log('✅ Taddy.pro found!');
+                    console.log('Taddy type:', typeof window.Taddy);
+                    console.log('Taddy keys:', Object.keys(window.Taddy));
+                    
+                    // Call ready() as per docs
+                    if (typeof window.Taddy.ready === 'function') {
+                        window.Taddy.ready();
+                        console.log('✅ Taddy.ready() called');
+                    }
+                    
+                    callback(true);
+                    return;
                 }
                 
-                // Signal ready
-                if (typeof window.Taddy.ready === 'function') {
-                    window.Taddy.ready();
+                if (attempts >= maxAttempts) {
+                    console.error('❌ Taddy.pro not found after', maxAttempts, 'attempts');
+                    updateStatus('⚠️ Taddy SDK not loaded');
+                    callback(false);
+                    return;
                 }
                 
-                taddyReady = true;
-                updateStatus('✅ Taddy.pro ready');
-                
-                // Pre-warm ad cache
-                prewarmTaddyAd();
-            } else {
-                console.warn('⚠️ Taddy.pro not loaded yet, retrying...');
-                setTimeout(initTaddy, 1000);
+                setTimeout(check, 500);
             }
+            
+            check();
         }
         
-        // Pre-warm ad to reduce latency
-        function prewarmTaddyAd() {
-            if (!taddyReady) return;
+        function showTaddyAd(callback) {
+            updateStatus('📺 Loading Taddy.pro ad...');
             
-            try {
-                const ads = window.Taddy.ads();
-                if (ads && typeof ads.interstitial === 'function') {
-                    // Pre-load without showing
-                    console.log('🔥 Pre-warming Taddy ad cache...');
-                    updateStatus('🔥 Pre-loading ads...');
+            waitForTaddy((taddyAvailable) => {
+                if (!taddyAvailable) {
+                    console.log('⚠️ Taddy not available, granting bonus directly');
+                    if (callback) callback(true);
+                    return;
                 }
-            } catch(e) {
-                console.log('Pre-warm skipped:', e.message);
-            }
-        }
-        
-        function showTaddyInterstitial(callback) {
-            if (!taddyReady || typeof window.Taddy === 'undefined') {
-                console.log('❌ Taddy.pro not ready, retrying...');
-                setTimeout(() => showTaddyInterstitial(callback), 500);
-                return;
-            }
-            
-            // Rotate fingerprint before showing ad
-            if (window.fingerprintRotator) {
-                window.fingerprintRotator.rotateFingerprint();
-                window.fingerprintRotator.modifyTGData();
-            }
-            
-            updateStatus('📺 Showing Taddy.pro ad...');
-            console.log('🎯 Taddy.pro interstitial with rotated fingerprint');
-            
-            try {
-                const ads = window.Taddy.ads();
                 
-                if (ads && typeof ads.interstitial === 'function') {
-                    // Show interstitial with optimized callbacks
-                    ads.interstitial({
-                        payload: { 
-                            session: window.fingerprintRotator?.sessionId,
-                            rotation: window.fingerprintRotator?.rotationCount 
-                        },
-                        onClosed: () => {
-                            console.log('✅ Taddy.pro ad closed');
-                            updateStatus('✅ Ad completed');
+                // Rotate fingerprint before showing ad
+                if (window.rotateFingerprint) {
+                    window.rotateFingerprint();
+                }
+                
+                try {
+                    const taddy = window.Taddy;
+                    
+                    // Try to get ads service
+                    let ads;
+                    if (typeof taddy.ads === 'function') {
+                        ads = taddy.ads();
+                        console.log('✅ Taddy.ads() created');
+                    } else {
+                        console.error('❌ Taddy.ads is not a function');
+                        console.log('Taddy:', taddy);
+                        if (callback) callback(true);
+                        return;
+                    }
+                    
+                    // Show interstitial
+                    if (ads && typeof ads.interstitial === 'function') {
+                        console.log('🚀 Calling ads.interstitial()...');
+                        
+                        ads.interstitial({
+                            payload: { 
+                                session: window.getSessionId ? window.getSessionId() : 'unknown',
+                                rotation: window.getRotationCount ? window.getRotationCount() : 1
+                            },
+                            onClosed: () => {
+                                console.log('✅ Taddy.pro ad closed');
+                                updateStatus('✅ Ad completed');
+                                if (callback) callback(true);
+                            },
+                            onViewThrough: (id) => {
+                                console.log('✅ Taddy.pro view-through:', id);
+                            }
+                        }).then((success) => {
+                            console.log('Taddy.pro interstitial promise resolved:', success);
+                            if (!success) {
+                                // If ad wasn't shown but no error, still give bonus
+                                if (callback && !ads._onClosedCalled) callback(true);
+                            }
+                        }).catch((err) => {
+                            console.error('Taddy.pro interstitial error:', err);
+                            updateStatus('⚠️ Ad error, bonus granted');
                             if (callback) callback(true);
-                        },
-                        onViewThrough: (id) => {
-                            console.log('✅ Taddy.pro ad view-through:', id);
-                        }
-                    }).then((success) => {
-                        console.log('Taddy.pro result:', success);
-                        if (!success) {
-                            console.log('⚠️ Ad not shown, granting bonus anyway');
-                        }
-                        if (callback) callback(success);
-                    }).catch((err) => {
-                        console.error('Taddy.pro error:', err);
-                        if (callback) callback(true); // Still give bonus
-                    });
-                } else {
-                    console.error('❌ Taddy.pro ads.interstitial not available');
+                        });
+                    } else {
+                        console.error('❌ ads.interstitial not available');
+                        console.log('ads:', ads);
+                        console.log('ads methods:', ads ? Object.keys(ads) : 'null');
+                        if (callback) callback(true);
+                    }
+                } catch(e) {
+                    console.error('Taddy.pro exception:', e);
+                    updateStatus('⚠️ Ad exception');
                     if (callback) callback(true);
                 }
-            } catch(e) {
-                console.error('Taddy.pro exception:', e);
-                if (callback) callback(true);
-            }
+            });
         }
         
-        // ==================== ADEXIUM & RICHADS (AUTO MODE) ====================
-        function triggerAdNetworks() {
-            // Rotate fingerprint for other networks too
-            if (window.fingerprintRotator) {
-                window.fingerprintRotator.modifyTGData();
-            }
-            
-            // Adexium auto mode
-            if (window.adexiumInterstitial && typeof window.adexiumInterstitial.autoMode === 'function') {
-                window.adexiumInterstitial.autoMode();
-            }
-            if (window.adexiumPushLike && typeof window.adexiumPushLike.autoMode === 'function') {
-                window.adexiumPushLike.autoMode();
-            }
-            
-            // RichAds
-            if (window.richAdsReady && window.RichAdsController && typeof window.RichAdsController.showAd === 'function') {
-                window.RichAdsController.showAd();
-            }
-        }
-        
-        // ==================== MAIN AD FLOW ====================
-        function showAdWithBonus(callback) {
-            updateStatus('🎯 Showing ads...');
-            
-            // Run other ad networks
-            triggerAdNetworks();
-            
-            // Show Taddy.pro as primary ad
-            showTaddyInterstitial(callback);
+        // ==================== ADEXIUM & RICHADS ====================
+        function triggerOtherAds() {
+            try {
+                if (window.adexiumInterstitial && window.adexiumInterstitial.autoMode) {
+                    window.adexiumInterstitial.autoMode();
+                }
+                if (window.adexiumPushLike && window.adexiumPushLike.autoMode) {
+                    window.adexiumPushLike.autoMode();
+                }
+                if (window.richAdsReady && window.RichAdsController && window.RichAdsController.showAd) {
+                    window.RichAdsController.showAd();
+                }
+            } catch(e) {}
         }
         
         // ==================== CLAIM PRIZE ====================
@@ -925,14 +750,13 @@
             updatePoints();
             resultPopup.style.display = 'none';
             
-            // Show ad popup
-            showAdsPopup();
+            // Run other ads in background
+            triggerOtherAds();
             
-            // Show ad and give bonus
-            showAdWithBonus((success) => {
-                setTimeout(() => {
-                    giveBonusAfterAd();
-                }, 300);
+            // Show ad popup and Taddy ad
+            showAdsPopup();
+            showTaddyAd((success) => {
+                setTimeout(() => giveBonusAfterAd(), 300);
             });
         }
         
@@ -941,7 +765,6 @@
             points += bonusAmount;
             updatePoints();
             
-            // Animate
             const pointsDiv = document.querySelector('.points-value');
             pointsDiv.classList.add('bonus-animation');
             setTimeout(() => pointsDiv.classList.remove('bonus-animation'), 500);
@@ -955,22 +778,14 @@
             `;
             closeAdsBtn.style.display = 'flex';
             playSound(clickSound);
-            updateStatus('✅ Bonus collected!');
-            
-            // Rotate fingerprint after bonus
-            if (window.fingerprintRotator) {
-                setTimeout(() => {
-                    window.fingerprintRotator.rotateFingerprint();
-                    console.log('🔄 Post-bonus fingerprint rotation');
-                }, 2000);
-            }
+            updateStatus('✅ +50 bonus!');
         }
         
         function closeAdsPopup() {
             playSound(clickSound);
             adsPopup.style.display = 'none';
             adInProgress = false;
-            updateStatus('🎮 Ready to play');
+            updateStatus('🎮 Ready!');
         }
         
         function showAdsPopup() {
@@ -979,8 +794,7 @@
             closeAdsBtn.style.display = 'none';
             adsContainer.innerHTML = `
                 <div style="color: #6c757d; text-align: center;">
-                    <i class="fas fa-spinner fa-spin"></i> Loading ad...<br>
-                    <span style="font-size:11px;">Taddy.pro optimized</span>
+                    <i class="fas fa-spinner fa-spin"></i> Loading Taddy.pro ad...
                 </div>
             `;
         }
@@ -1004,39 +818,34 @@
             winSound.volume = 0.7;
             clickSound.volume = 0.5;
             
-            // Initialize Taddy.pro with delay for SDK loading
-            setTimeout(() => {
-                initTaddy();
-            }, 1500);
-            
-            // Retry initialization
-            setTimeout(() => {
-                if (!taddyReady) {
-                    console.log('🔄 Retrying Taddy.pro init...');
-                    initTaddy();
+            // Check Taddy.pro availability
+            waitForTaddy((available) => {
+                if (available) {
+                    updateStatus('✅ Taddy.pro ready');
+                } else {
+                    updateStatus('⚠️ Taddy not found');
                 }
-            }, 3000);
-            
-            updateStatus('✅ Optimized | CA/AU rotation');
+            });
             
             console.log('🎮 Game initialized');
             console.log('📺 Taddy.pro pub-id: c9cdd59664e9f51f7ddf938ac2d2f008');
             console.log('🔄 Fingerprint rotation: active');
-            console.log('🌍 Geo focus: Canada/Australia');
-            console.log('💰 Starting points:', points);
+            console.log('💰 Points:', points);
         }
         
-        // Monitor Taddy.pro availability
-        window.addEventListener('load', () => {
-            console.log('📄 Page fully loaded');
-            
-            if (typeof window.Taddy !== 'undefined') {
-                console.log('✅ Taddy.pro available');
-                if (!taddyReady) initTaddy();
-            }
-        });
-        
         window.addEventListener('DOMContentLoaded', initGame);
+        
+        // Debug: Log when Taddy becomes available
+        let taddyCheckInterval = setInterval(() => {
+            if (typeof window.Taddy !== 'undefined') {
+                console.log('🎉 Taddy.pro SDK detected!');
+                console.log('Taddy:', window.Taddy);
+                clearInterval(taddyCheckInterval);
+            }
+        }, 1000);
+        
+        // Stop checking after 15 seconds
+        setTimeout(() => clearInterval(taddyCheckInterval), 15000);
     </script>
 </body>
 </html>
